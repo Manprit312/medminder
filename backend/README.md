@@ -13,7 +13,8 @@ Node.js + Express + TypeScript REST API with **JWT** auth.
 
 2. **API — Render (free web service)**  
    - Connect your Git repo to [Render](https://render.com).  
-   - Use the included repo root **`render.yaml`** (Blueprint) or create a **Web Service** with **Root Directory** `backend`, **Build** `npm install && npm run build`, **Start** `npm start`.  
+   - **Root Directory:** **`backend`** (folder with `package.json`, relative to repo root).  
+   - Use the included **`render.yaml`** (Blueprint) or create a **Web Service** with **Build** `npm install && npm run build`, **Start** `npm start`.  
    - In **Environment**, add at least:
      - **`DATABASE_URL`** — Neon connection string  
      - **`JWT_SECRET`** — long random string (16+ characters)  
@@ -25,6 +26,12 @@ Node.js + Express + TypeScript REST API with **JWT** auth.
 3. **Point the Ionic app** at the deployed API: set `apiUrl` in `src/environments/environment.prod.ts` (or your build config) to `https://<your-service>.onrender.com` (no trailing slash).
 
 **Note:** Render’s free tier **spins down** after idle time; first request after sleep can take ~30–60 seconds.
+
+**Build fails with a long `npm` help message:** In the Render service **Settings**, set **Build Command** to exactly:
+
+`npm install && npm run build`
+
+(not `npm` or empty). **Start Command:** `npm start`. If you use the repo’s `render.yaml` Blueprint, sync it so these commands are not overridden in the dashboard.
 
 ## Setup
 
