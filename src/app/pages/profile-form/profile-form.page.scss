@@ -1,0 +1,54 @@
+.form-screen {
+  --background: var(--mm-page-gradient);
+}
+
+.form-hero {
+  text-align: center;
+  padding-bottom: 0.35rem;
+
+  .hero-icon {
+    font-size: 3.1rem;
+    opacity: 0.48;
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+
+  h1 {
+    font-size: 1.45rem;
+    margin: 0 0 0.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ion-text-color);
+  }
+
+  .subtitle {
+    margin: 0;
+    color: var(--mm-text-muted, rgba(18, 10, 36, 0.72));
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+}
+
+.caregiver-hint .hint {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.form-card {
+  margin-top: 0.5rem;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.input-lead {
+  margin-inline-end: 8px;
+  opacity: 0.75;
+  font-size: 1.35rem;
+}
+
+.btn-ic {
+  margin-inline-end: 8px;
+  vertical-align: -3px;
+  font-size: 1.25rem;
+}

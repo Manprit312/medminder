@@ -1,0 +1,112 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>Settings</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="settings-form mm-gradient-bg">
+  <div class="form-hero ion-padding">
+    <span class="material-symbols-outlined hero-icon">tune</span>
+    <h1>App preferences</h1>
+    <p class="subtitle">Account, API, notifications, and legal information.</p>
+  </div>
+
+  <form>
+    <ion-list inset="true" lines="none" class="form-card">
+      <ion-list-header>
+        <ion-label>
+          <span class="material-symbols-outlined section-ic">account_circle</span>
+          Account
+        </ion-label>
+      </ion-list-header>
+
+      <ion-item class="field-row" lines="none">
+        <span class="material-symbols-outlined input-lead" slot="start">mail</span>
+        <ion-label class="ion-text-wrap">
+          <h3>Signed in as</h3>
+          <p>{{ email || '—' }}</p>
+        </ion-label>
+      </ion-item>
+
+      <ion-item class="field-row" lines="none">
+        <span class="material-symbols-outlined input-lead" slot="start">dns</span>
+        <ion-label class="ion-text-wrap">
+          <h3>API base URL</h3>
+          <p class="mono">{{ apiUrl }}</p>
+        </ion-label>
+      </ion-item>
+
+      <ion-item lines="none" class="cta-row">
+        <ion-button expand="block" color="danger" fill="outline" class="full-width-btn" (click)="logout()">
+          <span class="material-symbols-outlined btn-ic">logout</span>
+          Sign out
+        </ion-button>
+      </ion-item>
+    </ion-list>
+
+    <ion-list inset="true" lines="none" class="form-card ion-margin-top">
+      <ion-list-header>
+        <ion-label>
+          <span class="material-symbols-outlined section-ic">notifications</span>
+          Reminders
+        </ion-label>
+      </ion-list-header>
+
+      <ion-item *ngIf="native" class="field-row">
+        <span class="material-symbols-outlined input-lead" slot="start">campaign</span>
+        <ion-label class="ion-text-wrap">
+          <h3>Notification permission</h3>
+          <p>Status: <strong>{{ permDisplay || '…' }}</strong></p>
+        </ion-label>
+      </ion-item>
+
+      <ion-item *ngIf="native" lines="none" class="cta-row">
+        <ion-button expand="block" class="full-width-btn" (click)="requestNotifications()">
+          <span class="material-symbols-outlined btn-ic">notifications_active</span>
+          Enable medication reminders
+        </ion-button>
+      </ion-item>
+
+      <ion-item *ngIf="!native" class="field-row">
+        <span class="material-symbols-outlined input-lead" slot="start">laptop_mac</span>
+        <ion-label class="ion-text-wrap">
+          <h3>Browser preview</h3>
+          <p>Install the iOS or Android build for local reminders on your device.</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+
+    <ion-list inset="true" lines="none" class="form-card ion-margin-top">
+      <ion-list-header>
+        <ion-label>
+          <span class="material-symbols-outlined section-ic">gavel</span>
+          Legal &amp; privacy
+        </ion-label>
+      </ion-list-header>
+
+      <ion-item class="legal-item" lines="none">
+        <span class="material-symbols-outlined input-lead" slot="start">shield_lock</span>
+        <ion-text class="ion-text-wrap">
+          <p>
+            <strong>Privacy:</strong> Your session token is stored on this device. Profile and medication data are
+            loaded from the API above when you’re online.
+          </p>
+        </ion-text>
+      </ion-item>
+
+      <ion-item class="legal-item" lines="none">
+        <span class="material-symbols-outlined input-lead" slot="start">medical_information</span>
+        <ion-text class="ion-text-wrap">
+          <p>
+            <strong>Disclaimer:</strong> MedMinder is a reminder assistant only. It does not provide medical advice.
+            Confirm medications and doses with your clinician or pharmacist.
+          </p>
+        </ion-text>
+      </ion-item>
+    </ion-list>
+
+    <div class="ion-padding version-block">
+      <p class="version">MedMinder · v0.1</p>
+    </div>
+  </form>
+</ion-content>

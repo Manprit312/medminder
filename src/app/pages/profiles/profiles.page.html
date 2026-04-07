@@ -1,0 +1,61 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>Family</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="profiles-page mm-gradient-bg">
+  <div class="ion-padding" *ngIf="profiles.length === 0">
+    <div class="mm-empty-hero">
+      <img
+        class="mm-empty-art"
+        src="assets/illustrations/family-empty.svg"
+        width="288"
+        height="176"
+        alt=""
+      />
+      <h2 class="mm-empty-title">No profiles yet</h2>
+      <p class="mm-empty-copy">Add yourself or a family member — each person gets their own medication list and reminders.</p>
+      <ion-button expand="block" class="ion-margin-top" shape="round" type="button" (click)="goAddProfile()">
+        <span class="material-symbols-outlined btn-ic">person_add</span>
+        Add profile
+      </ion-button>
+    </div>
+  </div>
+
+  <ion-list *ngIf="profiles.length > 0" lines="none" class="mm-stack ion-padding">
+    <ion-item
+      button
+      detail="true"
+      *ngFor="let p of profiles; let i = index"
+      (click)="openProfile(p)"
+      class="profile-row"
+    >
+      <div class="avatar" slot="start" [style.background]="avatarColor(i)">
+        {{ p.name.charAt(0).toUpperCase() }}
+      </div>
+      <ion-label>
+        <h2>{{ p.name }}</h2>
+        <p>
+          <span class="material-symbols-outlined tiny">pill</span>
+          {{ medCount(p.id) }} medication<span *ngIf="medCount(p.id) !== 1">s</span>
+        </p>
+      </ion-label>
+      <ion-button
+        slot="end"
+        fill="clear"
+        color="danger"
+        (click)="deleteProfile(p, $event)"
+        aria-label="Remove profile"
+      >
+        <span class="material-symbols-outlined">delete</span>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button color="primary" type="button" (click)="goAddProfile()" aria-label="Add profile">
+      <span class="material-symbols-outlined fab-icon">person_add</span>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

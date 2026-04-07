@@ -1,0 +1,96 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="back()">
+        <span class="material-symbols-outlined" slot="start">arrow_back</span>
+        Today
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Log dose</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="form-screen" *ngIf="dose">
+  <div class="form-hero ion-padding">
+    <span class="material-symbols-outlined hero-icon">event_available</span>
+    <p class="time-chip">{{ dose.time }}</p>
+    <h1>{{ dose.medName }}</h1>
+    <p class="subtitle" *ngIf="dose.dosageNote">{{ dose.dosageNote }}</p>
+    <p class="profile-line">
+      <span class="material-symbols-outlined tiny">person</span>
+      {{ dose.profileName }}
+    </p>
+  </div>
+
+  <div class="refill-banner ion-padding-horizontal" *ngIf="medication && refill.runOutMessage(medication) as msg">
+    <p class="refill-line">
+      <span class="material-symbols-outlined tiny">inventory_2</span>
+      {{ msg }}
+      <ion-badge *ngIf="refill.shouldWarnRefill(medication)" color="warning" class="refill-badge">Refill soon</ion-badge>
+    </p>
+  </div>
+
+  <div class="status-card ion-padding" *ngIf="dose.status === 'pending'">
+    <p class="prompt">How should we log this dose?</p>
+    <div class="big-actions">
+      <ion-button expand="block" size="large" color="success" (click)="mark('taken')">
+        <span class="material-symbols-outlined btn-ic">check_circle</span>
+        Mark as taken
+      </ion-button>
+      <ion-button expand="block" size="large" fill="outline" color="medium" (click)="mark('skipped')">
+        <span class="material-symbols-outlined btn-ic">block</span>
+        Skip this dose
+      </ion-button>
+      <ion-button expand="block" size="large" fill="outline" color="warning" (click)="mark('missed')">
+        <span class="material-symbols-outlined btn-ic">priority_high</span>
+        Mark as missed (caregiver alert)
+      </ion-button>
+    </div>
+  </div>
+
+  <div class="status-card ion-padding" *ngIf="dose.status === 'taken'">
+    <div class="done-row">
+      <span class="material-symbols-outlined done-icon">check_circle</span>
+      <div>
+        <h2>Marked as taken</h2>
+        <p>You can change this below if you tapped by mistake.</p>
+      </div>
+    </div>
+    <ion-button expand="block" fill="clear" (click)="mark('skipped')">Change to skipped</ion-button>
+  </div>
+
+  <div class="status-card ion-padding" *ngIf="dose.status === 'skipped'">
+    <div class="done-row">
+      <span class="material-symbols-outlined skip-icon">block</span>
+      <div>
+        <h2>Skipped</h2>
+        <p>You can mark as taken if that was a mistake.</p>
+      </div>
+    </div>
+    <ion-button expand="block" fill="clear" color="success" (click)="mark('taken')">Mark as taken</ion-button>
+  </div>
+
+  <div class="status-card ion-padding" *ngIf="dose.status === 'missed'">
+    <div class="done-row">
+      <span class="material-symbols-outlined missed-icon">warning</span>
+      <div>
+        <h2>Missed</h2>
+        <p>A caregiver alert was simulated (console + toast). You can correct the log below.</p>
+      </div>
+    </div>
+    <ion-button expand="block" fill="clear" color="success" (click)="mark('taken')">Mark as taken</ion-button>
+    <ion-button expand="block" fill="clear" color="medium" (click)="mark('skipped')">Change to skipped</ion-button>
+  </div>
+
+  <div class="ion-padding footer-note">
+    <p>
+      <span class="material-symbols-outlined inline">info</span>
+      This is your personal log. It does not replace medical advice.
+    </p>
+  </div>
+</ion-content>
+
+<ion-content *ngIf="!dose" class="ion-padding">
+  <p>Dose not found for today.</p>
+  <ion-button expand="block" (click)="back()">Back to Today</ion-button>
+</ion-content>

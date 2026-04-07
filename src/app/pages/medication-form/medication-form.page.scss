@@ -1,0 +1,81 @@
+.form-screen {
+  --background: var(--mm-page-gradient);
+}
+
+.form-hero {
+  text-align: center;
+  padding-bottom: 0.35rem;
+
+  .hero-icon {
+    font-size: 3.1rem;
+    opacity: 0.48;
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+
+  h1 {
+    font-size: 1.45rem;
+    margin: 0 0 0.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ion-text-color);
+  }
+
+  .subtitle {
+    margin: 0;
+    color: var(--mm-text-muted, rgba(18, 10, 36, 0.72));
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+}
+
+.form-card {
+  border-radius: var(--mm-radius-md, 18px);
+  overflow: hidden;
+  border: 1px solid var(--ion-border-color);
+  box-shadow: var(--mm-shadow-card);
+}
+
+.learn-more-block {
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.learn-disclaimer {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  opacity: 0.65;
+  padding-inline-start: 4px;
+}
+
+.refill-hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  opacity: 0.72;
+}
+
+.input-lead {
+  margin-inline-end: 8px;
+  opacity: 0.75;
+  font-size: 1.35rem;
+}
+
+.btn-ic {
+  margin-inline-end: 8px;
+  vertical-align: -3px;
+  font-size: 1.2rem;
+}
+
+.toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tiny {
+  font-size: 1.1rem;
+  vertical-align: -2px;
+  opacity: 0.75;
+}

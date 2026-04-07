@@ -1,0 +1,99 @@
+.intro {
+  p {
+    margin: 0;
+    line-height: 1.6;
+    font-size: 1.02rem;
+    color: var(--mm-text-muted, rgba(18, 10, 36, 0.82));
+  }
+
+  .intro-icon {
+    vertical-align: -4px;
+    margin-inline-end: 8px;
+    opacity: 0.85;
+    color: var(--ion-color-primary);
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 1.25rem 1rem;
+  max-width: 340px;
+  margin: 0 auto;
+
+  .empty-icon {
+    font-size: 3.75rem;
+    opacity: 0.4;
+    display: block;
+    margin-bottom: 0.85rem;
+    color: var(--ion-color-primary);
+  }
+
+  h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--ion-text-color);
+  }
+
+  p {
+    margin: 0;
+    font-size: 1.02rem;
+    line-height: 1.55;
+    color: var(--mm-text-muted, rgba(18, 10, 36, 0.78));
+  }
+}
+
+.slot-icon {
+  font-size: 1.5rem;
+  margin-inline-end: 8px;
+  opacity: 0.85;
+}
+
+.tiny {
+  font-size: 1rem;
+  vertical-align: -3px;
+  margin-inline-end: 4px;
+  opacity: 0.7;
+}
+
+.times {
+  font-size: 0.98rem;
+  margin-top: 4px;
+  color: var(--mm-text-muted, rgba(18, 10, 36, 0.8));
+}
+
+.med-row ion-label h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.med-row ion-label p {
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+
+.refill-line {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  opacity: 0.88;
+
+  .refill-badge {
+    vertical-align: middle;
+    margin-inline-start: 6px;
+  }
+}
+
+.fab-icon {
+  font-size: 1.75rem;
+}
+
+.btn-ic {
+  font-size: 1.15rem;
+  vertical-align: -2px;
+  margin-inline-end: 6px;
+}

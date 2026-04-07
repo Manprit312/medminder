@@ -1,0 +1,553 @@
+// MedMinder — layout tokens, cards, empty-state art (loads after variables.scss)
+
+:root {
+  --mm-radius-sm: 12px;
+  --mm-radius-md: 18px;
+  --mm-radius-lg: 24px;
+  --mm-radius-xl: 28px;
+  --mm-shadow-card: 0 2px 4px rgba(15, 23, 42, 0.04), 0 8px 24px -4px rgba(76, 29, 149, 0.12);
+  --mm-shadow-soft: 0 2px 10px rgba(15, 23, 42, 0.05);
+  --mm-shadow-lift: 0 12px 40px -12px rgba(76, 29, 149, 0.18);
+  --mm-page-gradient: linear-gradient(
+    168deg,
+    rgba(var(--ion-color-primary-rgb), 0.09) 0%,
+    rgba(var(--ion-color-primary-rgb), 0.03) 28%,
+    var(--ion-background-color) 52%
+  );
+  --mm-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --mm-duration: 0.28s;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --mm-shadow-card: 0 8px 32px rgba(0, 0, 0, 0.35);
+    --mm-page-gradient: linear-gradient(
+      165deg,
+      rgba(var(--ion-color-primary-rgb), 0.18) 0%,
+      var(--ion-background-color) 50%
+    );
+  }
+}
+
+ion-toolbar {
+  --min-height: 56px;
+}
+
+ion-toolbar ion-title {
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: -0.01em;
+}
+
+/* —— Readable body text —— */
+ion-content {
+  font-size: 1rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+ion-label,
+ion-item {
+  font-size: 1rem;
+}
+
+/* —— Block CTAs: large, comfortable tap targets —— */
+ion-button[expand='block'] {
+  min-height: var(--mm-touch-min, 48px);
+  --padding-top: 14px;
+  --padding-bottom: 14px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.015em;
+}
+
+
+/* Shared keyframes (referenced only when motion is allowed) */
+@keyframes mm-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* —— Motion (respect reduced motion) —— */
+@media (prefers-reduced-motion: no-preference) {
+  .mm-motion-enter {
+    animation: mm-fade-up var(--mm-duration) var(--mm-ease-out) both;
+  }
+
+  .mm-stack ion-item {
+    animation: mm-fade-up 0.38s var(--mm-ease-out) both;
+  }
+
+  .mm-stack ion-item:nth-child(1) {
+    animation-delay: 0.02s;
+  }
+  .mm-stack ion-item:nth-child(2) {
+    animation-delay: 0.05s;
+  }
+  .mm-stack ion-item:nth-child(3) {
+    animation-delay: 0.08s;
+  }
+  .mm-stack ion-item:nth-child(4) {
+    animation-delay: 0.11s;
+  }
+  .mm-stack ion-item:nth-child(5) {
+    animation-delay: 0.14s;
+  }
+  .mm-stack ion-item:nth-child(n + 6) {
+    animation-delay: 0.17s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mm-motion-enter,
+  .mm-stack ion-item {
+    animation: none !important;
+  }
+}
+
+/* Page backgrounds */
+.mm-gradient-bg {
+  --background: var(--mm-page-gradient);
+}
+
+/* Decorative empty-state illustrations (src/assets/illustrations/*.svg) */
+.mm-empty-hero {
+  text-align: center;
+  padding: 1.25rem 0.5rem 0.5rem;
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+.mm-empty-art {
+  width: min(92vw, 288px);
+  height: auto;
+  display: block;
+  margin: 0 auto 1.35rem;
+  border-radius: var(--mm-radius-lg);
+  filter: drop-shadow(0 14px 32px rgba(var(--ion-color-primary-rgb), 0.18));
+}
+
+@media (prefers-color-scheme: dark) {
+  .mm-empty-art {
+    filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.45));
+    opacity: 0.96;
+  }
+}
+
+.mm-empty-title {
+  margin: 0 0 0.6rem;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ion-text-color);
+}
+
+.mm-empty-copy {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: var(--mm-text-muted, rgba(18, 10, 36, 0.78));
+  text-align: center;
+}
+
+.mm-card {
+  border-radius: var(--mm-radius-md);
+  box-shadow: var(--mm-shadow-card);
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-border-color);
+  transition:
+    box-shadow var(--mm-duration) var(--mm-ease-out),
+    transform 0.2s var(--mm-ease-out);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mm-card.mm-card-interactive:active {
+    transform: scale(0.99);
+    box-shadow: var(--mm-shadow-soft);
+  }
+}
+
+/* Auth / compact elevated surfaces */
+.mm-auth-card {
+  padding: 2rem 1.35rem 1.75rem;
+  border-radius: var(--mm-radius-lg);
+  box-shadow: var(--mm-shadow-lift);
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-border-color);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mm-auth-card {
+    animation: mm-fade-up 0.45s var(--mm-ease-out) both;
+  }
+}
+
+.mm-intro-card {
+  margin: 12px 16px 4px;
+  border-radius: var(--mm-radius-md);
+  background: rgba(var(--ion-color-primary-rgb), 0.08);
+  border: 1px solid var(--ion-border-color);
+  box-shadow: var(--mm-shadow-soft);
+}
+
+/* Today: date header strip */
+.mm-page-intro {
+  padding-bottom: 0.5rem;
+
+  .intro-kicker {
+    margin: 0 0 6px;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ion-color-primary-shade);
+    opacity: 0.95;
+  }
+
+  .intro-title {
+    margin: 0 0 10px;
+    font-size: 1.625rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--ion-text-color);
+  }
+
+  .intro-body {
+    margin: 0;
+    font-size: 1.02rem;
+    line-height: 1.55;
+    color: var(--mm-text-muted, rgba(18, 10, 36, 0.72));
+  }
+}
+
+/* Section titles (Today) */
+.section-head {
+  padding: 14px 0 10px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 8px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--ion-text-color);
+}
+
+.section-ic {
+  font-size: 1.4rem;
+  color: var(--ion-color-primary);
+  opacity: 0.95;
+}
+
+.section-hint {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--mm-text-muted, rgba(18, 10, 36, 0.72));
+}
+
+/* Medication form: icon + label row */
+app-medication-form .section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 0.75rem;
+  padding: 8px 0 0;
+  font-size: 0.98rem;
+  font-weight: 600;
+  opacity: 0.92;
+
+  .material-symbols-outlined {
+    font-size: 1.25rem;
+    opacity: 0.78;
+  }
+}
+
+/* Stacked list rows (Ionic lists) */
+.mm-stack ion-item {
+  --border-radius: var(--mm-radius-md);
+  --padding-start: 16px;
+  --padding-end: 14px;
+  --inner-padding-end: 10px;
+  --min-height: 56px;
+  margin-bottom: 12px;
+  box-shadow: var(--mm-shadow-soft);
+  border: 1px solid var(--ion-border-color);
+}
+
+.mm-stack ion-item ion-label h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.mm-stack ion-item ion-label p {
+  font-size: 0.98rem;
+  margin-top: 4px;
+  opacity: 0.88;
+}
+
+/* FAB: larger tap target */
+ion-fab-button {
+  width: 58px;
+  height: 58px;
+}
+
+/* Today: adherence headline + weekly summary (keeps today.page.scss budget small) */
+.adherence-today {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+  margin: 0 0 10px;
+  font-size: 0.92rem;
+}
+
+.adherence-pct {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--ion-color-success-shade);
+}
+
+.adherence-label {
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.adherence-formula {
+  font-size: 0.72rem;
+  opacity: 0.55;
+  width: 100%;
+}
+
+.weekly-summary {
+  padding-top: 4px;
+  padding-bottom: 8px;
+}
+
+.weekly-summary-card {
+  padding: 14px 16px 12px;
+}
+
+.weekly-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.weekly-ic {
+  font-size: 1.35rem;
+  color: var(--ion-color-primary);
+}
+
+.weekly-range {
+  margin: 0 0 12px;
+  font-size: 0.82rem;
+  opacity: 0.7;
+}
+
+.weekly-stats {
+  margin: 0;
+}
+
+.weekly-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--ion-border-color);
+  font-size: 0.9rem;
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+
+  dt {
+    margin: 0;
+    opacity: 0.82;
+    font-weight: 500;
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.adherence-row dd strong {
+  color: var(--ion-color-success-shade);
+  font-size: 1.05rem;
+}
+
+.weekly-footnote {
+  margin: 10px 0 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  opacity: 0.62;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.tiny-ic {
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+  opacity: 0.75;
+}
+
+/* Today: progress + “all caught up” (keeps today.page.scss under budget) */
+.today-hero {
+  padding-bottom: 0.75rem;
+}
+
+.progress-panel.mm-card {
+  background: rgba(var(--ion-color-success-rgb), 0.11);
+  border-color: rgba(var(--ion-color-success-rgb), 0.32);
+  padding: 18px 18px 16px;
+}
+
+.progress-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.02rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--ion-text-color);
+
+  .material-symbols-outlined {
+    font-size: 1.3rem;
+    opacity: 0.85;
+    color: var(--ion-color-success-shade);
+  }
+}
+
+.progress-bar {
+  height: 10px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.progress-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-bottom: 6px;
+  font-size: 0.88rem;
+}
+
+.stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  .sm {
+    font-size: 1.05rem;
+  }
+}
+
+.taken-stat {
+  color: var(--ion-color-success-shade);
+  font-weight: 600;
+}
+
+.pending-stat {
+  opacity: 0.88;
+}
+
+.skip-stat {
+  opacity: 0.72;
+}
+
+.progress-caption {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.72;
+  line-height: 1.45;
+}
+
+.dose-section {
+  padding-top: 4px;
+}
+
+.caught-up {
+  padding-top: 8px;
+  padding-bottom: 4px;
+}
+
+.caught-up-card.mm-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 18px 16px;
+  background: rgba(var(--ion-color-success-rgb), 0.11);
+  border-color: rgba(var(--ion-color-success-rgb), 0.26);
+}
+
+.caught-up-ic {
+  font-size: 2rem;
+  color: var(--ion-color-success);
+}
+
+.caught-up-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.caught-up-sub {
+  margin: 0;
+  font-size: 0.82rem;
+  opacity: 0.7;
+  line-height: 1.4;
+  max-width: 280px;
+}
+
+/* Dose log: status card + primary actions */
+app-dose-log .status-card {
+  max-width: 420px;
+  margin: 0 auto;
+  border-radius: var(--mm-radius-md, 18px);
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-border-color);
+  box-shadow: var(--mm-shadow-soft);
+}
+
+app-dose-log .prompt {
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin-bottom: 1rem;
+  color: var(--ion-text-color);
+}
+
+app-dose-log .big-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+app-dose-log .big-actions ion-button {
+  min-height: 44px;
+  font-weight: 600;
+}

@@ -1,0 +1,103 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/profiles" text="Family"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ profile?.name || 'Profile' }}</ion-title>
+    <ion-buttons slot="end" *ngIf="profile">
+      <ion-button type="button" (click)="goEditProfile()" aria-label="Edit profile">
+        <span class="material-symbols-outlined">edit</span>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="mm-gradient-bg" *ngIf="profile">
+  <div class="ion-padding intro">
+    <p>
+      <span class="material-symbols-outlined intro-icon">medication</span>
+      Medications for this person. Reminders use the times you set (device notifications on native builds).
+    </p>
+  </div>
+
+  <div class="ion-padding caregiver-line" *ngIf="profile.caregiverEmail || profile.caregiverPhone">
+    <p>
+      <span class="material-symbols-outlined intro-icon">contact_mail</span>
+      <strong>Caregiver alerts:</strong>
+      <span *ngIf="profile.caregiverEmail">{{ profile.caregiverEmail }}</span>
+      <span *ngIf="profile.caregiverEmail && profile.caregiverPhone"> · </span>
+      <span *ngIf="profile.caregiverPhone">{{ profile.caregiverPhone }}</span>
+    </p>
+  </div>
+
+  <div class="ion-padding" *ngIf="medications.length === 0">
+    <div class="empty-state">
+      <span class="material-symbols-outlined empty-icon">prescriptions</span>
+      <h2>No medications</h2>
+      <p>Add one with the + button or open the form below.</p>
+      <ion-button expand="block" class="ion-margin-top" type="button" (click)="openAddMed()">
+        <span class="material-symbols-outlined btn-ic">add_circle</span>
+        Add medication
+      </ion-button>
+    </div>
+  </div>
+
+  <ion-list *ngIf="medications.length > 0" lines="none" class="mm-stack ion-padding-horizontal">
+    <ion-item
+      button
+      detail="true"
+      *ngFor="let m of medications"
+      (click)="openEditMed(m)"
+      class="med-row"
+    >
+      <span class="material-symbols-outlined slot-icon" slot="start">pill</span>
+      <ion-label>
+        <h2>
+          {{ m.name }}
+          <ion-badge *ngIf="!m.enabled" color="medium">Off</ion-badge>
+        </h2>
+        <p *ngIf="m.dosageNote">{{ m.dosageNote }}</p>
+        <p class="times">
+          <span class="material-symbols-outlined tiny">schedule</span>
+          {{ m.times.join(', ') }}
+        </p>
+        <p class="refill-line" *ngIf="refill.runOutMessage(m) as msg">
+          <span class="material-symbols-outlined tiny">inventory_2</span>
+          {{ msg }}
+          <ion-badge *ngIf="refill.shouldWarnRefill(m)" color="warning" class="refill-badge">Refill soon</ion-badge>
+        </p>
+      </ion-label>
+      <ion-buttons slot="end">
+        <ion-button
+          fill="clear"
+          color="secondary"
+          type="button"
+          (click)="openMedInfo(m, $event)"
+          aria-label="Learn more about this medication on DailyMed"
+        >
+          <span class="material-symbols-outlined">open_in_new</span>
+        </ion-button>
+        <ion-button
+          fill="clear"
+          color="danger"
+          type="button"
+          (click)="deleteMedication(m, $event)"
+          aria-label="Remove medication"
+        >
+          <span class="material-symbols-outlined">delete</span>
+        </ion-button>
+      </ion-buttons>
+    </ion-item>
+  </ion-list>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button color="primary" (click)="openAddMed()" aria-label="Add medication">
+      <span class="material-symbols-outlined fab-icon">add</span>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
+
+<ion-content *ngIf="!profile" class="ion-padding">
+  <p>Profile not found.</p>
+  <ion-button type="button" (click)="backToFamily()">Back to Family</ion-button>
+</ion-content>

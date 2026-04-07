@@ -1,0 +1,115 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>Welcome</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="onboarding-content mm-gradient-bg">
+  <div class="ion-padding progress-wrap">
+    <ion-progress-bar [value]="progress()" color="secondary"></ion-progress-bar>
+    <p class="step-label">Step {{ step }} of {{ totalSteps }}</p>
+  </div>
+
+  <!-- 1 Welcome -->
+  <section class="ion-padding step-panel" *ngIf="step === 1">
+    <div class="hero-block">
+      <span class="material-symbols-outlined hero-icon">waving_hand</span>
+      <h1>Welcome to MedMinder</h1>
+      <p class="lead">
+        We’ll set up one family member and one medicine so you can see how reminders work.
+      </p>
+    </div>
+    <ion-button expand="block" size="large" (click)="nextFromWelcome()">
+      Get started
+      <span class="material-symbols-outlined" slot="end">arrow_forward</span>
+    </ion-button>
+  </section>
+
+  <!-- 2 Who -->
+  <section class="ion-padding step-panel" *ngIf="step === 2">
+    <h2 class="question">Who are you tracking medicines for?</h2>
+    <p class="hint">You can add more people later in Family.</p>
+    <ion-radio-group [(ngModel)]="audience" class="audience-group">
+      <ion-item lines="none" class="choice-card">
+        <ion-radio slot="start" value="self"></ion-radio>
+        <ion-label class="ion-text-wrap choice-title">Myself</ion-label>
+      </ion-item>
+      <ion-item lines="none" class="choice-card">
+        <ion-radio slot="start" value="family"></ion-radio>
+        <ion-label class="ion-text-wrap choice-title">Someone else</ion-label>
+      </ion-item>
+      <ion-item lines="none" class="choice-card">
+        <ion-radio slot="start" value="multiple"></ion-radio>
+        <ion-label class="ion-text-wrap choice-title">Several people</ion-label>
+      </ion-item>
+    </ion-radio-group>
+    <ion-button expand="block" size="large" (click)="nextFromAudience()" [disabled]="!audience">
+      Continue
+    </ion-button>
+  </section>
+
+  <!-- 3 First profile -->
+  <section class="ion-padding step-panel" *ngIf="step === 3">
+    <h2 class="question">Add your first family member</h2>
+    <p class="hint">Use their name as you’d like to see it in reminders.</p>
+    <ion-list inset="true" lines="none" class="form-card">
+      <ion-item>
+        <span class="material-symbols-outlined input-lead" slot="start">person</span>
+        <ion-input
+          label="Name"
+          labelPlacement="stacked"
+          [(ngModel)]="profileName"
+          placeholder="e.g. Mom, Dad, you"
+          autocomplete="name"
+        ></ion-input>
+      </ion-item>
+    </ion-list>
+    <ion-button expand="block" size="large" (click)="nextFromProfile()" [disabled]="!profileName.trim()">
+      Add person
+    </ion-button>
+  </section>
+
+  <!-- 4 First medicine -->
+  <section class="ion-padding step-panel" *ngIf="step === 4">
+    <h2 class="question">Add a first medicine</h2>
+    <p class="hint">You can add more doses and details later.</p>
+    <ion-list inset="true" lines="none" class="form-card">
+      <ion-item>
+        <span class="material-symbols-outlined input-lead" slot="start">pill</span>
+        <ion-input
+          label="Medication name"
+          labelPlacement="stacked"
+          [(ngModel)]="medName"
+          placeholder="e.g. Vitamin D"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <span class="material-symbols-outlined input-lead" slot="start">schedule</span>
+        <ion-input
+          type="time"
+          label="Reminder time"
+          labelPlacement="stacked"
+          [(ngModel)]="medTime"
+        ></ion-input>
+      </ion-item>
+    </ion-list>
+    <ion-button expand="block" size="large" (click)="finishMedication()" [disabled]="!medName.trim()">
+      Save and continue
+    </ion-button>
+  </section>
+
+  <!-- 5 Done -->
+  <section class="ion-padding step-panel" *ngIf="step === 5">
+    <div class="hero-block">
+      <span class="material-symbols-outlined hero-icon success">check_circle</span>
+      <h1>You’re ready</h1>
+      <p class="lead">
+        Open <strong>Today</strong> to log doses. On your phone, allow notifications for reminders.
+      </p>
+    </div>
+    <ion-button expand="block" size="large" (click)="goToToday()">
+      Go to Today
+      <span class="material-symbols-outlined" slot="end">event_available</span>
+    </ion-button>
+  </section>
+</ion-content>

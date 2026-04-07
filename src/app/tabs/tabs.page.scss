@@ -1,0 +1,9 @@
+.tab-icon {
+  font-size: 1.65rem;
+  margin-bottom: 4px;
+  opacity: 0.92;
+}
+
+ion-tab-button.tab-selected .tab-icon {
+  opacity: 1;
+}

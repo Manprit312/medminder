@@ -1,0 +1,99 @@
+.btn-lead {
+  font-size: 1.15rem;
+  vertical-align: -3px;
+  margin-inline-end: 6px;
+}
+
+.dose-list {
+  padding-bottom: 1rem;
+}
+
+.dose-item.taken {
+  --background: rgba(var(--ion-color-success-rgb), 0.08);
+}
+
+.dose-item.skipped {
+  opacity: 0.88;
+}
+
+.dose-item.missed {
+  --background: rgba(var(--ion-color-warning-rgb), 0.1);
+}
+
+.missed-stat {
+  color: var(--ion-color-warning-shade);
+  font-weight: 600;
+}
+
+.slot-icon {
+  font-size: 1.75rem;
+  margin-inline-end: 12px;
+  opacity: 0.85;
+}
+
+.dose-time {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.tiny {
+  font-size: 1rem;
+  vertical-align: -3px;
+  margin-inline-end: 4px;
+  opacity: 0.7;
+}
+
+.med-line {
+  font-weight: 600;
+}
+
+.dosage {
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.profile-line {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+.label-muted {
+  font-weight: 500;
+  opacity: 0.55;
+  margin-inline-end: 4px;
+}
+
+.refill-hint {
+  margin: 0.4rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--mm-text-muted, rgba(18, 10, 36, 0.78));
+
+  ion-badge {
+    vertical-align: middle;
+    margin-inline-start: 6px;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.actions ion-button {
+  min-height: 44px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  --padding-start: 12px;
+  --padding-end: 12px;
+}
+
+.btn-icon {
+  font-size: 1rem;
+  vertical-align: -2px;
+  margin-inline-end: 4px;
+}

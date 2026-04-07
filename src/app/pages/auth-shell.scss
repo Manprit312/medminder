@@ -1,0 +1,61 @@
+.auth-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+
+  .logo {
+    font-size: 3.75rem;
+    opacity: 0.5;
+    display: block;
+    margin-bottom: 0.65rem;
+  }
+
+  h1 {
+    margin: 0 0 0.4rem;
+    font-size: 1.85rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ion-text-color);
+  }
+
+  .sub {
+    margin: 0 0 1.35rem;
+    color: var(--mm-text-muted, rgba(18, 10, 36, 0.72));
+    font-size: 1.02rem;
+    line-height: 1.55;
+  }
+}
+
+.form-list {
+  background: transparent;
+  margin-bottom: 1rem;
+  text-align: start;
+}
+
+.input-ic {
+  margin-inline-end: 8px;
+  opacity: 0.65;
+}
+
+.hint {
+  margin-top: 1.25rem;
+  font-size: 0.95rem;
+  opacity: 0.8;
+
+  a {
+    font-weight: 600;
+  }
+}
+
+.hint-row {
+  margin-top: 0.75rem;
+  margin-bottom: 0;
+  text-align: center;
+}

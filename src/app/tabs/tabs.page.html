@@ -1,0 +1,19 @@
+<ion-tabs>
+  <ion-router-outlet></ion-router-outlet>
+  <ion-tab-bar slot="bottom">
+    <ion-tab-button tab="today" (click)="goTab('/tabs/today')">
+      <span class="material-symbols-outlined tab-icon" aria-hidden="true">event_available</span>
+      <ion-label>Today</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="profiles" (click)="goTab('/tabs/profiles')">
+      <span class="material-symbols-outlined tab-icon" aria-hidden="true">groups</span>
+      <ion-label>Family</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="settings" (click)="goTab('/tabs/settings')">
+      <span class="material-symbols-outlined tab-icon" aria-hidden="true">settings</span>
+      <ion-label>Settings</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
+</ion-tabs>

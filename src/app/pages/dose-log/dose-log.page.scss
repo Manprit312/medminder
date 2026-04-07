@@ -1,0 +1,128 @@
+.form-screen {
+  --background: var(--mm-page-gradient);
+}
+
+.form-hero {
+  text-align: center;
+  padding-bottom: 0.35rem;
+
+  .hero-icon {
+    font-size: 2.85rem;
+    opacity: 0.48;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .time-chip {
+    display: inline-block;
+    margin: 0 0 0.5rem;
+    padding: 0.35rem 0.95rem;
+    border-radius: 999px;
+    background: rgba(var(--ion-color-primary-rgb), 0.14);
+    color: var(--ion-color-primary-shade);
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+  }
+
+  h1 {
+    font-size: 1.55rem;
+    margin: 0 0 0.35rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ion-text-color);
+  }
+
+  .subtitle {
+    margin: 0 0 0.5rem;
+    color: var(--mm-text-muted, rgba(18, 10, 36, 0.78));
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+
+  .profile-line {
+    margin: 0;
+    color: var(--mm-text-muted, rgba(18, 10, 36, 0.72));
+    font-size: 1rem;
+  }
+}
+
+.refill-banner {
+  max-width: 420px;
+  margin: 0 auto 0.5rem;
+
+  .refill-line {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(var(--ion-color-warning-rgb), 0.1);
+    border: 1px solid rgba(var(--ion-color-warning-rgb), 0.25);
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .refill-badge {
+    vertical-align: middle;
+    margin-inline-start: 8px;
+  }
+}
+
+.tiny {
+  font-size: 1rem;
+  vertical-align: -3px;
+  margin-inline-end: 4px;
+  opacity: 0.7;
+}
+
+.btn-ic {
+  margin-inline-end: 8px;
+  vertical-align: -3px;
+  font-size: 1.35rem;
+}
+
+.done-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+
+  h2 {
+    margin: 0 0 0.25rem;
+    font-size: 1.15rem;
+  }
+
+  p {
+    margin: 0;
+    opacity: 0.75;
+    font-size: 0.9rem;
+  }
+}
+
+.done-icon {
+  font-size: 2.5rem;
+  color: var(--ion-color-success);
+}
+
+.skip-icon {
+  font-size: 2.5rem;
+  color: var(--ion-color-medium);
+}
+
+.missed-icon {
+  font-size: 2.5rem;
+  color: var(--ion-color-warning-shade);
+}
+
+.footer-note {
+  p {
+    font-size: 0.85rem;
+    opacity: 0.6;
+    line-height: 1.45;
+    margin: 0;
+  }
+
+  .inline {
+    vertical-align: -3px;
+    margin-inline-end: 4px;
+  }
+}

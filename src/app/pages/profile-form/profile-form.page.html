@@ -1,0 +1,86 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()">
+        <span class="material-symbols-outlined" slot="start">close</span>
+        Cancel
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ isEdit ? 'Edit profile' : 'New profile' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button strong="true" (click)="save()" [disabled]="!name.trim()">
+        <span class="material-symbols-outlined" slot="start">save</span>
+        Save
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="form-screen">
+  <div class="form-hero ion-padding">
+    <span class="material-symbols-outlined hero-icon">badge</span>
+    <h1>{{ isEdit ? 'Update name' : 'Who is this for?' }}</h1>
+    <p class="subtitle">You, a child, a parent — anyone who needs reminders.</p>
+  </div>
+
+  <form (ngSubmit)="save()">
+    <ion-list inset="true" lines="none" class="form-card">
+      <ion-item>
+        <span class="material-symbols-outlined input-lead" slot="start">person</span>
+        <ion-input
+          name="profileName"
+          label="Display name"
+          labelPlacement="stacked"
+          [(ngModel)]="name"
+          placeholder="e.g. Mom, Alex, Me"
+          autocomplete="name"
+          enterkeyhint="next"
+          required
+        ></ion-input>
+      </ion-item>
+      <ion-item lines="none" class="caregiver-hint">
+        <ion-text class="ion-text-wrap" color="medium">
+          <p class="hint">
+            <strong>Caregiver alert</strong> — If a dose is marked <strong>missed</strong>, we can notify this contact
+            (simulated in the app for now; SMS/WhatsApp later).
+          </p>
+        </ion-text>
+      </ion-item>
+      <ion-item>
+        <span class="material-symbols-outlined input-lead" slot="start">mail</span>
+        <ion-input
+          name="caregiverEmail"
+          type="email"
+          inputmode="email"
+          label="Caregiver email (optional)"
+          labelPlacement="stacked"
+          [(ngModel)]="formCaregiverEmail"
+          placeholder="e.g. caregiver@example.com"
+          autocomplete="email"
+          enterkeyhint="next"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <span class="material-symbols-outlined input-lead" slot="start">call</span>
+        <ion-input
+          name="caregiverPhone"
+          type="tel"
+          inputmode="tel"
+          label="Caregiver phone (optional)"
+          labelPlacement="stacked"
+          [(ngModel)]="formCaregiverPhone"
+          placeholder="e.g. +1 555 123 4567"
+          autocomplete="tel"
+          enterkeyhint="done"
+        ></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <div class="ion-padding">
+      <ion-button expand="block" size="large" type="submit" [disabled]="!name.trim()">
+        <span class="material-symbols-outlined btn-ic">check_circle</span>
+        {{ isEdit ? 'Save changes' : 'Create profile' }}
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

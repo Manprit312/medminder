@@ -1,0 +1,12 @@
+@use '../auth-shell.scss';
+
+.api-hint {
+  margin-top: 1.5rem;
+  font-size: 0.72rem;
+  opacity: 0.45;
+  word-break: break-all;
+
+  code {
+    font-size: 0.68rem;
+  }
+}

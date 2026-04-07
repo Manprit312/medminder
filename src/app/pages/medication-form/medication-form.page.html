@@ -1,0 +1,166 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="backHref()" text="Back"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ isAdd ? 'Add medication' : 'Edit medication' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button strong="true" (click)="save()" [disabled]="!formName.trim()">
+        <span class="material-symbols-outlined" slot="start">save</span>
+        Save
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="form-screen" *ngIf="profile">
+  <div class="form-hero ion-padding">
+    <span class="material-symbols-outlined hero-icon">pill</span>
+    <h1>{{ isAdd ? 'New medication' : 'Update details' }}</h1>
+    <p class="subtitle">For <strong>{{ profile.name }}</strong></p>
+  </div>
+
+  <form (ngSubmit)="save()">
+    <ion-list inset="true" lines="none" class="form-card">
+      <ion-item>
+        <span class="material-symbols-outlined input-lead" slot="start">medication</span>
+        <ion-input
+          name="medName"
+          label="Medication name"
+          labelPlacement="stacked"
+          [(ngModel)]="formName"
+          placeholder="e.g. Vitamin D, Metformin"
+          enterkeyhint="next"
+          required
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <span class="material-symbols-outlined input-lead" slot="start">straighten</span>
+        <ion-input
+          name="dosage"
+          label="Dose note (optional)"
+          labelPlacement="stacked"
+          [(ngModel)]="formDosage"
+          placeholder="e.g. 1 tablet, 500 mg"
+        ></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <div class="section-head ion-padding-horizontal">
+      <span class="material-symbols-outlined">inventory_2</span>
+      <span>Supply &amp; refill</span>
+    </div>
+
+    <ion-list inset="true" lines="none" class="form-card">
+      <ion-item>
+        <span class="material-symbols-outlined input-lead" slot="start">medication_liquid</span>
+        <ion-input
+          name="remainingQty"
+          type="number"
+          inputmode="numeric"
+          min="0"
+          label="Pills on hand (optional)"
+          labelPlacement="stacked"
+          [(ngModel)]="formRemainingQuantity"
+          placeholder="Leave blank if not tracking refill yet"
+          enterkeyhint="next"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <span class="material-symbols-outlined input-lead" slot="start">straighten</span>
+        <ion-input
+          name="pillsPerIntake"
+          type="number"
+          inputmode="numeric"
+          min="1"
+          label="Pills per intake"
+          labelPlacement="stacked"
+          [(ngModel)]="formPillsPerIntake"
+          placeholder="1"
+          enterkeyhint="next"
+        ></ion-input>
+      </ion-item>
+    </ion-list>
+    <p class="refill-hint ion-padding-horizontal">
+      When you mark a dose as <strong>taken</strong>, we subtract this many pills from your count. Leave blank to skip
+      tracking.
+    </p>
+
+    <div class="learn-more-block ion-padding-horizontal" *ngIf="formName.trim()">
+      <ion-button fill="clear" size="small" color="secondary" type="button" (click)="openLearnMore()">
+        <span class="material-symbols-outlined btn-ic">open_in_new</span>
+        Learn more on DailyMed
+      </ion-button>
+      <p class="learn-disclaimer">
+        Opens the NIH DailyMed search in your browser. MedMinder does not provide medical advice — always ask a
+        clinician or pharmacist.
+      </p>
+    </div>
+
+    <div class="section-head ion-padding-horizontal">
+      <span class="material-symbols-outlined">schedule</span>
+      <span>Times per day</span>
+    </div>
+
+    <ion-list inset="true" lines="none" class="form-card">
+      <ion-item *ngFor="let t of formTimes; let i = index">
+        <ion-input
+          type="time"
+          [(ngModel)]="formTimes[i]"
+          (ionBlur)="formTimes[i] = normalizeTime(formTimes[i])"
+          [name]="'time' + i"
+          label="Reminder time"
+          labelPlacement="stacked"
+        ></ion-input>
+        <ion-button
+          slot="end"
+          fill="clear"
+          color="danger"
+          (click)="removeTimeRow(i)"
+          [disabled]="formTimes.length <= 1"
+          type="button"
+          aria-label="Remove time"
+        >
+          <span class="material-symbols-outlined">remove_circle</span>
+        </ion-button>
+      </ion-item>
+    </ion-list>
+
+    <div class="ion-padding">
+      <ion-button expand="block" fill="outline" type="button" (click)="addTimeRow()">
+        <span class="material-symbols-outlined btn-ic">add_alarm</span>
+        Add another time
+      </ion-button>
+    </div>
+
+    <ion-list inset="true" lines="none" class="form-card">
+      <ion-item>
+        <ion-toggle [(ngModel)]="formEnabled" name="enabled">
+          <span class="toggle-label">
+            <span class="material-symbols-outlined tiny">notifications_active</span>
+            Reminders enabled
+          </span>
+        </ion-toggle>
+      </ion-item>
+    </ion-list>
+
+    <div class="ion-padding">
+      <ion-button expand="block" size="large" type="submit" [disabled]="!formName.trim()">
+        <span class="material-symbols-outlined btn-ic">check_circle</span>
+        {{ isAdd ? 'Add medication' : 'Save changes' }}
+      </ion-button>
+    </div>
+
+    <div class="ion-padding ion-text-center" *ngIf="!isAdd">
+      <ion-button fill="clear" color="danger" type="button" (click)="deleteMedication()">
+        <span class="material-symbols-outlined btn-ic">delete</span>
+        Remove medication
+      </ion-button>
+    </div>
+  </form>
+</ion-content>
+
+<ion-content *ngIf="!profile" class="ion-padding">
+  <p>Profile not found.</p>
+  <ion-button type="button" (click)="backToProfilesList()">Back to Family</ion-button>
+</ion-content>

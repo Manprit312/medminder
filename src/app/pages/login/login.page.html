@@ -1,0 +1,49 @@
+<ion-content [fullscreen]="true" [scrollY]="false" class="ion-padding auth-wrap mm-gradient-bg">
+  <div class="auth-card mm-auth-card">
+    <span class="material-symbols-outlined logo">medication</span>
+    <h1>MedMinder</h1>
+    <p class="sub">Sign in to sync your family profiles and medications.</p>
+
+    <form (ngSubmit)="submit()">
+      <ion-list lines="none" class="form-list">
+        <ion-item>
+          <span class="material-symbols-outlined input-ic" slot="start">mail</span>
+          <ion-input
+            type="email"
+            name="email"
+            [(ngModel)]="email"
+            label="Email"
+            labelPlacement="stacked"
+            autocomplete="email"
+            required
+          ></ion-input>
+        </ion-item>
+        <ion-item>
+          <span class="material-symbols-outlined input-ic" slot="start">lock</span>
+          <ion-input
+            type="password"
+            name="password"
+            [(ngModel)]="password"
+            label="Password"
+            labelPlacement="stacked"
+            autocomplete="current-password"
+            required
+          ></ion-input>
+        </ion-item>
+      </ion-list>
+      <ion-button expand="block" size="large" type="submit" [disabled]="!email.trim() || !password">
+        Sign in
+      </ion-button>
+    </form>
+
+    <p class="hint hint-row">
+      <a routerLink="/forgot-password">Forgot password?</a>
+    </p>
+
+    <p class="hint">
+      No account?
+      <a routerLink="/register">Create one</a>
+    </p>
+    <p class="api-hint">API: <code>{{ apiUrl }}</code></p>
+  </div>
+</ion-content>

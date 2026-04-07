@@ -1,0 +1,7 @@
+{
+  "name": "medminder",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

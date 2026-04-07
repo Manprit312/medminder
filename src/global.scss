@@ -1,0 +1,178 @@
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/**
+ * Ionic Dark Mode
+ * -----------------------------------------------------
+ * For more info, please see:
+ * https://ionicframework.com/docs/theming/dark-mode
+ */
+
+/* @import "@ionic/angular/css/palettes/dark.always.css"; */
+/* @import "@ionic/angular/css/palettes/dark.class.css"; */
+@import "@ionic/angular/css/palettes/dark.system.css";
+
+/* —— App shell: full height (required for ion-tabs / ion-router-outlet layout) —— */
+html,
+body {
+  height: 100%;
+}
+
+app-root {
+  display: block;
+  height: 100%;
+}
+
+ion-app {
+  height: 100%;
+}
+
+/*
+ * Hit-testing: root ion-router-outlet (login/register) — stack pages above; do not disable
+ * pointer-events here (breaks handlers inside ion-content).
+ */
+ion-router-outlet {
+  z-index: 0;
+}
+
+ion-page,
+.ion-page {
+  position: relative;
+  z-index: 5;
+  min-height: 100%;
+  pointer-events: auto;
+}
+
+/*
+ * Tab shell only: nested outlet under ion-tabs sits full-bleed; taps can hit ION-ROUTER-OUTLET
+ * instead of Today/Settings content. Disable hits on that nested host only; keep .ion-page interactive.
+ * (Root outlet is unchanged — Sign in on /login still works.)
+ */
+ion-tabs ion-router-outlet {
+  pointer-events: none;
+  z-index: 0;
+}
+
+ion-tabs .ion-page {
+  pointer-events: auto;
+  position: relative;
+  z-index: 5;
+}
+
+/*
+ * Fullscreen ion-content: #background-content can steal taps; scroll layer must receive them.
+ */
+ion-content::part(background) {
+  pointer-events: none;
+}
+
+ion-content::part(scroll) {
+  pointer-events: auto;
+  z-index: 1;
+}
+
+/* Material Symbols (Outlined) */
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 1.25rem;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+/* Tab bar: clearer separation from content (loads after dark.system) */
+ion-tab-bar {
+  --background: var(--ion-card-background);
+  height: 58px;
+  border-top: 1px solid var(--ion-border-color);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+ion-tab-button {
+  --padding-top: 6px;
+  --padding-bottom: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  min-height: 52px;
+}
+
+ion-tab-button ion-label {
+  margin-top: 2px;
+}
+
+ion-tab-button.tab-selected {
+  color: var(--ion-color-primary);
+}
+
+ion-tab-button.tab-selected .tab-icon {
+  font-variation-settings: "FILL" 1, "wght" 600, "GRAD" 0, "opsz" 24;
+}
+
+/* Links: visible focus for keyboard users */
+a:focus-visible {
+  outline: 2px solid var(--ion-color-primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Dark mode: plum/violet aligned with light (after Ionic dark palette) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --mm-text-muted: rgba(245, 243, 255, 0.78);
+    --ion-color-primary: #c4b5fd;
+    --ion-color-primary-rgb: 196, 181, 253;
+    --ion-color-primary-contrast: #1e1b4b;
+    --ion-color-primary-contrast-rgb: 30, 27, 75;
+    --ion-color-primary-shade: #ac9fe0;
+    --ion-color-primary-tint: #cabdfd;
+    --ion-color-secondary: #a78bfa;
+    --ion-color-secondary-rgb: 167, 139, 250;
+    --ion-color-secondary-contrast: #1e1b4b;
+    --ion-color-secondary-contrast-rgb: 30, 27, 75;
+    --ion-color-secondary-shade: #937ad8;
+    --ion-color-secondary-tint: #b098fb;
+    --ion-color-tertiary: #f472b6;
+    --ion-color-tertiary-rgb: 244, 114, 182;
+    --ion-color-tertiary-contrast: #4c0519;
+    --ion-color-tertiary-contrast-rgb: 76, 5, 25;
+    --ion-color-tertiary-shade: #d764a0;
+    --ion-color-tertiary-tint: #f680bd;
+    --ion-toolbar-background: #3b0764;
+    --ion-toolbar-color: #f5f3ff;
+  }
+}

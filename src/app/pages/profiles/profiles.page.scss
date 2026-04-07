@@ -1,0 +1,32 @@
+.avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: 0.02em;
+  margin-inline-end: 14px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.tiny {
+  font-size: 1rem;
+  vertical-align: -3px;
+  margin-inline-end: 4px;
+  opacity: 0.7;
+}
+
+.fab-icon {
+  font-size: 1.75rem;
+}
+
+.btn-ic {
+  font-size: 1.1rem;
+  vertical-align: -2px;
+  margin-inline-end: 6px;
+}
