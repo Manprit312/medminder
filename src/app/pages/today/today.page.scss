@@ -4,96 +4,463 @@
   margin-inline-end: 6px;
 }
 
-.dose-list {
-  padding-bottom: 1rem;
+/* —— Medico-style Today (deep olive + stacked cards) —— */
+.mm-today-header ion-toolbar {
+  --background: var(--mm-olive-deep);
+  --border-width: 0;
+  --color: var(--mm-cream-bright);
 }
 
-.dose-item.taken {
-  --background: rgba(var(--ion-color-success-rgb), 0.08);
+.mm-today-header ion-title {
+  color: var(--mm-cream-bright);
+  font-family: var(--mm-font-heading);
+  font-weight: 700;
 }
 
-.dose-item.skipped {
+.mm-today-medico {
+  --background: linear-gradient(165deg, var(--mm-olive-deep) 0%, var(--mm-olive-mid) 42%, #3d4638 100%);
+  color: var(--mm-cream-bright);
+}
+
+.mm-today-hero {
+  text-align: center;
+  padding-bottom: 0.5rem;
+}
+
+.mm-today-hero-icon {
+  margin: 0 auto 1rem;
+  max-width: min(88vw, 280px);
+  display: flex;
+  justify-content: center;
+}
+
+.mm-today-hero-alarm {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--mm-radius-lg);
+  box-shadow: var(--mm-shadow-lift);
+  object-fit: contain;
+}
+
+.mm-today-kicker {
+  margin: 0 0 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  color: rgba(250, 248, 240, 0.9);
+}
+
+.mm-today-title {
+  margin: 0 0 0.5rem;
+  font-family: var(--mm-font-heading);
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--mm-cream-bright);
+}
+
+.mm-today-date {
+  margin: 0;
+  font-size: 1rem;
   opacity: 0.88;
 }
 
-.dose-item.missed {
-  --background: rgba(var(--ion-color-warning-rgb), 0.1);
+.mm-today-empty-copy {
+  margin: 0.75rem 0 0;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: rgba(250, 248, 240, 0.88);
+  max-width: 400px;
+  margin-inline: auto;
 }
 
-.missed-stat {
-  color: var(--ion-color-warning-shade);
-  font-weight: 600;
+.mm-today-cta {
+  --box-shadow: 0 8px 24px rgba(var(--ion-color-tertiary-rgb), 0.35);
 }
 
-.slot-icon {
-  font-size: 1.75rem;
-  margin-inline-end: 12px;
-  opacity: 0.85;
+.mm-today-panels {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 8px;
 }
 
-.dose-time {
-  font-size: 1.2rem;
+.mm-surface-cream {
+  border-radius: var(--mm-radius-md);
+  padding: 14px 16px;
+  background: var(--mm-card-cream);
+  color: var(--ion-text-color);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: var(--mm-shadow-soft);
+}
+
+.mm-progress-compact .progress-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.98rem;
   font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--ion-text-color);
+
+  .material-symbols-outlined {
+    font-size: 1.25rem;
+    color: var(--ion-color-success-shade);
+  }
+}
+
+.mm-progress-compact .progress-bar {
+  height: 8px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.mm-progress-compact .adherence-today {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+}
+
+.mm-progress-compact .progress-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.88rem;
+}
+
+.mm-weekly-compact .weekly-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: var(--mm-font-heading);
+  color: var(--ion-text-color);
+}
+
+.mm-weekly-compact .weekly-range {
+  margin: 0 0 6px;
+  font-size: 0.82rem;
+  opacity: 0.75;
+}
+
+.mm-weekly-compact .weekly-adh {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.mm-meals-wrap {
+  padding-top: 0.25rem;
+}
+
+.mm-meals-card {
+  padding: 1rem 1rem 0.5rem;
+  border-radius: var(--mm-radius-md, 18px);
+  border: 1px solid rgba(95, 105, 86, 0.12);
+  box-shadow: var(--mm-shadow-card);
+}
+
+.mm-meals-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 0.45rem;
+  font-size: 1.02rem;
+  font-weight: 700;
+  font-family: var(--mm-font-heading);
+  color: var(--ion-text-color);
+}
+
+.mm-meals-title-ic {
+  font-size: 1.35rem;
+  opacity: 0.88;
+  color: var(--ion-color-tertiary);
+}
+
+.mm-meals-optional {
+  font-weight: 600;
+  font-size: 0.85rem;
+  opacity: 0.65;
+}
+
+.mm-meals-intro {
+  margin: 0 0 0.5rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--mm-text-muted);
+}
+
+.mm-meals-field {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --background: transparent;
+  margin-bottom: 0.35rem;
+
+  ion-textarea {
+    --padding-top: 6px;
+    font-size: 0.95rem;
+  }
+}
+
+/* —— Medicine track: stacked deck (later cards overlap upward & sit on top via z-index) —— */
+.mm-reminder-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding-top: 0.5rem;
+  padding-bottom: 3rem;
+  isolation: isolate;
+}
+
+.mm-track-card {
+  position: relative;
+  border-radius: 36px;
+  padding: 1.15rem 1.1rem 1rem;
+  margin-top: 0;
+  margin-bottom: 0;
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.07),
+    0 12px 28px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.2s var(--mm-ease-out);
+}
+
+/** Pull each card up under the previous so the stack reads as a deck; last item has highest z-index. */
+.mm-track-overlap {
+  margin-top: -2.35rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mm-track-card:active {
+    transform: scale(0.993);
+  }
+}
+
+.mm-track-card:first-of-type {
+  margin-top: 4px;
+}
+
+.mm-track-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.mm-track-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.mm-track-time-col {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  align-self: center;
+}
+
+.mm-track-kicker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.mm-track-alarm {
+  font-size: 1.15rem;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  opacity: 0.92;
+}
+
+.mm-track-kicker-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.mm-rc-med {
+  margin: 0 0 0.4rem;
+  font-family: var(--mm-font-heading);
+  font-size: 1.28rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.mm-rc-detail {
+  margin: 0 0 0.45rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  font-family: var(--ion-font-family);
+  font-weight: 400;
+  opacity: 0.92;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mm-track-sub {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  opacity: 0.88;
+}
+
+.mm-track-dot {
+  opacity: 0.45;
+  padding: 0 1px;
+}
+
+/* Time pills — colors paired to card background (reference) */
+.mm-track-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.75rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.88rem;
   letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.mm-track-pill--sage {
+  background: var(--mm-track-pill-olive);
+  color: #fafaf4;
+}
+
+.mm-track-pill--teal {
+  background: var(--mm-track-pill-cream);
+  color: var(--ion-text-color);
+}
+
+.mm-track-pill--taupe {
+  background: var(--mm-track-pill-orange);
+  color: #1a1a1a;
+}
+
+.mm-track-pill--cream {
+  background: var(--mm-track-pill-olive-soft);
+  color: #ffffff;
+}
+
+.mm-rc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 0.85rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.mm-rc-cream .mm-rc-actions {
+  border-top-color: rgba(26, 26, 26, 0.08);
+}
+
+.mm-rc-actions ion-button {
+  --padding-start: 12px;
+  --padding-end: 12px;
+  min-height: 40px;
+  font-size: 0.85rem;
+}
+
+.mm-rc-skip {
+  --border-color: rgba(255, 255, 255, 0.55);
+  --color: inherit;
+}
+
+.mm-rc-logged {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.mm-rc-cream .mm-rc-logged {
+  border-top-color: rgba(26, 26, 26, 0.08);
+}
+
+.mm-rc-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.mm-rc-pill.mm-rc-taken {
+  background: rgba(74, 103, 65, 0.35);
+}
+
+.mm-rc-pill.mm-rc-skip {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Card backgrounds */
+.mm-rc-sage {
+  background: var(--mm-card-sage);
+  color: #fafaf4;
+}
+
+.mm-rc-teal {
+  background: var(--mm-card-teal);
+  color: #fafaf4;
+}
+
+.mm-rc-taupe {
+  background: var(--mm-card-taupe);
+  color: #f5f3eb;
+}
+
+.mm-rc-cream {
+  background: var(--mm-card-cream);
+  color: var(--ion-text-color);
+}
+
+.mm-rc-cream .mm-track-kicker {
+  color: var(--ion-color-primary-shade);
+}
+
+.mm-rc-cream .mm-rc-detail {
+  color: var(--mm-text-muted);
+}
+
+.mm-rc-cream .mm-rc-skip {
+  --border-color: var(--ion-color-medium);
+  --color: var(--ion-text-color);
 }
 
 .tiny {
   font-size: 1rem;
   vertical-align: -3px;
-  margin-inline-end: 4px;
-  opacity: 0.7;
-}
-
-.med-line {
-  font-weight: 600;
-}
-
-.dosage {
-  font-weight: 400;
-  opacity: 0.8;
-}
-
-.profile-line {
-  font-size: 0.85rem;
-  opacity: 0.8;
-  margin-top: 2px;
-}
-
-.label-muted {
-  font-weight: 500;
-  opacity: 0.55;
-  margin-inline-end: 4px;
-}
-
-.refill-hint {
-  margin: 0.4rem 0 0;
-  font-size: 0.9rem;
-  line-height: 1.4;
-  color: var(--mm-text-muted, rgba(18, 10, 36, 0.78));
-
-  ion-badge {
-    vertical-align: middle;
-    margin-inline-start: 6px;
-  }
-}
-
-.actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: flex-end;
-}
-
-.actions ion-button {
-  min-height: 44px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  --padding-start: 12px;
-  --padding-end: 12px;
+  opacity: 0.85;
 }
 
 .btn-icon {
   font-size: 1rem;
   vertical-align: -2px;
   margin-inline-end: 4px;
+}
+
+.sm {
+  font-size: 1.1rem;
 }

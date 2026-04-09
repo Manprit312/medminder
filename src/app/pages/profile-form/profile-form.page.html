@@ -19,8 +19,10 @@
 <ion-content [fullscreen]="true" class="form-screen">
   <div class="form-hero ion-padding">
     <span class="material-symbols-outlined hero-icon">badge</span>
-    <h1>{{ isEdit ? 'Update name' : 'Who is this for?' }}</h1>
-    <p class="subtitle">You, a child, a parent — anyone who needs reminders.</p>
+    <h1>{{ isEdit ? 'Edit profile' : 'New profile' }}</h1>
+    <p class="subtitle">
+      {{ isEdit ? 'Update how this person appears in MedMinder.' : 'Add someone who uses this device for their reminders.' }}
+    </p>
   </div>
 
   <form (ngSubmit)="save()">
@@ -38,41 +40,94 @@
           required
         ></ion-input>
       </ion-item>
+
+      <ion-item>
+        <span class="material-symbols-outlined input-lead" slot="start">diversity_3</span>
+        <ion-select
+          name="patientGroup"
+          label="Who is this for?"
+          labelPlacement="stacked"
+          interface="popover"
+          [(ngModel)]="formPatientGroup"
+        >
+          <ion-select-option *ngFor="let opt of patientGroupOptions" [value]="opt.value">
+            {{ opt.label }}<ng-container *ngIf="opt.sub"> — {{ opt.sub }}</ng-container>
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
       <ion-item lines="none" class="caregiver-hint">
         <ion-text class="ion-text-wrap" color="medium">
-          <p class="hint">
-            <strong>Caregiver alert</strong> — If a dose is marked <strong>missed</strong>, we can notify this contact
-            (simulated in the app for now; SMS/WhatsApp later).
-          </p>
+          <p class="hint">We use this for general organization tips on the profile screen—not for dosing or diagnosis.</p>
         </ion-text>
       </ion-item>
-      <ion-item>
-        <span class="material-symbols-outlined input-lead" slot="start">mail</span>
-        <ion-input
-          name="caregiverEmail"
-          type="email"
-          inputmode="email"
-          label="Caregiver email (optional)"
-          labelPlacement="stacked"
-          [(ngModel)]="formCaregiverEmail"
-          placeholder="e.g. caregiver@example.com"
-          autocomplete="email"
-          enterkeyhint="next"
-        ></ion-input>
-      </ion-item>
-      <ion-item>
-        <span class="material-symbols-outlined input-lead" slot="start">call</span>
-        <ion-input
-          name="caregiverPhone"
-          type="tel"
-          inputmode="tel"
-          label="Caregiver phone (optional)"
-          labelPlacement="stacked"
-          [(ngModel)]="formCaregiverPhone"
-          placeholder="e.g. +1 555 123 4567"
-          autocomplete="tel"
-          enterkeyhint="done"
-        ></ion-input>
+
+      <ng-container *ngIf="subscription.canUseCaregiverFields()">
+        <ion-list-header>
+          <ion-label>Caregiver (optional)</ion-label>
+        </ion-list-header>
+        <ion-item>
+          <span class="material-symbols-outlined input-lead" slot="start">mail</span>
+          <ion-input
+            name="caregiverEmail"
+            type="email"
+            inputmode="email"
+            label="Caregiver email (optional)"
+            labelPlacement="stacked"
+            [(ngModel)]="formCaregiverEmail"
+            placeholder="e.g. caregiver@example.com"
+            autocomplete="email"
+            enterkeyhint="next"
+          ></ion-input>
+        </ion-item>
+        <ion-item>
+          <span class="material-symbols-outlined input-lead" slot="start">call</span>
+          <ion-input
+            name="caregiverPhone"
+            type="tel"
+            inputmode="tel"
+            label="Caregiver phone (optional)"
+            labelPlacement="stacked"
+            [(ngModel)]="formCaregiverPhone"
+            placeholder="e.g. +1 555 123 4567"
+            autocomplete="tel"
+            enterkeyhint="done"
+          ></ion-input>
+        </ion-item>
+      </ng-container>
+
+      <ng-container *ngIf="showCaregiverReadonly">
+        <ion-list-header>
+          <ion-label>Caregiver contact</ion-label>
+        </ion-list-header>
+        <ion-item *ngIf="formCaregiverEmail?.trim()" lines="none">
+          <span class="material-symbols-outlined input-lead" slot="start">mail</span>
+          <ion-label class="ion-text-wrap">
+            <p class="readonly-label">Email</p>
+            <p>{{ formCaregiverEmail }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item *ngIf="formCaregiverPhone?.trim()" lines="none">
+          <span class="material-symbols-outlined input-lead" slot="start">call</span>
+          <ion-label class="ion-text-wrap">
+            <p class="readonly-label">Phone</p>
+            <p>{{ formCaregiverPhone }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item lines="none" class="caregiver-hint">
+          <ion-text class="ion-text-wrap" color="medium">
+            <p class="hint">Editing caregiver contacts requires MedMinder Plus (Settings).</p>
+          </ion-text>
+        </ion-item>
+      </ng-container>
+
+      <ion-item
+        *ngIf="!subscription.canUseCaregiverFields() && !isEdit && !showCaregiverReadonly"
+        lines="none"
+        class="caregiver-hint"
+      >
+        <ion-text class="ion-text-wrap" color="medium">
+          <p class="hint">MedMinder Plus adds caregiver contacts and multiple family profiles.</p>
+        </ion-text>
       </ion-item>
     </ion-list>
 

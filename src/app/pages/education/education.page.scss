@@ -1,0 +1,78 @@
+.form-hero {
+  text-align: center;
+  padding-bottom: 0.35rem;
+
+  .hero-icon {
+    font-size: 3rem;
+    opacity: 0.48;
+    display: block;
+    margin-bottom: 0.6rem;
+  }
+
+  h1 {
+    font-size: 1.45rem;
+    margin: 0 0 0.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ion-text-color);
+  }
+
+  .subtitle {
+    margin: 0;
+    color: var(--mm-text-muted, rgba(18, 10, 36, 0.72));
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+}
+
+.form-card {
+  border-radius: var(--mm-radius-md, 18px);
+  overflow: hidden;
+  border: 1px solid var(--ion-border-color);
+  box-shadow: var(--mm-shadow-card);
+}
+
+.section-ic {
+  vertical-align: -4px;
+  margin-inline-end: 8px;
+  font-size: 1.25rem;
+  opacity: 0.85;
+  color: var(--ion-color-primary);
+}
+
+.input-lead {
+  margin-inline-end: 6px;
+  opacity: 0.75;
+  font-size: 1.35rem;
+}
+
+.field-row {
+  h3 {
+    margin: 0 0 0.3rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ion-text-color);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.98rem;
+    line-height: 1.45;
+    color: var(--mm-text-muted, rgba(18, 10, 36, 0.78));
+  }
+}
+
+.legal-item {
+  align-items: flex-start;
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    opacity: 0.9;
+  }
+}
+
+.plus-teaser h3 {
+  margin-top: 0;
+}

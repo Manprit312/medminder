@@ -45,7 +45,12 @@ export class LoginPage {
       let msg = 'Sign-in failed';
       if (e instanceof HttpErrorResponse) {
         const body = e.error as { error?: string } | undefined;
-        msg = body?.error ?? e.message;
+        if (e.status === 0) {
+          msg =
+            'Could not reach the server. Check internet, wait one minute if the host was idle, then try again. If this keeps happening, the deployed API must allow this app in CORS.';
+        } else {
+          msg = body?.error ?? e.message;
+        }
       }
       const alert = await this.alertCtrl.create({
         header: 'Could not sign in',

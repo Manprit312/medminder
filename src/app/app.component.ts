@@ -19,10 +19,12 @@ export class AppComponent implements OnInit {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    await this.medData.load();
+    // Do not await load(): Render free tier cold-starts can take 60–120s and would block the shell.
     if (this.auth.isLoggedIn()) {
-      await this.onboarding.migrateIfHasExistingData();
+      void this.medData.load().then(() => void this.onboarding.migrateIfHasExistingData());
       await this.medNotif.initialize();
+    } else {
+      void this.medData.load();
     }
   }
 }

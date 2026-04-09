@@ -6,7 +6,7 @@ import { ViewWillEnter } from '@ionic/angular';
 import { AuthService } from '../../services/auth.service';
 import { MedDataService } from '../../services/med-data.service';
 import { MedNotificationService } from '../../services/med-notification.service';
-import { getApiUrl } from '../../../environments/api-url';
+import { SubscriptionService } from '../../services/subscription.service';
 
 @Component({
   selector: 'app-settings',
@@ -15,7 +15,6 @@ import { getApiUrl } from '../../../environments/api-url';
   standalone: false,
 })
 export class SettingsPage implements ViewWillEnter {
-  readonly apiUrl = getApiUrl();
   native = Capacitor.isNativePlatform();
   permDisplay: string | null = null;
 
@@ -23,7 +22,8 @@ export class SettingsPage implements ViewWillEnter {
     private readonly auth: AuthService,
     private readonly medData: MedDataService,
     private readonly medNotif: MedNotificationService,
-    private readonly router: Router
+    private readonly router: Router,
+    readonly subscription: SubscriptionService
   ) {}
 
   get email(): string | null {

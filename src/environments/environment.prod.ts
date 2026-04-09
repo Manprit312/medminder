@@ -1,4 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:3847',
+  apiUrl: 'https://medminder-zhjh.onrender.com',
+  /** Production default until billing / API assigns tiers. */
+  subscriptionTier: 'free' as 'free' | 'premium',
 };

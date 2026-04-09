@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertController, ViewWillEnter } from '@ionic/angular';
+import { AlertController, ToastController, ViewWillEnter } from '@ionic/angular';
 import { Profile } from '../../models/med.models';
 import { MedDataService } from '../../services/med-data.service';
 import { MedNotificationService } from '../../services/med-notification.service';
+import { SubscriptionService } from '../../services/subscription.service';
 
 const AVATAR_COLORS = [
   'var(--ion-color-primary)',
@@ -28,7 +29,9 @@ export class ProfilesPage implements ViewWillEnter {
     private readonly medData: MedDataService,
     private readonly medNotif: MedNotificationService,
     private readonly router: Router,
-    private readonly alertCtrl: AlertController
+    private readonly alertCtrl: AlertController,
+    private readonly toastCtrl: ToastController,
+    readonly subscription: SubscriptionService
   ) {}
 
   async ionViewWillEnter(): Promise<void> {
@@ -41,7 +44,12 @@ export class ProfilesPage implements ViewWillEnter {
   }
 
   openProfile(p: Profile): void {
-    this.router.navigate(['/tabs/profiles', p.id]);
+    void this.router.navigate(['/tabs/profiles', p.id]);
+  }
+
+  editProfile(p: Profile, ev: Event): void {
+    ev.stopPropagation();
+    void this.router.navigate(['/tabs/profiles', p.id, 'edit']);
   }
 
   async deleteProfile(p: Profile, ev: Event): Promise<void> {
@@ -70,7 +78,18 @@ export class ProfilesPage implements ViewWillEnter {
   }
 
   /** RouterLink on ion-button / ion-fab-button is unreliable; use programmatic navigation. */
-  goAddProfile(): void {
-    void this.router.navigateByUrl('/tabs/profiles/add');
+  async goAddProfile(): Promise<void> {
+    const n = this.profiles.length;
+    if (!this.subscription.canAddProfile(n)) {
+      const t = await this.toastCtrl.create({
+        message: 'More than one profile is available with MedMinder Plus.',
+        duration: 3200,
+        position: 'bottom',
+        color: 'dark',
+      });
+      await t.present();
+      return;
+    }
+    await this.router.navigateByUrl('/tabs/profiles/add');
   }
 }

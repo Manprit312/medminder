@@ -1,8 +1,45 @@
-.auth-wrap {
+/**
+ * Center auth cards: slotted content lives in shadow DOM, so flex on the host
+ * does nothing — target the scroll part (see Ionic ion-content `part="scroll"`).
+ */
+ion-content.auth-wrap::part(scroll) {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100%;
+  box-sizing: border-box;
+}
+
+/**
+ * Safe areas: status bar, notch, Dynamic Island, home indicator.
+ * Standalone = no ion-header (e.g. login) — top inset applies to content.
+ *
+ * Android WebView often reports env(safe-area-inset-top) as 0 even with
+ * viewport-fit=cover, so we clamp with a minimum (~status bar) when needed.
+ * Set on header + content (siblings in routed templates; there is often no ion-page).
+ */
+ion-header.auth-header,
+ion-content.auth-wrap {
+  /* Do not use legacy constant() inside max() — it can invalidate the whole max() in WebView. */
+  --mm-auth-safe-top: max(env(safe-area-inset-top, 0px), 48px);
+}
+
+ion-content.auth-wrap {
+  --padding-start: max(16px, env(safe-area-inset-left, 0px));
+  --padding-end: max(16px, env(safe-area-inset-right, 0px));
+  --padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Standalone --padding-top is set in global.scss (!important) so it wins over encapsulation. */
+
+ion-content.auth-wrap:not(.auth-wrap-standalone) {
+  --padding-top: 16px;
+}
+
+ion-header.auth-header ion-toolbar {
+  --padding-top: var(--mm-auth-safe-top);
+  --min-height: 56px;
+  padding-top: var(--mm-auth-safe-top);
 }
 
 .auth-card {
@@ -18,6 +55,7 @@
   }
 
   h1 {
+    font-family: var(--mm-font-heading);
     margin: 0 0 0.4rem;
     font-size: 1.85rem;
     font-weight: 700;
@@ -27,7 +65,7 @@
 
   .sub {
     margin: 0 0 1.35rem;
-    color: var(--mm-text-muted, rgba(18, 10, 36, 0.72));
+    color: var(--mm-text-muted);
     font-size: 1.02rem;
     line-height: 1.55;
   }

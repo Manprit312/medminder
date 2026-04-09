@@ -1,64 +1,117 @@
-.form-screen {
-  --background: var(--mm-page-gradient);
+.mm-dose-header ion-toolbar {
+  --background: var(--mm-olive-deep);
+  --border-width: 0;
+  --color: var(--mm-cream-bright);
 }
 
-.form-hero {
-  text-align: center;
-  padding-bottom: 0.35rem;
+.mm-dose-header ion-title {
+  color: var(--mm-cream-bright);
+  font-family: var(--mm-font-heading);
+  font-weight: 700;
+}
 
-  .hero-icon {
-    font-size: 2.85rem;
-    opacity: 0.48;
-    display: block;
-    margin-bottom: 0.5rem;
-  }
+.mm-dose-header ion-back-button {
+  --color: var(--mm-cream-bright);
+}
 
-  .time-chip {
-    display: inline-block;
-    margin: 0 0 0.5rem;
-    padding: 0.35rem 0.95rem;
-    border-radius: 999px;
-    background: rgba(var(--ion-color-primary-rgb), 0.14);
-    color: var(--ion-color-primary-shade);
-    font-weight: 700;
-    font-size: 1.05rem;
-    letter-spacing: 0.02em;
-  }
+.mm-dose-medico {
+  --background: linear-gradient(165deg, var(--mm-olive-deep) 0%, var(--mm-olive-mid) 55%, #3d4638 100%);
+  color: var(--mm-cream-bright);
+}
 
-  h1 {
-    font-size: 1.55rem;
-    margin: 0 0 0.35rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--ion-text-color);
-  }
+.mm-dose-panel {
+  max-width: 440px;
+  margin: 0 auto;
+  padding-top: 0.5rem;
+}
 
-  .subtitle {
-    margin: 0 0 0.5rem;
-    color: var(--mm-text-muted, rgba(18, 10, 36, 0.78));
-    font-size: 1rem;
-    line-height: 1.45;
-  }
+.mm-dose-name {
+  margin: 0 0 0.75rem;
+  font-family: var(--mm-font-heading);
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--mm-cream-bright);
+}
 
-  .profile-line {
-    margin: 0;
-    color: var(--mm-text-muted, rgba(18, 10, 36, 0.72));
-    font-size: 1rem;
-  }
+.mm-dose-desc {
+  margin: 0 0 1rem;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  color: rgba(250, 248, 240, 0.92);
+}
+
+.mm-dose-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 0.75rem;
+}
+
+.mm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: rgba(250, 248, 240, 0.14);
+  border: 1px solid rgba(250, 248, 240, 0.22);
+  color: var(--mm-cream-bright);
+}
+
+.mm-chip-ic {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.mm-dose-profile {
+  margin: 0;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.88;
+}
+
+.mm-dose-actions {
+  max-width: 440px;
+  margin: 0 auto;
+  padding-bottom: 1rem;
+}
+
+.mm-taken-primary {
+  --border-radius: var(--mm-radius-md);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.mm-secondary-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mm-dose-status.status-card {
+  max-width: 440px;
+  margin: 0 auto 1rem;
 }
 
 .refill-banner {
-  max-width: 420px;
+  max-width: 440px;
   margin: 0 auto 0.5rem;
 
   .refill-line {
     margin: 0;
     padding: 10px 12px;
     border-radius: 12px;
-    background: rgba(var(--ion-color-warning-rgb), 0.1);
-    border: 1px solid rgba(var(--ion-color-warning-rgb), 0.25);
+    background: rgba(var(--ion-color-warning-rgb), 0.14);
+    border: 1px solid rgba(var(--ion-color-warning-rgb), 0.28);
     font-size: 0.9rem;
     line-height: 1.4;
+    color: var(--mm-cream-bright);
   }
 
   .refill-badge {
@@ -89,12 +142,14 @@
   h2 {
     margin: 0 0 0.25rem;
     font-size: 1.15rem;
+    color: var(--ion-text-color);
   }
 
   p {
     margin: 0;
     opacity: 0.75;
     font-size: 0.9rem;
+    color: var(--ion-text-color);
   }
 }
 
@@ -116,13 +171,21 @@
 .footer-note {
   p {
     font-size: 0.85rem;
-    opacity: 0.6;
+    opacity: 0.65;
     line-height: 1.45;
     margin: 0;
+    color: rgba(250, 248, 240, 0.85);
   }
 
   .inline {
     vertical-align: -3px;
     margin-inline-end: 4px;
   }
+}
+
+.status-card {
+  border-radius: var(--mm-radius-md, 18px);
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-border-color);
+  box-shadow: var(--mm-shadow-soft);
 }

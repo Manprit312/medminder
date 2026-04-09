@@ -1,0 +1,127 @@
+.form-hero {
+  text-align: center;
+  padding-bottom: 0.35rem;
+
+  .hero-icon {
+    font-size: 2.75rem;
+    opacity: 0.45;
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--ion-color-primary);
+  }
+
+  h1 {
+    font-family: var(--mm-font-heading);
+    font-size: 1.45rem;
+    margin: 0 0 0.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ion-text-color);
+  }
+
+  .subtitle {
+    margin: 0;
+    color: var(--mm-text-muted);
+    font-size: 0.98rem;
+    line-height: 1.5;
+    text-align: left;
+  }
+}
+
+.two-views {
+  padding-bottom: 0.5rem;
+}
+
+.two-views-h {
+  margin: 0 0 0.5rem;
+  font-family: var(--mm-font-heading);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ion-text-color);
+}
+
+.two-views-lead {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--mm-text-muted);
+}
+
+.two-views-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+
+  @media (min-width: 560px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.role-card {
+  padding: 1rem 1rem 1.1rem;
+  border-radius: var(--mm-radius-md, 18px);
+  border: 1px solid var(--ion-border-color);
+  background: var(--ion-card-background);
+  box-shadow: var(--mm-shadow-card);
+}
+
+.role-card--patient {
+  border-top: 3px solid var(--ion-color-tertiary);
+}
+
+.role-card--clinician {
+  border-top: 3px solid var(--ion-color-primary);
+}
+
+.role-card-ic {
+  display: block;
+  font-size: 2rem;
+  opacity: 0.85;
+  margin-bottom: 0.35rem;
+  color: var(--ion-color-primary);
+}
+
+.role-card--patient .role-card-ic {
+  color: var(--ion-color-tertiary-shade);
+}
+
+.role-card-title {
+  margin: 0 0 0.45rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-family: var(--mm-font-heading);
+  color: var(--ion-text-color);
+}
+
+.role-card-body {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--mm-text-muted);
+}
+
+.form-card {
+  border-radius: var(--mm-radius-md, 18px);
+  overflow: hidden;
+  border: 1px solid var(--ion-border-color);
+  box-shadow: var(--mm-shadow-card);
+  background: var(--ion-card-background);
+}
+
+.input-lead {
+  margin-inline-end: 8px;
+  opacity: 0.8;
+  font-size: 1.3rem;
+  color: var(--ion-color-primary);
+}
+
+.legal-item {
+  align-items: flex-start;
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--mm-text-muted);
+  }
+}

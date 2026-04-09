@@ -16,25 +16,38 @@
   <div class="ion-padding intro">
     <p>
       <span class="material-symbols-outlined intro-icon">medication</span>
-      Medications for this person. Reminders use the times you set (device notifications on native builds).
+      Medications and reminders for this person.
     </p>
   </div>
 
   <div class="ion-padding caregiver-line" *ngIf="profile.caregiverEmail || profile.caregiverPhone">
     <p>
       <span class="material-symbols-outlined intro-icon">contact_mail</span>
-      <strong>Caregiver alerts:</strong>
+      <strong>Caregiver:</strong>
       <span *ngIf="profile.caregiverEmail">{{ profile.caregiverEmail }}</span>
       <span *ngIf="profile.caregiverEmail && profile.caregiverPhone"> · </span>
       <span *ngIf="profile.caregiverPhone">{{ profile.caregiverPhone }}</span>
     </p>
   </div>
 
+  <div class="ion-padding-horizontal ion-padding-bottom" *ngIf="patientTipsBlock as tips">
+    <div class="patient-tips-card">
+      <h3 class="patient-tips-title">
+        <span class="material-symbols-outlined patient-tips-ic" aria-hidden="true">lightbulb</span>
+        {{ tips.title }}
+      </h3>
+      <ul class="patient-tips-list">
+        <li *ngFor="let line of tips.bullets">{{ line }}</li>
+      </ul>
+      <p class="patient-tips-disclaimer">{{ tips.disclaimer }}</p>
+    </div>
+  </div>
+
   <div class="ion-padding" *ngIf="medications.length === 0">
     <div class="empty-state">
       <span class="material-symbols-outlined empty-icon">prescriptions</span>
       <h2>No medications</h2>
-      <p>Add one with the + button or open the form below.</p>
+      <p>Add one with the + button.</p>
       <ion-button expand="block" class="ion-margin-top" type="button" (click)="openAddMed()">
         <span class="material-symbols-outlined btn-ic">add_circle</span>
         Add medication
@@ -73,7 +86,7 @@
           color="secondary"
           type="button"
           (click)="openMedInfo(m, $event)"
-          aria-label="Learn more about this medication on DailyMed"
+          aria-label="Open medicine information in browser"
         >
           <span class="material-symbols-outlined">open_in_new</span>
         </ion-button>
@@ -91,7 +104,7 @@
   </ion-list>
 
   <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button color="primary" (click)="openAddMed()" aria-label="Add medication">
+    <ion-fab-button color="tertiary" (click)="openAddMed()" aria-label="Add medication">
       <span class="material-symbols-outlined fab-icon">add</span>
     </ion-fab-button>
   </ion-fab>

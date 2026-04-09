@@ -1,0 +1,103 @@
+.form-hero {
+  text-align: center;
+  padding-bottom: 0.35rem;
+
+  .hero-icon {
+    font-size: 2.75rem;
+    opacity: 0.45;
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--ion-color-danger);
+  }
+
+  h1 {
+    font-family: var(--mm-font-heading);
+    font-size: 1.45rem;
+    margin: 0 0 0.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ion-text-color);
+  }
+
+  .subtitle {
+    margin: 0;
+    color: var(--mm-text-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    text-align: left;
+  }
+}
+
+.form-card {
+  border-radius: var(--mm-radius-md, 18px);
+  overflow: hidden;
+  border: 1px solid var(--ion-border-color);
+  box-shadow: var(--mm-shadow-card);
+  background: var(--ion-card-background);
+}
+
+.input-lead {
+  margin-inline-end: 8px;
+  opacity: 0.8;
+  font-size: 1.3rem;
+  color: var(--ion-color-primary);
+}
+
+.legal-item {
+  align-items: flex-start;
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--mm-text-muted);
+  }
+}
+
+.err {
+  margin: 0 0 0.5rem;
+  font-size: 0.88rem;
+  color: var(--ion-color-danger);
+}
+
+.vitals-save-btn {
+  font-weight: 700;
+  --box-shadow: 0 4px 14px rgba(var(--ion-color-tertiary-rgb), 0.28);
+}
+
+.btn-ic {
+  margin-inline-end: 8px;
+  vertical-align: -4px;
+  font-size: 1.2rem;
+}
+
+.history-h {
+  margin: 0 0 0.65rem;
+  font-family: var(--mm-font-heading);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ion-text-color);
+}
+
+.history-list {
+  background: transparent;
+}
+
+.history-row {
+  --background: var(--ion-card-background);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  border: 1px solid var(--ion-border-color);
+
+  h3 {
+    margin: 0 0 0.25rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--mm-text-muted);
+  }
+}

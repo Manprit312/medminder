@@ -1,44 +1,107 @@
-// MedMinder — Ionic theme (light + dark-friendly)
+// MedMinder — earthy / organic theme (cream, olive, orange accent) + Fraunces + DM Sans
 // https://ionicframework.com/docs/theming/
 
 :root {
-  --ion-font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  /* Slightly larger root for readability (elder-friendly); scales rem-based UI */
+  --ion-font-family:
+    'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mm-font-heading: 'Fraunces', Georgia, 'Times New Roman', serif;
   font-size: 106.25%;
 
-  /* Plum / violet — primary + secondary share one hue */
-  --ion-color-primary: #6d28d9;
-  --ion-color-primary-rgb: 109, 40, 217;
+  /* Olive — primary actions, toolbar */
+  --ion-color-primary: #5f6956;
+  --ion-color-primary-rgb: 95, 105, 86;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #6023bf;
-  --ion-color-primary-tint: #7c3edd;
+  --ion-color-primary-shade: #52594a;
+  --ion-color-primary-tint: #6f7866;
 
-  --ion-color-secondary: #8b5cf6;
-  --ion-color-secondary-rgb: 139, 92, 246;
-  --ion-color-secondary-contrast: #ffffff;
-  --ion-color-secondary-contrast-rgb: 255, 255, 255;
-  --ion-color-secondary-shade: #7a51d8;
-  --ion-color-secondary-tint: #976cf7;
+  /* Muted sage — secondary chips / subtle UI */
+  --ion-color-secondary: #8a9480;
+  --ion-color-secondary-rgb: 138, 148, 128;
+  --ion-color-secondary-contrast: #1a1a1a;
+  --ion-color-secondary-contrast-rgb: 26, 26, 26;
+  --ion-color-secondary-shade: #798272;
+  --ion-color-secondary-tint: #969f8d;
 
-  /* Rose accent (FABs, chips) — complements violet */
-  --ion-color-tertiary: #db2777;
-  --ion-color-tertiary-rgb: 219, 39, 119;
+  /* Orange — strong CTAs, FABs, toggles (reference mockups) */
+  --ion-color-tertiary: #ff6b35;
+  --ion-color-tertiary-rgb: 255, 107, 53;
   --ion-color-tertiary-contrast: #ffffff;
   --ion-color-tertiary-contrast-rgb: 255, 255, 255;
-  --ion-color-tertiary-shade: #c12269;
-  --ion-color-tertiary-tint: #df3d84;
+  --ion-color-tertiary-shade: #e05e2f;
+  --ion-color-tertiary-tint: #ff7a49;
 
-  /* Surfaces: warm off-white with a hint of violet — higher contrast for body text */
-  --ion-background-color: #f4f0fb;
-  --ion-text-color: #120a24;
-  --ion-text-color-rgb: 18, 10, 36;
-  --mm-text-muted: rgba(18, 10, 36, 0.72);
-  --ion-card-background: #ffffff;
-  --ion-item-background: #ffffff;
-  --ion-toolbar-background: var(--ion-color-primary);
-  --ion-toolbar-color: var(--ion-color-primary-contrast);
-  --ion-border-color: rgba(59, 7, 100, 0.14);
-  /* Minimum touch target (WCAG 2.5.5) */
+  /* Surfaces */
+  --ion-background-color: #f2f2e6;
+  --ion-text-color: #1a1a1a;
+  --ion-text-color-rgb: 26, 26, 26;
+  --mm-text-muted: rgba(26, 26, 26, 0.68);
+  --ion-card-background: #fafaf4;
+  --ion-item-background: #fafaf4;
+  --mm-surface-pill: #dcdccb;
+  --ion-toolbar-background: #5f6956;
+  --ion-toolbar-color: #ffffff;
+  --ion-border-color: rgba(95, 105, 86, 0.2);
+
+  /* Success — taken / progress (sage-adjacent) */
+  --ion-color-success: #4a6741;
+  --ion-color-success-rgb: 74, 103, 65;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #415b39;
+  --ion-color-success-tint: #5c7652;
+
+  --ion-color-warning: #c27803;
+  --ion-color-warning-rgb: 194, 120, 3;
+  --ion-color-warning-contrast: #1a1a1a;
+  --ion-color-warning-contrast-rgb: 26, 26, 26;
+  --ion-color-warning-shade: #ab6a03;
+  --ion-color-warning-tint: #c8851c;
+
+  --ion-color-danger: #c24141;
+  --ion-color-danger-rgb: 194, 65, 65;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #ab3939;
+  --ion-color-danger-tint: #c85454;
+
+  /* Dark — primary text / “Medicine taken” style CTAs (olive, not pure black) */
+  --ion-color-dark: #3a4134;
+  --ion-color-dark-rgb: 58, 65, 52;
+  --ion-color-dark-contrast: #fafaf4;
+  --ion-color-dark-contrast-rgb: 250, 250, 244;
+  --ion-color-dark-shade: #33392e;
+  --ion-color-dark-tint: #4e5549;
+
+  /* Light — cream surfaces for outlines on olive / track cards */
+  --ion-color-light: #f2f2e6;
+  --ion-color-light-rgb: 242, 242, 230;
+  --ion-color-light-contrast: #1a1a1a;
+  --ion-color-light-contrast-rgb: 26, 26, 26;
+  --ion-color-light-shade: #d6d6ca;
+  --ion-color-light-tint: #f5f5ee;
+
+  /* Medium — stone (muted outlines / secondary actions on cream) */
+  --ion-color-medium: #6e7268;
+  --ion-color-medium-rgb: 110, 114, 104;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-contrast-rgb: 255, 255, 255;
+  --ion-color-medium-shade: #61645b;
+  --ion-color-medium-tint: #7d8077;
+
   --mm-touch-min: 48px;
+
+  /* Medico-style surfaces (reference mockups: deep olive page + stacked cards) */
+  --mm-olive-deep: #3a4134;
+  --mm-olive-mid: #4a5345;
+  --mm-cream-bright: #faf8f0;
+  /* Stacked “medicine track” cards (reference UI) */
+  --mm-card-sage: #7a8b6f;
+  --mm-card-teal: #5f8f82;
+  --mm-card-taupe: #6d6358;
+  --mm-card-cream: #f0ebe3;
+  --mm-track-pill-olive: #3a4134;
+  --mm-track-pill-cream: #f7f3ea;
+  --mm-track-pill-orange: #c45d2e;
+  --mm-track-pill-olive-soft: #5f6956;
 }

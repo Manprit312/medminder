@@ -1,0 +1,145 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/settings" text="Settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Heart &amp; BP</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="vitals-page mm-gradient-bg">
+  <div class="form-hero ion-padding">
+    <span class="material-symbols-outlined hero-icon">cardiology</span>
+    <h1>Blood pressure &amp; heart rate</h1>
+    <p class="subtitle">
+      Log readings you take at home (cuff, pharmacy kiosk, or watch). Optional context for you and your care team —
+      <strong>not</strong> a medical device and not for diagnosis.
+    </p>
+  </div>
+
+  <ion-list inset="true" lines="none" class="form-card ion-margin-horizontal">
+    <ion-item class="legal-item" lines="none">
+      <span class="material-symbols-outlined input-lead" slot="start">sync</span>
+      <ion-text class="ion-text-wrap">
+        <p>
+          <strong>Future:</strong> We plan to connect to <strong>Apple Health</strong> and <strong>Health Connect</strong>
+          (Android) so heart rate and blood pressure can sync when you allow it. For now, type values from your own
+          devices.
+        </p>
+      </ion-text>
+    </ion-item>
+  </ion-list>
+
+  <form class="ion-padding" (ngSubmit)="saveReading()">
+    <ion-list inset="true" lines="none" class="form-card" *ngIf="profiles.length > 0">
+      <ion-item>
+        <ion-select
+          label="Profile"
+          labelPlacement="stacked"
+          interface="popover"
+          [(ngModel)]="selectedProfileId"
+          name="profileId"
+          (ionChange)="onProfileChange()"
+        >
+          <ion-select-option *ngFor="let p of profiles" [value]="p.id">{{ p.name }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Systolic (top number)"
+          labelPlacement="stacked"
+          type="number"
+          inputmode="numeric"
+          name="sys"
+          [(ngModel)]="formSystolic"
+          placeholder="e.g. 120"
+          min="0"
+          max="400"
+          autocomplete="off"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Diastolic (bottom number)"
+          labelPlacement="stacked"
+          type="number"
+          inputmode="numeric"
+          name="dia"
+          [(ngModel)]="formDiastolic"
+          placeholder="e.g. 80"
+          min="0"
+          max="400"
+          autocomplete="off"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Heart rate (bpm)"
+          labelPlacement="stacked"
+          type="number"
+          inputmode="numeric"
+          name="hr"
+          [(ngModel)]="formHeartRate"
+          placeholder="e.g. 72"
+          min="0"
+          max="400"
+          autocomplete="off"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Date &amp; time"
+          labelPlacement="stacked"
+          type="datetime-local"
+          name="recordedAt"
+          [(ngModel)]="formRecordedAt"
+        ></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <p class="ion-padding-horizontal err" *ngIf="saveError">{{ saveError }}</p>
+
+    <div class="ion-padding" *ngIf="profiles.length > 0">
+      <ion-button expand="block" shape="round" color="tertiary" type="submit" class="vitals-save-btn">
+        <span class="material-symbols-outlined btn-ic" aria-hidden="true">save</span>
+        Save reading
+      </ion-button>
+    </div>
+  </form>
+
+  <ion-list inset="true" lines="none" class="form-card ion-margin-horizontal" *ngIf="profiles.length === 0">
+    <ion-item class="legal-item" lines="none">
+      <ion-text class="ion-text-wrap">
+        <p>Add a person under <strong>Family</strong> first, then you can attach vitals to their profile.</p>
+      </ion-text>
+    </ion-item>
+  </ion-list>
+
+  <div class="ion-padding-horizontal ion-padding-bottom" *ngIf="readings.length > 0">
+    <h2 class="history-h">Recent readings</h2>
+    <ion-list lines="none" class="history-list">
+      <ion-item *ngFor="let r of readings" class="history-row">
+        <ion-label>
+          <h3>{{ formatWhen(r.recordedAt) }}</h3>
+          <p>{{ formatReadingLine(r) }}</p>
+        </ion-label>
+        <ion-button slot="end" fill="clear" color="danger" type="button" (click)="deleteReading(r)" [attr.aria-label]="'Delete reading ' + formatWhen(r.recordedAt)">
+          <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+        </ion-button>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <ion-list inset="true" lines="none" class="form-card ion-margin-horizontal ion-margin-top">
+    <ion-item class="legal-item" lines="none">
+      <span class="material-symbols-outlined input-lead" slot="start">info</span>
+      <ion-text class="ion-text-wrap">
+        <p>
+          Stored on this device only unless we add cloud sync later. If something feels wrong, contact your clinician or
+          emergency services — don’t rely on this screen alone.
+        </p>
+      </ion-text>
+    </ion-item>
+  </ion-list>
+</ion-content>

@@ -1,26 +1,28 @@
-<ion-header [translucent]="true">
-  <ion-toolbar color="primary">
+<ion-header class="mm-today-header" [translucent]="true">
+  <ion-toolbar>
     <ion-title>Today</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="mm-gradient-bg">
-  <!-- Empty: no medications scheduled -->
-  <div class="ion-padding" *ngIf="doses.length === 0">
-    <div class="mm-empty-hero">
-      <img
-        class="mm-empty-art"
-        src="assets/illustrations/schedule-empty.svg"
-        width="288"
-        height="176"
-        alt=""
-      />
-      <h2 class="mm-empty-title">Nothing scheduled yet</h2>
-      <p class="mm-empty-copy">
+<ion-content [fullscreen]="true" class="mm-today-medico">
+  <div class="ion-padding mm-today-empty" *ngIf="doses.length === 0">
+    <div class="mm-today-hero mm-today-hero--text">
+      <div class="mm-today-hero-icon">
+        <img
+          class="mm-today-hero-alarm"
+          src="assets/alarm.png"
+          width="280"
+          height="200"
+          alt=""
+        />
+      </div>
+      <p class="mm-today-kicker">Medicine reminder</p>
+      <h2 class="mm-today-title">Medicine reminder app</h2>
+      <p class="mm-today-empty-copy">
         This screen lists <strong>today’s medication times</strong> for everyone in your family. Add people and meds
-        first, then doses appear here.
+        first, then reminders appear here as stacked cards.
       </p>
-      <ion-button expand="block" class="ion-margin-top" shape="round" routerLink="/tabs/profiles">
+      <ion-button expand="block" class="ion-margin-top mm-today-cta" shape="round" color="tertiary" routerLink="/tabs/profiles">
         <span class="material-symbols-outlined btn-lead">groups</span>
         Set up in Family
       </ion-button>
@@ -28,17 +30,23 @@
   </div>
 
   <ng-container *ngIf="doses.length > 0">
-    <div class="mm-page-intro ion-padding mm-intro-card mm-motion-enter">
-      <p class="intro-kicker">Medication schedule</p>
-      <h1 class="intro-title">{{ todayDate | date : 'EEEE, MMM d' }}</h1>
-      <p class="intro-body">
-        Below is <strong>every dose planned for today</strong>. Use <strong>Taken</strong> or <strong>Skip</strong> when
-        each time comes up, or tap a row to see details.
-      </p>
-    </div>
+    <section class="mm-today-hero mm-today-hero--text ion-padding">
+      <div class="mm-today-hero-icon">
+        <img
+          class="mm-today-hero-alarm"
+          src="assets/alarm.png"
+          width="280"
+          height="200"
+          alt=""
+        />
+      </div>
+      <p class="mm-today-kicker">Medicine reminder</p>
+      <h1 class="mm-today-title">Medicine reminder app</h1>
+      <p class="mm-today-date">{{ todayDate | date : 'EEEE, MMM d' }}</p>
+    </section>
 
-    <div class="today-hero ion-padding-horizontal">
-      <div class="progress-panel mm-card">
+    <div class="mm-today-panels ion-padding-horizontal">
+      <div class="mm-progress-compact mm-surface-cream">
         <div class="progress-title">
           <span class="material-symbols-outlined">donut_large</span>
           <span>How today is going</span>
@@ -47,9 +55,6 @@
         <p class="adherence-today" *ngIf="todaySummary && todaySummary.totalScheduled > 0">
           <span class="adherence-pct">{{ todaySummary.adherencePercent }}%</span>
           <span class="adherence-label">adherence today</span>
-          <span class="adherence-formula" title="(taken doses ÷ scheduled doses) × 100"
-            >(taken ÷ scheduled) × 100</span
-          >
         </p>
         <div class="progress-stats">
           <span class="stat taken-stat">
@@ -58,169 +63,267 @@
           </span>
           <span class="stat pending-stat" *ngIf="pendingCount > 0">
             <span class="material-symbols-outlined sm">schedule</span>
-            {{ pendingCount }} still to log
-          </span>
-          <span class="stat skip-stat" *ngIf="skippedCount > 0">
-            <span class="material-symbols-outlined sm">block</span>
-            {{ skippedCount }} skipped
-          </span>
-          <span class="stat missed-stat" *ngIf="missedCount > 0">
-            <span class="material-symbols-outlined sm">warning</span>
-            {{ missedCount }} missed
+            {{ pendingCount }} to log
           </span>
         </div>
-        <p class="progress-caption">
-          {{ takenCount }} of {{ totalCount }} scheduled doses marked <strong>taken</strong>. The bar matches adherence:
-          taken ÷ total scheduled for today.
-        </p>
       </div>
-    </div>
 
-    <div class="weekly-summary ion-padding-horizontal" *ngIf="weeklySummary">
-      <div class="weekly-summary-card mm-card">
+      <div class="mm-weekly-compact mm-surface-cream" *ngIf="weeklySummary">
         <h3 class="weekly-title">
           <span class="material-symbols-outlined weekly-ic">calendar_view_week</span>
-          This week’s summary
+          This week
         </h3>
         <p class="weekly-range">
           {{ weeklySummary.dateFrom + 'T12:00:00' | date : 'EEE MMM d' }} –
-          {{ weeklySummary.dateTo + 'T12:00:00' | date : 'EEE MMM d, y' }}
+          {{ weeklySummary.dateTo + 'T12:00:00' | date : 'MMM d' }}
         </p>
-        <dl class="weekly-stats">
-          <div class="weekly-row">
-            <dt>Total scheduled doses</dt>
-            <dd>{{ weeklySummary.totalScheduled }}</dd>
-          </div>
-          <div class="weekly-row">
-            <dt>Taken</dt>
-            <dd>{{ weeklySummary.taken }}</dd>
-          </div>
-          <div class="weekly-row">
-            <dt>Missed</dt>
-            <dd>{{ weeklySummary.missed }}</dd>
-          </div>
-          <div class="weekly-row">
-            <dt>Skipped</dt>
-            <dd>{{ weeklySummary.skipped }}</dd>
-          </div>
-          <div class="weekly-row adherence-row">
-            <dt>Adherence</dt>
-            <dd>
-              <strong *ngIf="weeklySummary.totalScheduled > 0">{{ weeklySummary.adherencePercent }}%</strong>
-              <span *ngIf="weeklySummary.totalScheduled === 0">—</span>
-            </dd>
-          </div>
-        </dl>
-        <p class="weekly-footnote" *ngIf="weeklySummary.totalScheduled > 0">
-          <span class="material-symbols-outlined tiny-ic">calculate</span>
-          (taken ÷ total scheduled) × 100 across this week (Mon–Sun).
+        <p class="weekly-adh" *ngIf="weeklySummary.totalScheduled > 0">
+          <strong>{{ weeklySummary.adherencePercent }}%</strong> adherence
         </p>
       </div>
     </div>
 
-    <!-- Pending: needs action -->
-    <section class="dose-section ion-padding-horizontal" *ngIf="pendingDoses.length > 0">
-      <div class="section-head ">
-        <h2 class="section-title">
-          <span class="material-symbols-outlined section-ic">pending_actions</span>
-          Still to take
-        </h2>
-        <p class="section-hint">These times are not logged yet — mark them when each dose happens.</p>
-      </div>
-      <ion-list lines="none" class="dose-list mm-stack">
-        <ion-item
-          *ngFor="let dose of pendingDoses"
-          lines="full"
-          class="dose-item"
-          button
-          detail="true"
-          (click)="openDose(dose)"
-        >
-          <span class="material-symbols-outlined slot-icon" slot="start">schedule</span>
-          <ion-label>
-            <h2 class="dose-time">{{ dose.time }}</h2>
-            <p class="med-line">
-              <span class="material-symbols-outlined tiny">pill</span>
-              {{ dose.medName }}
-              <span *ngIf="dose.dosageNote" class="dosage">· {{ dose.dosageNote }}</span>
-            </p>
-            <p class="profile-line">
-              <span class="label-muted">For</span>
-              {{ dose.profileName }}
-            </p>
-            <p class="refill-hint" *ngIf="runOutLine(dose) as msg">
-              <span class="material-symbols-outlined tiny">inventory_2</span>
-              {{ msg }}
-              <ion-badge *ngIf="warnRefill(dose)" color="warning">Refill soon</ion-badge>
-            </p>
-          </ion-label>
-          <div class="actions" slot="end" (click)="$event.stopPropagation()">
-            <ion-button size="small" fill="outline" color="success" (click)="mark(dose, 'taken')">
-              <span class="material-symbols-outlined btn-icon">check</span>
-              Taken
-            </ion-button>
-            <ion-button size="small" fill="outline" color="medium" (click)="mark(dose, 'skipped')">Skip</ion-button>
-            <ion-button size="small" fill="outline" color="warning" (click)="mark(dose, 'missed')">
-              <span class="material-symbols-outlined btn-icon">priority_high</span>
-              Missed
-            </ion-button>
-          </div>
+    <div class="mm-meals-wrap ion-padding-horizontal ion-margin-bottom" *ngIf="mealLogDateKey">
+      <div class="mm-meals-card mm-surface-cream">
+        <h3 class="mm-meals-title">
+          <span class="material-symbols-outlined mm-meals-title-ic" aria-hidden="true">restaurant</span>
+          Today’s meals
+          <span class="mm-meals-optional">(optional)</span>
+        </h3>
+        <p class="mm-meals-intro">
+          Quick notes if you like to remember what you ate around your doses. Saved on this device only — not nutrition
+          or medical advice.
+        </p>
+        <ion-item lines="none" class="mm-meals-field">
+          <ion-textarea
+            label="Breakfast"
+            labelPlacement="stacked"
+            [autoGrow]="true"
+            rows="2"
+            maxlength="280"
+            [(ngModel)]="mealDraft.breakfast"
+            (ionBlur)="saveMealsJournal()"
+            placeholder="e.g. Oatmeal, skipped…"
+            inputmode="text"
+            aria-label="Breakfast"
+          ></ion-textarea>
         </ion-item>
-      </ion-list>
-    </section>
-
-    <div class="caught-up ion-padding" *ngIf="pendingDoses.length === 0">
-      <div class="caught-up-card mm-card">
-        <span class="material-symbols-outlined caught-up-ic">check_circle</span>
-        <p class="caught-up-title">All doses logged for today</p>
-        <p class="caught-up-sub">You can still tap a row below to review or change a log.</p>
+        <ion-item lines="none" class="mm-meals-field">
+          <ion-textarea
+            label="Lunch"
+            labelPlacement="stacked"
+            [autoGrow]="true"
+            rows="2"
+            maxlength="280"
+            [(ngModel)]="mealDraft.lunch"
+            (ionBlur)="saveMealsJournal()"
+            placeholder="e.g. Salad, sandwich…"
+            inputmode="text"
+            aria-label="Lunch"
+          ></ion-textarea>
+        </ion-item>
+        <ion-item lines="none" class="mm-meals-field">
+          <ion-textarea
+            label="Dinner"
+            labelPlacement="stacked"
+            [autoGrow]="true"
+            rows="2"
+            maxlength="280"
+            [(ngModel)]="mealDraft.dinner"
+            (ionBlur)="saveMealsJournal()"
+            placeholder="e.g. Soup, takeout…"
+            inputmode="text"
+            aria-label="Dinner"
+          ></ion-textarea>
+        </ion-item>
       </div>
     </div>
 
-    <!-- Logged: taken or skipped -->
-    <section class="dose-section" *ngIf="loggedDoses.length > 0">
-      <div class="section-head ion-padding-horizontal">
-        <h2 class="section-title">
-          <span class="material-symbols-outlined section-ic">history</span>
-          Already logged
-        </h2>
-        <p class="section-hint">Taken, skipped, or missed — tap to open the dose log.</p>
-      </div>
-      <ion-list lines="none" class="dose-list mm-stack">
-        <ion-item
-          *ngFor="let dose of loggedDoses"
-          lines="full"
-          class="dose-item"
-          [class.taken]="dose.status === 'taken'"
-          [class.skipped]="dose.status === 'skipped'"
-          [class.missed]="dose.status === 'missed'"
-          button
-          detail="true"
-          (click)="openDose(dose)"
-        >
-          <span class="material-symbols-outlined slot-icon" slot="start">schedule</span>
-          <ion-label>
-            <h2 class="dose-time">{{ dose.time }}</h2>
-            <p class="med-line">
-              <span class="material-symbols-outlined tiny">pill</span>
-              {{ dose.medName }}
-              <span *ngIf="dose.dosageNote" class="dosage">· {{ dose.dosageNote }}</span>
+    <div class="mm-reminder-stack ion-padding">
+      <article
+        *ngFor="let dose of dosesForDeck; let i = index"
+        [class]="reminderCardClass(dose, i)"
+        [class.mm-track-overlap]="i > 0"
+        [style.z-index]="deckZIndex(i)"
+        (click)="openDose(dose)"
+      >
+        <div class="mm-track-row">
+          <div class="mm-track-main">
+            <p class="mm-track-kicker">
+              <span class="material-symbols-outlined mm-track-alarm" aria-hidden="true">alarm</span>
+              <span class="mm-track-kicker-text">{{ cardKicker(dose) }}</span>
             </p>
-            <p class="profile-line">
-              <span class="label-muted">For</span>
+            <h2 class="mm-rc-med">{{ dose.medName }}</h2>
+            <p class="mm-rc-detail">{{ instructionLine(dose) }}</p>
+            <p class="mm-track-sub">
+              <span class="material-symbols-outlined tiny" aria-hidden="true">person</span>
               {{ dose.profileName }}
+              <span class="mm-track-dot" aria-hidden="true">·</span>
+              {{ frequencyPhrase(dose) }}
             </p>
-            <p class="refill-hint" *ngIf="runOutLine(dose) as msg">
-              <span class="material-symbols-outlined tiny">inventory_2</span>
-              {{ msg }}
-              <ion-badge *ngIf="warnRefill(dose)" color="warning">Refill soon</ion-badge>
-            </p>
-          </ion-label>
-          <ion-note slot="end" *ngIf="dose.status === 'taken'" color="success">Taken</ion-note>
-          <ion-note slot="end" *ngIf="dose.status === 'skipped'" color="medium">Skipped</ion-note>
-          <ion-note slot="end" *ngIf="dose.status === 'missed'" color="warning">Missed</ion-note>
-        </ion-item>
-      </ion-list>
-    </section>
+          </div>
+          <div class="mm-track-time-col">
+            <span [class]="timePillClass(dose, i)">{{ formatTime12h(dose.time) }}</span>
+          </div>
+        </div>
+        <div class="mm-rc-actions" *ngIf="dose.status === 'pending'" (click)="$event.stopPropagation()">
+          <ion-button size="small" fill="solid" color="success" (click)="mark(dose, 'taken')">
+            <span class="material-symbols-outlined btn-icon">check</span>
+            Taken
+          </ion-button>
+          <ion-button size="small" fill="outline" color="light" class="mm-rc-skip" (click)="mark(dose, 'skipped')">
+            Skip
+          </ion-button>
+          <ion-button size="small" fill="outline" color="warning" (click)="mark(dose, 'missed')">
+            <span class="material-symbols-outlined btn-icon">priority_high</span>
+            Missed
+          </ion-button>
+        </div>
+        <div class="mm-rc-logged" *ngIf="dose.status !== 'pending'">
+          <span class="mm-rc-pill" [class.mm-rc-taken]="dose.status === 'taken'" [class.mm-rc-skip]="dose.status === 'skipped'">
+            <span class="material-symbols-outlined sm" *ngIf="dose.status === 'taken'">check</span>
+            {{ dose.status === 'taken' ? 'Taken' : dose.status === 'skipped' ? 'Skipped' : 'Missed' }}
+          </span>
+        </div>
+      </article>
+    </div>
   </ng-container>
 </ion-content>
+
+<!-- Full-screen detail: expands from stack; background matches tapped card tone -->
+<div
+  class="mm-expanded-root"
+  *ngIf="expandedDose as dose"
+  role="dialog"
+  aria-modal="true"
+  [attr.aria-label]="dose.medName + ' details'"
+>
+  <div
+    [class]="'mm-expanded-panel ' + expandedToneClass()"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="mm-expanded-toolbar">
+      <ion-button
+        type="button"
+        fill="clear"
+        class="mm-expanded-back"
+        (click)="closeExpanded()"
+        aria-label="Close"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+      </ion-button>
+      <h2 class="mm-expanded-title">Medicine</h2>
+      <ion-button
+        type="button"
+        fill="clear"
+        class="mm-expanded-edit"
+        (click)="openEditMedication(dose)"
+        aria-label="Edit medication details"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+      </ion-button>
+    </header>
+
+    <div class="mm-expanded-body ion-padding">
+      <p class="mm-expanded-kicker">{{ cardKicker(dose) }}</p>
+      <h1 class="mm-expanded-name">{{ dose.medName }}</h1>
+      <p class="mm-expanded-desc">
+        {{
+          dose.dosageNote ||
+            'Follow the label or your clinician’s directions. Tap below when you’ve taken this dose.'
+        }}
+      </p>
+
+      <div class="mm-expanded-chips" *ngIf="expandedMedication() as med">
+        <span class="mm-xp-chip" *ngIf="estimatedDaysRemainingMed(med) as days">
+          <span class="material-symbols-outlined mm-xp-chip-ic" aria-hidden="true">calendar_month</span>
+          {{ days }}
+        </span>
+        <span class="mm-xp-chip">
+          <span class="material-symbols-outlined mm-xp-chip-ic" aria-hidden="true">schedule</span>
+          {{ formatTimesList(med) }}
+        </span>
+        <span class="mm-xp-chip">
+          <span class="material-symbols-outlined mm-xp-chip-ic" aria-hidden="true">repeat</span>
+          {{ frequencyPhraseMed(med) }}
+        </span>
+        <span class="mm-xp-chip" *ngIf="kindLabel(med) as kl">
+          <span class="material-symbols-outlined mm-xp-chip-ic" aria-hidden="true">category</span>
+          {{ kl }}
+        </span>
+      </div>
+
+      <p class="mm-expanded-profile">
+        <span class="material-symbols-outlined tiny" aria-hidden="true">person</span>
+        {{ dose.profileName }}
+      </p>
+
+      <div class="mm-expanded-refill" *ngIf="runOutLine(dose) as msg">
+        <p class="mm-expanded-refill-line">
+          <span class="material-symbols-outlined tiny" aria-hidden="true">inventory_2</span>
+          {{ msg }}
+          <ion-badge *ngIf="warnRefill(dose)" color="warning">Refill soon</ion-badge>
+        </p>
+      </div>
+
+      <ion-button
+        type="button"
+        expand="block"
+        fill="clear"
+        class="mm-expanded-edit-row"
+        (click)="openEditMedication(dose)"
+      >
+        <span class="material-symbols-outlined btn-lead" aria-hidden="true">tune</span>
+        Edit times, dose &amp; stock
+      </ion-button>
+
+      <div class="mm-expanded-actions" *ngIf="dose.status === 'pending'">
+        <ion-button expand="block" size="large" color="dark" (click)="markExpanded('taken')">
+          <span class="material-symbols-outlined btn-ic" aria-hidden="true">check</span>
+          Medicine taken
+        </ion-button>
+        <ion-button expand="block" fill="outline" color="light" class="mm-xp-outline" (click)="markExpanded('skipped')">
+          <span class="material-symbols-outlined btn-ic" aria-hidden="true">block</span>
+          Skip this dose
+        </ion-button>
+        <ion-button expand="block" fill="outline" color="warning" (click)="markExpanded('missed')">
+          <span class="material-symbols-outlined btn-ic" aria-hidden="true">priority_high</span>
+          Mark as missed
+        </ion-button>
+      </div>
+
+      <div class="mm-xp-status" *ngIf="dose.status === 'taken'">
+        <span class="material-symbols-outlined mm-xp-done-ic" aria-hidden="true">check_circle</span>
+        <div>
+          <h3 class="mm-xp-status-h">Marked as taken</h3>
+          <p class="mm-xp-status-p">You can change this below if you tapped by mistake.</p>
+        </div>
+        <ion-button expand="block" fill="clear" color="light" (click)="markExpanded('skipped')">Change to skipped</ion-button>
+      </div>
+
+      <div class="mm-xp-status" *ngIf="dose.status === 'skipped'">
+        <span class="material-symbols-outlined mm-xp-skip-ic" aria-hidden="true">block</span>
+        <div>
+          <h3 class="mm-xp-status-h">Skipped</h3>
+          <p class="mm-xp-status-p">You can mark as taken if that was a mistake.</p>
+        </div>
+        <ion-button expand="block" fill="clear" color="success" (click)="markExpanded('taken')">Mark as taken</ion-button>
+      </div>
+
+      <div class="mm-xp-status" *ngIf="dose.status === 'missed'">
+        <span class="material-symbols-outlined mm-xp-miss-ic" aria-hidden="true">warning</span>
+        <div>
+          <h3 class="mm-xp-status-h">Missed</h3>
+          <p class="mm-xp-status-p">You can correct the log below.</p>
+        </div>
+        <ion-button expand="block" fill="clear" color="success" (click)="markExpanded('taken')">Mark as taken</ion-button>
+        <ion-button expand="block" fill="clear" color="light" (click)="markExpanded('skipped')">Change to skipped</ion-button>
+      </div>
+
+      <p class="mm-expanded-footnote">
+        <span class="material-symbols-outlined" aria-hidden="true">info</span>
+        This is your personal log. It does not replace medical advice.
+      </p>
+    </div>
+  </div>
+</div>

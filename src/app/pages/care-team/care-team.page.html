@@ -1,0 +1,96 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/settings" text="Settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Care team</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="care-team-page mm-gradient-bg">
+  <div class="form-hero ion-padding">
+    <span class="material-symbols-outlined hero-icon">stethoscope</span>
+    <h1>Invite your clinician</h1>
+    <p class="subtitle">
+      We’re planning a way for you to invite doctors, nurses, or pharmacists to view <strong>read-only</strong> adherence
+      summaries — so they can see whether reminders are helping, not to replace your medical record.
+    </p>
+  </div>
+
+  <section class="two-views ion-padding-horizontal" aria-labelledby="two-views-heading">
+    <h2 id="two-views-heading" class="two-views-h">Two separate experiences</h2>
+    <p class="two-views-lead">
+      Patients and clinicians would use <strong>different apps / sign-ins</strong> — your data wouldn’t be mixed with a
+      hospital login you already have unless we build that integration later.
+    </p>
+    <div class="two-views-grid">
+      <div class="role-card role-card--patient">
+        <span class="material-symbols-outlined role-card-ic" aria-hidden="true">person</span>
+        <h3 class="role-card-title">Patient</h3>
+        <p class="role-card-body">
+          <strong>This MedMinder app</strong> (what you’re using now). You add people and medicines, get reminders, log
+          doses, and — when we ship it — create invites for your care team.
+        </p>
+      </div>
+      <div class="role-card role-card--clinician">
+        <span class="material-symbols-outlined role-card-ic" aria-hidden="true">badge</span>
+        <h3 class="role-card-title">Clinician</h3>
+        <p class="role-card-body">
+          <strong>Planned separate clinician portal</strong> (often a website; could be a dedicated app later).
+          Verified doctors, nurses, or pharmacists sign in there and see <strong>only</strong> read-only summaries for
+          patients who invited them — not a replacement for your EHR.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <ion-list inset="true" lines="none" class="form-card ion-margin-horizontal">
+    <ion-item class="legal-item" lines="none">
+      <span class="material-symbols-outlined input-lead" slot="start">schedule</span>
+      <ion-text class="ion-text-wrap">
+        <p>
+          <strong>Planned experience:</strong> You’d generate a secure invite (link or code) from MedMinder. Your care
+          team would sign in through a separate clinician experience and see high-level progress — for example, how
+          often doses were logged as taken — for the profiles you choose to share.
+        </p>
+      </ion-text>
+    </ion-item>
+  </ion-list>
+
+  <ion-list inset="true" lines="none" class="form-card ion-margin-horizontal ion-margin-top">
+    <ion-item class="legal-item" lines="none">
+      <span class="material-symbols-outlined input-lead" slot="start">shield_lock</span>
+      <ion-text class="ion-text-wrap">
+        <p>
+          <strong>Privacy:</strong> Real clinician access needs identity verification, consent, and appropriate agreements
+          (for example where applicable, HIPAA and business associate rules). Until that’s built, <strong>no one can
+            view your MedMinder data</strong> except you when logged in on your account.
+        </p>
+      </ion-text>
+    </ion-item>
+  </ion-list>
+
+  <ion-list inset="true" lines="none" class="form-card ion-margin-horizontal ion-margin-top">
+    <ion-item class="legal-item" lines="none">
+      <span class="material-symbols-outlined input-lead" slot="start">construction</span>
+      <ion-text class="ion-text-wrap">
+        <p>
+          <strong>Status:</strong> Invites and the clinician portal are <strong>not available yet</strong>. This screen
+          is here so you know what we’re working toward. Check release notes or app updates later.
+        </p>
+      </ion-text>
+    </ion-item>
+  </ion-list>
+
+  <ion-list inset="true" lines="none" class="form-card ion-margin-horizontal ion-margin-top">
+    <ion-item class="legal-item" lines="none">
+      <span class="material-symbols-outlined input-lead" slot="start">medical_information</span>
+      <ion-text class="ion-text-wrap">
+        <p>
+          <strong>Reminder:</strong> MedMinder does not provide medical advice. Any sharing in the future would be for
+          adherence context only — treatment decisions stay between you and your licensed providers.
+        </p>
+      </ion-text>
+    </ion-item>
+  </ion-list>
+</ion-content>

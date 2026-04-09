@@ -1,19 +1,23 @@
-/* ion-content.settings-form uses mm-gradient-bg for --background */
+.settings-screen {
+  --padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+}
 
 .form-hero {
   text-align: center;
-  padding-bottom: 0.35rem;
+  padding-bottom: 0.5rem;
 
   .hero-icon {
-    font-size: 3rem;
-    opacity: 0.48;
+    font-size: 2.75rem;
+    opacity: 0.45;
     display: block;
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.5rem;
+    color: var(--ion-color-primary);
   }
 
   h1 {
-    font-size: 1.45rem;
-    margin: 0 0 0.4rem;
+    font-family: var(--mm-font-heading);
+    font-size: 1.5rem;
+    margin: 0 0 0.35rem;
     font-weight: 700;
     letter-spacing: -0.02em;
     color: var(--ion-text-color);
@@ -21,9 +25,9 @@
 
   .subtitle {
     margin: 0;
-    color: var(--mm-text-muted, rgba(18, 10, 36, 0.72));
-    font-size: 1rem;
-    line-height: 1.5;
+    color: var(--mm-text-muted);
+    font-size: 0.98rem;
+    line-height: 1.45;
   }
 }
 
@@ -32,78 +36,138 @@
   overflow: hidden;
   border: 1px solid var(--ion-border-color);
   box-shadow: var(--mm-shadow-card);
+  background: var(--ion-card-background);
+}
+
+.mm-settings-card {
+  margin-top: 0.5rem;
 }
 
 .section-ic {
   vertical-align: -4px;
   margin-inline-end: 8px;
-  font-size: 1.25rem;
-  opacity: 0.85;
+  font-size: 1.2rem;
+  opacity: 0.88;
   color: var(--ion-color-primary);
 }
 
 .input-lead {
-  margin-inline-end: 6px;
-  opacity: 0.75;
-  font-size: 1.35rem;
+  margin-inline-end: 8px;
+  opacity: 0.8;
+  font-size: 1.3rem;
+  color: var(--ion-color-primary);
 }
 
-.field-row {
-  h3 {
-    margin: 0 0 0.3rem;
-    font-size: 1.05rem;
+ion-list-header {
+  padding-top: 12px;
+  padding-bottom: 8px;
+
+  ion-label {
+    font-family: var(--mm-font-heading);
+    font-size: 0.95rem;
     font-weight: 700;
+    letter-spacing: 0.02em;
     color: var(--ion-text-color);
   }
-
-  p {
-    margin: 0;
-    font-size: 0.98rem;
-    line-height: 1.45;
-    color: var(--mm-text-muted, rgba(18, 10, 36, 0.78));
-  }
 }
 
-.cta-row {
-  --padding-start: 0;
-  --inner-padding-end: 0;
-  --inner-padding-start: 0;
+.mm-settings-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --inner-padding-end: 8px;
+  --min-height: 52px;
 }
 
-.full-width-btn {
-  width: 100%;
-  margin: 0.5rem 0 0.25rem;
+.mm-settings-label {
+  margin: 0 0 0.2rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mm-text-muted);
+}
+
+.mm-settings-value {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.45;
+  font-weight: 600;
+  color: var(--ion-text-color);
+}
+
+.mm-plan-pill {
+  display: inline-block;
+  margin-top: 2px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  background: var(--mm-surface-pill);
+  color: var(--ion-text-color);
+}
+
+.mm-plan-pill--plus {
+  background: rgba(var(--ion-color-tertiary-rgb), 0.18);
+  color: var(--ion-color-tertiary-shade);
+}
+
+.mm-settings-actions {
+  padding: 4px 16px 16px;
+}
+
+.mm-settings-btn {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.mm-settings-btn[color='tertiary'] {
+  --box-shadow: 0 4px 14px rgba(var(--ion-color-tertiary-rgb), 0.28);
 }
 
 .btn-ic {
   margin-inline-end: 8px;
-  vertical-align: -3px;
+  vertical-align: -4px;
   font-size: 1.2rem;
 }
 
-.legal-item {
+.mm-settings-footnote-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --min-height: auto;
+}
+
+.mm-settings-footnote {
+  display: block;
+  margin: 0;
+  padding: 0 0 12px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.mm-settings-legal {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 4px;
+  --padding-bottom: 16px;
   align-items: flex-start;
 
   p {
     margin: 0;
-    font-size: 0.9rem;
-    line-height: 1.45;
-    opacity: 0.9;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: var(--mm-text-muted);
   }
 }
 
 .version-block {
   text-align: center;
+  padding-top: 0.25rem;
 }
 
 .version {
   margin: 0;
-  font-size: 0.85rem;
-  opacity: 0.55;
-}
-
-.mono {
   font-size: 0.8rem;
-  word-break: break-all;
-  opacity: 0.85;
+  opacity: 0.5;
 }

@@ -15,7 +15,7 @@
         alt=""
       />
       <h2 class="mm-empty-title">No profiles yet</h2>
-      <p class="mm-empty-copy">Add yourself or a family member — each person gets their own medication list and reminders.</p>
+      <p class="mm-empty-copy">Create a profile to add medications and get reminders.</p>
       <ion-button expand="block" class="ion-margin-top" shape="round" type="button" (click)="goAddProfile()">
         <span class="material-symbols-outlined btn-ic">person_add</span>
         Add profile
@@ -41,20 +41,19 @@
           {{ medCount(p.id) }} medication<span *ngIf="medCount(p.id) !== 1">s</span>
         </p>
       </ion-label>
-      <ion-button
-        slot="end"
-        fill="clear"
-        color="danger"
-        (click)="deleteProfile(p, $event)"
-        aria-label="Remove profile"
-      >
-        <span class="material-symbols-outlined">delete</span>
-      </ion-button>
+      <ion-buttons slot="end">
+        <ion-button fill="clear" type="button" (click)="editProfile(p, $event)" aria-label="Edit profile">
+          <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+        </ion-button>
+        <ion-button fill="clear" color="danger" type="button" (click)="deleteProfile(p, $event)" aria-label="Remove profile">
+          <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+        </ion-button>
+      </ion-buttons>
     </ion-item>
   </ion-list>
 
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button color="primary" type="button" (click)="goAddProfile()" aria-label="Add profile">
+  <ion-fab *ngIf="subscription.canAddProfile(profiles.length)" slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button color="tertiary" type="button" (click)="goAddProfile()" aria-label="Add profile">
       <span class="material-symbols-outlined fab-icon">person_add</span>
     </ion-fab-button>
   </ion-fab>

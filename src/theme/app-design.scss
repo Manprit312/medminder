@@ -5,28 +5,48 @@
   --mm-radius-md: 18px;
   --mm-radius-lg: 24px;
   --mm-radius-xl: 28px;
-  --mm-shadow-card: 0 2px 4px rgba(15, 23, 42, 0.04), 0 8px 24px -4px rgba(76, 29, 149, 0.12);
-  --mm-shadow-soft: 0 2px 10px rgba(15, 23, 42, 0.05);
-  --mm-shadow-lift: 0 12px 40px -12px rgba(76, 29, 149, 0.18);
+  --mm-button-radius: 22px;
+  --mm-button-radius-round: 9999px;
+  --mm-button-shadow-primary: 0 4px 16px rgba(var(--ion-color-primary-rgb), 0.28);
+  --mm-button-shadow-tertiary: 0 6px 22px rgba(var(--ion-color-tertiary-rgb), 0.38);
+  --mm-button-shadow-success: 0 4px 14px rgba(var(--ion-color-success-rgb), 0.3);
+  --mm-shadow-card:
+    0 2px 4px rgba(26, 26, 26, 0.04),
+    0 8px 24px -4px rgba(95, 105, 86, 0.12);
+  --mm-shadow-soft: 0 2px 10px rgba(26, 26, 26, 0.06);
+  --mm-shadow-lift: 0 12px 40px -12px rgba(95, 105, 86, 0.2);
   --mm-page-gradient: linear-gradient(
     168deg,
-    rgba(var(--ion-color-primary-rgb), 0.09) 0%,
-    rgba(var(--ion-color-primary-rgb), 0.03) 28%,
+    rgba(var(--ion-color-primary-rgb), 0.1) 0%,
+    rgba(var(--ion-color-primary-rgb), 0.04) 28%,
     var(--ion-background-color) 52%
   );
   --mm-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --mm-duration: 0.28s;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --mm-shadow-card: 0 8px 32px rgba(0, 0, 0, 0.35);
-    --mm-page-gradient: linear-gradient(
-      165deg,
-      rgba(var(--ion-color-primary-rgb), 0.18) 0%,
-      var(--ion-background-color) 50%
-    );
-  }
+/* Headings — Fraunces (serif), body inherits DM Sans from Ionic */
+ion-toolbar ion-title,
+.mm-empty-title,
+.intro-title,
+.section-title,
+.weekly-title,
+.progress-title,
+.caught-up-title,
+app-profile-detail h1,
+app-medication-form ion-title {
+  font-family: var(--mm-font-heading);
+  font-optical-sizing: auto;
+}
+
+.intro-title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.mm-empty-title {
+  font-family: var(--mm-font-heading);
+  font-weight: 700;
 }
 
 ion-toolbar {
@@ -49,6 +69,64 @@ ion-content {
 ion-label,
 ion-item {
   font-size: 1rem;
+}
+
+/* —— Buttons: earthy theme (rounded, DM Sans, olive / orange / sage) —— */
+ion-button {
+  --border-radius: var(--mm-button-radius);
+  text-transform: none;
+  font-family: var(--ion-font-family);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  -webkit-font-smoothing: antialiased;
+}
+
+ion-button[shape='round'] {
+  --border-radius: var(--mm-button-radius-round);
+}
+
+ion-button[size='small'] {
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  min-height: 40px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+ion-button[fill='outline'] {
+  --border-width: 2px;
+  font-weight: 600;
+}
+
+ion-button[fill='clear'] {
+  font-weight: 600;
+}
+
+ion-button[fill='solid'][color='primary'] {
+  --box-shadow: var(--mm-button-shadow-primary);
+}
+
+ion-button[fill='solid'][color='tertiary'] {
+  --box-shadow: var(--mm-button-shadow-tertiary);
+}
+
+ion-button[fill='solid'][color='success'] {
+  --box-shadow: var(--mm-button-shadow-success);
+}
+
+ion-button[fill='solid'][color='dark'] {
+  --box-shadow: 0 4px 18px rgba(var(--ion-color-dark-rgb), 0.35);
+}
+
+ion-toolbar ion-button {
+  --border-radius: 14px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+ion-back-button {
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 /* —— Block CTAs: large, comfortable tap targets —— */
@@ -130,14 +208,7 @@ ion-button[expand='block'] {
   display: block;
   margin: 0 auto 1.35rem;
   border-radius: var(--mm-radius-lg);
-  filter: drop-shadow(0 14px 32px rgba(var(--ion-color-primary-rgb), 0.18));
-}
-
-@media (prefers-color-scheme: dark) {
-  .mm-empty-art {
-    filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.45));
-    opacity: 0.96;
-  }
+  filter: drop-shadow(0 14px 32px rgba(var(--ion-color-primary-rgb), 0.2));
 }
 
 .mm-empty-title {
@@ -152,7 +223,7 @@ ion-button[expand='block'] {
   margin: 0;
   font-size: 1.02rem;
   line-height: 1.6;
-  color: var(--mm-text-muted, rgba(18, 10, 36, 0.78));
+  color: var(--mm-text-muted);
   text-align: center;
 }
 
@@ -191,7 +262,7 @@ ion-button[expand='block'] {
 .mm-intro-card {
   margin: 12px 16px 4px;
   border-radius: var(--mm-radius-md);
-  background: rgba(var(--ion-color-primary-rgb), 0.08);
+  background: rgba(var(--ion-color-primary-rgb), 0.1);
   border: 1px solid var(--ion-border-color);
   box-shadow: var(--mm-shadow-soft);
 }
@@ -223,7 +294,7 @@ ion-button[expand='block'] {
     margin: 0;
     font-size: 1.02rem;
     line-height: 1.55;
-    color: var(--mm-text-muted, rgba(18, 10, 36, 0.72));
+    color: var(--mm-text-muted);
   }
 }
 
@@ -253,7 +324,7 @@ ion-button[expand='block'] {
   margin: 0;
   font-size: 0.95rem;
   line-height: 1.5;
-  color: var(--mm-text-muted, rgba(18, 10, 36, 0.72));
+  color: var(--mm-text-muted);
 }
 
 /* Medication form: icon + label row */
@@ -286,6 +357,7 @@ app-medication-form .section-head {
 }
 
 .mm-stack ion-item ion-label h2 {
+  font-family: var(--mm-font-heading);
   font-size: 1.125rem;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -297,10 +369,12 @@ app-medication-form .section-head {
   opacity: 0.88;
 }
 
-/* FAB: larger tap target */
+/* FAB: larger tap target — tertiary = orange accent (reference UI) */
 ion-fab-button {
   width: 58px;
   height: 58px;
+  --border-radius: 18px;
+  --box-shadow: var(--mm-button-shadow-tertiary);
 }
 
 /* Today: adherence headline + weekly summary (keeps today.page.scss budget small) */
@@ -550,4 +624,255 @@ app-dose-log .big-actions {
 app-dose-log .big-actions ion-button {
   min-height: 44px;
   font-weight: 600;
+}
+
+/* Today: full-screen expand from stack (same tone as tapped card) */
+.mm-expanded-root {
+  position: fixed;
+  inset: 0;
+  z-index: 25000;
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+}
+
+.mm-expanded-panel {
+  flex: 1;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform-origin: 50% 85%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mm-expanded-panel {
+    animation: mm-expanded-grow 0.42s var(--mm-ease-out) both;
+  }
+}
+
+@keyframes mm-expanded-grow {
+  0% {
+    opacity: 0.96;
+    transform: scale(0.88);
+    border-radius: 40px;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    border-radius: 0;
+  }
+}
+
+.mm-expanded-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: calc(10px + env(safe-area-inset-top)) 12px 12px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.mm-rc-cream .mm-expanded-toolbar {
+  border-bottom-color: rgba(26, 26, 26, 0.08);
+}
+
+.mm-expanded-back {
+  --color: inherit;
+  margin: 0;
+  min-height: 44px;
+}
+
+.mm-expanded-title {
+  flex: 1;
+  margin: 0;
+  text-align: center;
+  font-family: var(--mm-font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.mm-expanded-toolbar-spacer {
+  width: 48px;
+  flex-shrink: 0;
+}
+
+.mm-expanded-edit {
+  --color: inherit;
+  margin: 0;
+  min-width: 48px;
+  min-height: 44px;
+}
+
+.mm-expanded-body {
+  flex: 1;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  max-width: 520px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.mm-expanded-kicker {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.92;
+}
+
+.mm-expanded-name {
+  margin: 0 0 0.65rem;
+  font-family: var(--mm-font-heading);
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.mm-expanded-desc {
+  margin: 0 0 1rem;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  opacity: 0.94;
+}
+
+.mm-expanded-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 0.75rem;
+}
+
+.mm-xp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.mm-rc-cream .mm-xp-chip {
+  background: var(--mm-surface-pill);
+  border: 1px solid rgba(95, 105, 86, 0.2);
+  color: var(--ion-text-color);
+}
+
+.mm-xp-chip-ic {
+  font-size: 1.05rem;
+  opacity: 0.9;
+}
+
+.mm-expanded-profile {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.9;
+}
+
+.mm-expanded-refill-line {
+  margin: 0 0 1rem;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.mm-rc-cream .mm-expanded-refill-line {
+  background: rgba(var(--ion-color-warning-rgb), 0.12);
+  border: 1px solid rgba(var(--ion-color-warning-rgb), 0.25);
+}
+
+.mm-expanded-edit-row {
+  margin: 0 0 0.85rem;
+  --color: inherit;
+  font-weight: 600;
+  min-height: 44px;
+
+  .btn-lead {
+    margin-inline-end: 8px;
+    vertical-align: -4px;
+    font-size: 1.25rem;
+    opacity: 0.9;
+  }
+}
+
+.mm-expanded-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 0.5rem;
+}
+
+.mm-xp-outline {
+  --border-color: rgba(255, 255, 255, 0.55);
+  --color: inherit;
+}
+
+.mm-rc-cream .mm-xp-outline {
+  --border-color: var(--ion-color-medium);
+  --color: var(--ion-text-color);
+}
+
+.mm-xp-status {
+  margin-top: 0.75rem;
+  padding: 14px;
+  border-radius: var(--mm-radius-md);
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.mm-rc-cream .mm-xp-status {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(26, 26, 26, 0.08);
+  color: var(--ion-text-color);
+}
+
+.mm-xp-status-h {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  font-family: var(--mm-font-heading);
+}
+
+.mm-xp-status-p {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.mm-xp-done-ic {
+  font-size: 2rem;
+  color: var(--ion-color-success-tint);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.mm-xp-skip-ic,
+.mm-xp-miss-ic {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  display: block;
+  opacity: 0.9;
+}
+
+.mm-expanded-footnote {
+  margin: 1.25rem 0 0;
+  font-size: 0.82rem;
+  opacity: 0.72;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  line-height: 1.45;
+}
+
+.mm-rc-cream .mm-expanded-footnote {
+  color: var(--mm-text-muted);
 }

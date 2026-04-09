@@ -35,6 +35,15 @@
   line-height: 1.45;
 }
 
+.readonly-label {
+  margin: 0 0 0.2rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.65;
+}
+
 .form-card {
   margin-top: 0.5rem;
   border-radius: 12px;

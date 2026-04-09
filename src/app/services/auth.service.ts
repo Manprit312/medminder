@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { getApiUrl } from '../../environments/api-url';
+import { withApiTimeout } from '../shared/http-api-timeout';
 import { TokenStorageService } from './token-storage.service';
 
 @Injectable({ providedIn: 'root' })
@@ -25,9 +26,11 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<void> {
     const res = await firstValueFrom(
-      this.http.post<{ token: string; user: { email: string } }>(
-        `${getApiUrl()}/api/auth/login`,
-        { email: email.trim().toLowerCase(), password }
+      withApiTimeout(
+        this.http.post<{ token: string; user: { email: string } }>(
+          `${getApiUrl()}/api/auth/login`,
+          { email: email.trim().toLowerCase(), password }
+        )
       )
     );
     await this.tokens.setSession(res.token, res.user.email);
@@ -35,9 +38,11 @@ export class AuthService {
 
   async register(email: string, password: string): Promise<void> {
     const res = await firstValueFrom(
-      this.http.post<{ token: string; user: { email: string } }>(
-        `${getApiUrl()}/api/auth/register`,
-        { email: email.trim().toLowerCase(), password }
+      withApiTimeout(
+        this.http.post<{ token: string; user: { email: string } }>(
+          `${getApiUrl()}/api/auth/register`,
+          { email: email.trim().toLowerCase(), password }
+        )
       )
     );
     await this.tokens.setSession(res.token, res.user.email);
@@ -50,9 +55,11 @@ export class AuthService {
   /** Request a password-reset email (backend sends mail when SMTP is configured). */
   async requestPasswordReset(email: string): Promise<{ devResetUrl?: string }> {
     return firstValueFrom(
-      this.http.post<{ ok?: boolean; message?: string; devResetUrl?: string }>(
-        `${getApiUrl()}/api/auth/forgot-password`,
-        { email: email.trim().toLowerCase() }
+      withApiTimeout(
+        this.http.post<{ ok?: boolean; message?: string; devResetUrl?: string }>(
+          `${getApiUrl()}/api/auth/forgot-password`,
+          { email: email.trim().toLowerCase() }
+        )
       )
     );
   }
@@ -60,9 +67,11 @@ export class AuthService {
   /** Complete reset using the token from the email link. */
   async resetPassword(token: string, password: string): Promise<void> {
     await firstValueFrom(
-      this.http.post<{ ok?: boolean; message?: string }>(
-        `${getApiUrl()}/api/auth/reset-password`,
-        { token: token.trim(), password }
+      withApiTimeout(
+        this.http.post<{ ok?: boolean; message?: string }>(
+          `${getApiUrl()}/api/auth/reset-password`,
+          { token: token.trim(), password }
+        )
       )
     );
   }

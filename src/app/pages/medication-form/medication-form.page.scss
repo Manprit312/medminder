@@ -2,6 +2,80 @@
   --background: var(--mm-page-gradient);
 }
 
+.mm-medico-form .mm-type-step {
+  max-width: 440px;
+  margin: 0 auto;
+  padding-top: 0.5rem;
+}
+
+.mm-type-heading {
+  margin: 0 0 0.5rem;
+  font-family: var(--mm-font-heading);
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ion-text-color);
+}
+
+.mm-type-lead {
+  margin: 0 0 1.25rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--mm-text-muted);
+}
+
+.mm-type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.mm-type-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 120px;
+  padding: 16px 12px;
+  border: 2px solid var(--ion-border-color);
+  border-radius: var(--mm-radius-lg);
+  background: var(--ion-card-background);
+  box-shadow: var(--mm-shadow-soft);
+  cursor: pointer;
+  font: inherit;
+  color: var(--ion-text-color);
+  transition:
+    border-color 0.2s var(--mm-ease-out),
+    box-shadow 0.2s var(--mm-ease-out);
+}
+
+.mm-type-cell:focus-visible {
+  outline: 2px solid var(--ion-color-tertiary);
+  outline-offset: 2px;
+}
+
+.mm-type-selected {
+  border-color: var(--ion-color-primary);
+  box-shadow: var(--mm-shadow-card);
+}
+
+.mm-type-ic {
+  font-size: 2.25rem;
+  color: var(--ion-color-primary-shade);
+  opacity: 0.95;
+}
+
+.mm-type-label {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.mm-type-next {
+  --box-shadow: 0 8px 24px rgba(var(--ion-color-tertiary-rgb), 0.35);
+}
+
 .form-hero {
   text-align: center;
   padding-bottom: 0.35rem;

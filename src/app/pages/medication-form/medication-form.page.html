@@ -1,10 +1,16 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-back-button [defaultHref]="backHref()" text="Back"></ion-back-button>
+      <ion-back-button *ngIf="!isAdd || addStep === 1" [defaultHref]="backHref()" text="Back"></ion-back-button>
+      <ion-button *ngIf="isAdd && addStep === 2" type="button" (click)="backToTypeStep()" aria-label="Back to medicine type">
+        <span class="material-symbols-outlined" slot="start">arrow_back</span>
+        Add medicine
+      </ion-button>
     </ion-buttons>
-    <ion-title>{{ isAdd ? 'Add medication' : 'Edit medication' }}</ion-title>
-    <ion-buttons slot="end">
+    <ion-title>{{
+      isAdd ? (addStep === 1 ? 'Choose medicine type' : 'Add medication') : 'Edit medication'
+    }}</ion-title>
+    <ion-buttons slot="end" *ngIf="(!isAdd || addStep === 2) && profile">
       <ion-button strong="true" (click)="save()" [disabled]="!formName.trim()">
         <span class="material-symbols-outlined" slot="start">save</span>
         Save
@@ -13,14 +19,38 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="form-screen" *ngIf="profile">
-  <div class="form-hero ion-padding">
-    <span class="material-symbols-outlined hero-icon">pill</span>
-    <h1>{{ isAdd ? 'New medication' : 'Update details' }}</h1>
-    <p class="subtitle">For <strong>{{ profile.name }}</strong></p>
+<ion-content [fullscreen]="true" class="form-screen mm-medico-form" *ngIf="profile">
+  <!-- Step 1 — reference “Choose Medicine Type” -->
+  <div class="mm-type-step ion-padding" *ngIf="isAdd && addStep === 1">
+    <h1 class="mm-type-heading">Choose medicine type</h1>
+    <p class="mm-type-lead">Pick the format that matches what you’re adding.</p>
+    <div class="mm-type-grid" role="list">
+      <button
+        type="button"
+        class="mm-type-cell"
+        *ngFor="let opt of typeOptions"
+        [class.mm-type-selected]="formKind === opt.id"
+        (click)="selectKind(opt.id)"
+        role="listitem"
+      >
+        <span class="material-symbols-outlined mm-type-ic" aria-hidden="true">{{ opt.icon }}</span>
+        <span class="mm-type-label">{{ opt.label }}</span>
+      </button>
+    </div>
+    <ion-button expand="block" size="large" color="tertiary" class="mm-type-next" [disabled]="!formKind" (click)="goTypeNext()">
+      Next
+      <span class="material-symbols-outlined" slot="end">arrow_forward</span>
+    </ion-button>
   </div>
 
-  <form (ngSubmit)="save()">
+  <!-- Step 2 / edit -->
+  <form (ngSubmit)="save()" *ngIf="!isAdd || addStep === 2">
+    <div class="form-hero ion-padding">
+      <span class="material-symbols-outlined hero-icon">pill</span>
+      <h1>{{ isAdd ? 'New medication' : 'Update details' }}</h1>
+      <p class="subtitle">For <strong>{{ profile.name }}</strong></p>
+    </div>
+
     <ion-list inset="true" lines="none" class="form-card">
       <ion-item>
         <span class="material-symbols-outlined input-lead" slot="start">medication</span>

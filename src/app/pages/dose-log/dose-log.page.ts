@@ -48,6 +48,61 @@ export class DoseLogPage implements ViewWillEnter {
     return this.medData.getMedicationById(this.medicationId);
   }
 
+  formatTime12h(time: string): string {
+    const [h, m] = time.split(':').map(Number);
+    const d = new Date();
+    d.setHours(h, m ?? 0, 0, 0);
+    return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  }
+
+  formatTimesList(med: Medication | undefined): string {
+    if (!med?.times?.length) {
+      return '—';
+    }
+    return med.times.map((t) => this.formatTime12h(t)).join(' · ');
+  }
+
+  frequencyPhrase(med: Medication | undefined): string {
+    const n = med?.times?.length ?? 0;
+    if (n <= 0) {
+      return '—';
+    }
+    const labels = ['Once', 'Twice', 'Three times', 'Four times', 'Five times', 'Six times'];
+    if (n <= 6) {
+      return `${labels[n - 1]} a day`;
+    }
+    return `${n} times a day`;
+  }
+
+  kindLabel(med: Medication | undefined): string | null {
+    if (!med?.kind) {
+      return null;
+    }
+    const map: Record<string, string> = {
+      tablet: 'Tablet',
+      capsule: 'Capsule',
+      injection: 'Injection',
+      other: 'Other',
+    };
+    return map[med.kind] ?? med.kind;
+  }
+
+  /** Rough supply duration when refill data exists */
+  estimatedDaysRemaining(med: Medication | undefined): string | null {
+    if (!med || med.remainingQuantity == null || !med.times?.length) {
+      return null;
+    }
+    const perDay = med.times.length * (med.pillsPerIntake ?? 1);
+    if (perDay <= 0) {
+      return null;
+    }
+    const days = Math.floor(med.remainingQuantity / perDay);
+    if (days <= 0) {
+      return null;
+    }
+    return `${days} days`;
+  }
+
   async mark(status: 'taken' | 'skipped' | 'missed'): Promise<void> {
     if (!this.dose) {
       return;

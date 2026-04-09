@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, ViewWillEnter } from '@ionic/angular';
 import { Medication, Profile } from '../../models/med.models';
+import { patientContextTips } from '../../shared/patient-context-tips';
 import { MedDataService } from '../../services/med-data.service';
 import { MedExternalLinksService } from '../../services/med-external-links.service';
 import { MedNotificationService } from '../../services/med-notification.service';
@@ -40,6 +41,10 @@ export class ProfileDetailPage implements ViewWillEnter {
   load(): void {
     this.profile = this.medData.getProfile(this.profileId);
     this.medications = this.medData.getMedicationsForProfile(this.profileId);
+  }
+
+  get patientTipsBlock(): ReturnType<typeof patientContextTips> | null {
+    return this.profile ? patientContextTips(this.profile.patientGroup) : null;
   }
 
   editProfileHref(): string {

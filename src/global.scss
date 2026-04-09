@@ -25,18 +25,13 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import "@ionic/angular/css/palettes/dark.system.css";
+/* Light theme only — do not import Ionic dark palettes */
 
 /* —— App shell: full height (required for ion-tabs / ion-router-outlet layout) —— */
+html {
+  color-scheme: light;
+}
+
 html,
 body {
   height: 100%;
@@ -95,6 +90,16 @@ ion-content::part(scroll) {
   z-index: 1;
 }
 
+/*
+ * Login (standalone auth): top inset must live in global styles. Component-scoped rules
+ * can lose the cascade to Angular emulated encapsulation, and max(constant(...)) can
+ * invalidate --padding-top entirely in Android WebView.
+ */
+ion-content.auth-wrap.auth-wrap-standalone {
+  --mm-auth-safe-top: max(env(safe-area-inset-top, 0px), 48px) !important;
+  --padding-top: calc(16px + max(env(safe-area-inset-top, 0px), 48px)) !important;
+}
+
 /* Material Symbols (Outlined) */
 .material-symbols-outlined {
   font-family: "Material Symbols Outlined";
@@ -113,7 +118,7 @@ ion-content::part(scroll) {
   font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
 }
 
-/* Tab bar: clearer separation from content (loads after dark.system) */
+/* Tab bar: clearer separation from content */
 ion-tab-bar {
   --background: var(--ion-card-background);
   height: 58px;
@@ -150,29 +155,3 @@ a:focus-visible {
   border-radius: 4px;
 }
 
-/* Dark mode: plum/violet aligned with light (after Ionic dark palette) */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --mm-text-muted: rgba(245, 243, 255, 0.78);
-    --ion-color-primary: #c4b5fd;
-    --ion-color-primary-rgb: 196, 181, 253;
-    --ion-color-primary-contrast: #1e1b4b;
-    --ion-color-primary-contrast-rgb: 30, 27, 75;
-    --ion-color-primary-shade: #ac9fe0;
-    --ion-color-primary-tint: #cabdfd;
-    --ion-color-secondary: #a78bfa;
-    --ion-color-secondary-rgb: 167, 139, 250;
-    --ion-color-secondary-contrast: #1e1b4b;
-    --ion-color-secondary-contrast-rgb: 30, 27, 75;
-    --ion-color-secondary-shade: #937ad8;
-    --ion-color-secondary-tint: #b098fb;
-    --ion-color-tertiary: #f472b6;
-    --ion-color-tertiary-rgb: 244, 114, 182;
-    --ion-color-tertiary-contrast: #4c0519;
-    --ion-color-tertiary-contrast-rgb: 76, 5, 25;
-    --ion-color-tertiary-shade: #d764a0;
-    --ion-color-tertiary-tint: #f680bd;
-    --ion-toolbar-background: #3b0764;
-    --ion-toolbar-color: #f5f3ff;
-  }
-}

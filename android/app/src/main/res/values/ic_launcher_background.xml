@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#FFFFFF</color>
+    <!-- Adaptive icon layer behind foreground; matches logo olive surface -->
+    <color name="ic_launcher_background">#5f6956</color>
 </resources>

@@ -1,7 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
-import { DoseLogEntry, Medication, Profile, TodayDose } from '../models/med.models';
+import { withApiTimeout } from '../shared/http-api-timeout';
+import {
+  DoseLogEntry,
+  Medication,
+  MedicationKind,
+  PatientGroup,
+  Profile,
+  TodayDose,
+} from '../models/med.models';
 import { AuthService } from './auth.service';
 import { getApiUrl } from '../../environments/api-url';
 import { CaregiverAlertService } from './caregiver/caregiver-alert.service';
@@ -18,12 +26,28 @@ function doseKey(medicationId: string, date: string, time: string): string {
   return `${medicationId}|${date}|${time}`;
 }
 
+const PATIENT_GROUP_SET = new Set<PatientGroup>([
+  'infant',
+  'child',
+  'adult',
+  'older_adult',
+  'pregnancy',
+]);
+
+function normalizePatientGroup(raw: string | undefined): PatientGroup | undefined {
+  if (raw == null || raw === '') {
+    return undefined;
+  }
+  return PATIENT_GROUP_SET.has(raw as PatientGroup) ? (raw as PatientGroup) : 'adult';
+}
+
 interface ApiProfile {
   id: string;
   name: string;
   created_at: string;
   caregiverEmail?: string;
   caregiverPhone?: string;
+  patientGroup?: string;
 }
 
 interface ApiMedication {
@@ -35,6 +59,7 @@ interface ApiMedication {
   enabled: boolean;
   remainingQuantity?: number;
   pillsPerIntake?: number;
+  kind?: MedicationKind;
 }
 
 interface ApiDoseLog {
@@ -83,7 +108,7 @@ export class MedDataService {
     }
     try {
       const profRes = await firstValueFrom(
-        this.http.get<{ profiles: ApiProfile[] }>(`${this.base()}/api/profiles`)
+        withApiTimeout(this.http.get<{ profiles: ApiProfile[] }>(`${this.base()}/api/profiles`))
       );
       const profiles: Profile[] = profRes.profiles.map((p) => ({
         id: p.id,
@@ -91,14 +116,17 @@ export class MedDataService {
         createdAt: p.created_at,
         caregiverEmail: p.caregiverEmail,
         caregiverPhone: p.caregiverPhone,
+        patientGroup: normalizePatientGroup(p.patientGroup),
       }));
       profiles.sort((a, b) => a.name.localeCompare(b.name));
 
       const meds: Medication[] = [];
       for (const p of profiles) {
         const mr = await firstValueFrom(
-          this.http.get<{ medications: ApiMedication[] }>(
-            `${this.base()}/api/profiles/${p.id}/medications`
+          withApiTimeout(
+            this.http.get<{ medications: ApiMedication[] }>(
+              `${this.base()}/api/profiles/${p.id}/medications`
+            )
           )
         );
         for (const m of mr.medications) {
@@ -111,14 +139,17 @@ export class MedDataService {
             enabled: m.enabled,
             remainingQuantity: m.remainingQuantity,
             pillsPerIntake: m.pillsPerIntake ?? 1,
+            kind: m.kind,
           });
         }
       }
 
       const date = todayStr();
       const lr = await firstValueFrom(
-        this.http.get<{ logs: ApiDoseLog[] }>(
-          `${this.base()}/api/dose-logs?date=${encodeURIComponent(date)}`
+        withApiTimeout(
+          this.http.get<{ logs: ApiDoseLog[] }>(
+            `${this.base()}/api/dose-logs?date=${encodeURIComponent(date)}`
+          )
         )
       );
       const logs: DoseLogEntry[] = lr.logs.map((l) => ({
@@ -170,14 +201,18 @@ export class MedDataService {
 
   async createProfile(
     name: string,
-    caregiver?: { email?: string; phone?: string }
+    caregiver?: { email?: string; phone?: string },
+    patientGroup: PatientGroup = 'adult'
   ): Promise<Profile> {
     const res = await firstValueFrom(
-      this.http.post<{ profile: ApiProfile }>(`${this.base()}/api/profiles`, {
-        name: name.trim(),
-        caregiverEmail: caregiver?.email ?? '',
-        caregiverPhone: caregiver?.phone ?? '',
-      })
+      withApiTimeout(
+        this.http.post<{ profile: ApiProfile }>(`${this.base()}/api/profiles`, {
+          name: name.trim(),
+          caregiverEmail: caregiver?.email ?? '',
+          caregiverPhone: caregiver?.phone ?? '',
+          patientGroup,
+        })
+      )
     );
     const p: Profile = {
       id: res.profile.id,
@@ -185,6 +220,7 @@ export class MedDataService {
       createdAt: res.profile.created_at,
       caregiverEmail: res.profile.caregiverEmail,
       caregiverPhone: res.profile.caregiverPhone,
+      patientGroup: normalizePatientGroup(res.profile.patientGroup),
     };
     await this.refresh();
     return p;
@@ -193,20 +229,24 @@ export class MedDataService {
   async updateProfile(
     id: string,
     name: string,
-    caregiver?: { email?: string; phone?: string }
+    caregiver?: { email?: string; phone?: string },
+    patientGroup: PatientGroup = 'adult'
   ): Promise<void> {
     await firstValueFrom(
-      this.http.patch<{ profile: ApiProfile }>(`${this.base()}/api/profiles/${id}`, {
-        name: name.trim(),
-        caregiverEmail: caregiver?.email ?? '',
-        caregiverPhone: caregiver?.phone ?? '',
-      })
+      withApiTimeout(
+        this.http.patch<{ profile: ApiProfile }>(`${this.base()}/api/profiles/${id}`, {
+          name: name.trim(),
+          caregiverEmail: caregiver?.email ?? '',
+          caregiverPhone: caregiver?.phone ?? '',
+          patientGroup,
+        })
+      )
     );
     await this.refresh();
   }
 
   async deleteProfile(profileId: string): Promise<void> {
-    await firstValueFrom(this.http.delete(`${this.base()}/api/profiles/${profileId}`));
+    await firstValueFrom(withApiTimeout(this.http.delete(`${this.base()}/api/profiles/${profileId}`)));
     await this.refresh();
   }
 
@@ -219,20 +259,24 @@ export class MedDataService {
       enabled: boolean;
       remainingQuantity?: number | null;
       pillsPerIntake?: number;
+      kind?: MedicationKind;
     }
   ): Promise<Medication> {
     const res = await firstValueFrom(
-      this.http.post<{ medication: ApiMedication }>(`${this.base()}/api/profiles/${profileId}/medications`, {
-        name: body.name.trim(),
-        dosageNote: body.dosageNote?.trim() || undefined,
-        times: body.times,
-        enabled: body.enabled,
-        remainingQuantity:
-          body.remainingQuantity === undefined || body.remainingQuantity === null
-            ? undefined
-            : body.remainingQuantity,
-        pillsPerIntake: body.pillsPerIntake ?? 1,
-      })
+      withApiTimeout(
+        this.http.post<{ medication: ApiMedication }>(`${this.base()}/api/profiles/${profileId}/medications`, {
+          name: body.name.trim(),
+          dosageNote: body.dosageNote?.trim() || undefined,
+          times: body.times,
+          enabled: body.enabled,
+          remainingQuantity:
+            body.remainingQuantity === undefined || body.remainingQuantity === null
+              ? undefined
+              : body.remainingQuantity,
+          pillsPerIntake: body.pillsPerIntake ?? 1,
+          kind: body.kind,
+        })
+      )
     );
     const m = res.medication;
     const med: Medication = {
@@ -244,6 +288,7 @@ export class MedDataService {
       enabled: m.enabled,
       remainingQuantity: m.remainingQuantity,
       pillsPerIntake: m.pillsPerIntake ?? 1,
+      kind: m.kind,
     };
     await this.refresh();
     return med;
@@ -251,29 +296,34 @@ export class MedDataService {
 
   async updateMedication(medication: Medication): Promise<void> {
     await firstValueFrom(
-      this.http.patch<{ medication: ApiMedication }>(`${this.base()}/api/medications/${medication.id}`, {
-        name: medication.name,
-        dosageNote: medication.dosageNote ?? null,
-        times: medication.times,
-        enabled: medication.enabled,
-        remainingQuantity:
-          medication.remainingQuantity === undefined ? undefined : medication.remainingQuantity,
-        pillsPerIntake: medication.pillsPerIntake ?? 1,
-      })
+      withApiTimeout(
+        this.http.patch<{ medication: ApiMedication }>(`${this.base()}/api/medications/${medication.id}`, {
+          name: medication.name,
+          dosageNote: medication.dosageNote ?? null,
+          times: medication.times,
+          enabled: medication.enabled,
+          remainingQuantity:
+            medication.remainingQuantity === undefined ? undefined : medication.remainingQuantity,
+          pillsPerIntake: medication.pillsPerIntake ?? 1,
+          kind: medication.kind ?? null,
+        })
+      )
     );
     await this.refresh();
   }
 
   async deleteMedication(medicationId: string): Promise<void> {
-    await firstValueFrom(this.http.delete(`${this.base()}/api/medications/${medicationId}`));
+    await firstValueFrom(withApiTimeout(this.http.delete(`${this.base()}/api/medications/${medicationId}`)));
     await this.refresh();
   }
 
   /** Load dose logs for an inclusive date range (for adherence / summaries). Does not replace in-memory today logs. */
   async fetchDoseLogsRange(from: string, to: string): Promise<DoseLogEntry[]> {
     const res = await firstValueFrom(
-      this.http.get<{ logs: ApiDoseLog[] }>(
-        `${this.base()}/api/dose-logs?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+      withApiTimeout(
+        this.http.get<{ logs: ApiDoseLog[] }>(
+          `${this.base()}/api/dose-logs?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+        )
       )
     );
     return res.logs.map((l) => ({
@@ -293,12 +343,14 @@ export class MedDataService {
   ): Promise<void> {
     const date = todayStr();
     await firstValueFrom(
-      this.http.post(`${this.base()}/api/dose-logs`, {
-        medicationId,
-        date,
-        scheduledTime,
-        status,
-      })
+      withApiTimeout(
+        this.http.post(`${this.base()}/api/dose-logs`, {
+          medicationId,
+          date,
+          scheduledTime,
+          status,
+        })
+      )
     );
     await this.refresh();
     if (status === 'missed') {

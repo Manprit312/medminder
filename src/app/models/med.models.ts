@@ -1,3 +1,12 @@
+/** Optional form / UI label (stored when supported by API). */
+export type MedicationKind = 'tablet' | 'capsule' | 'injection' | 'other';
+
+/**
+ * Who this profile is for — used for general reminder tips only (not dosing or diagnosis).
+ * Stored per profile on the server.
+ */
+export type PatientGroup = 'infant' | 'child' | 'adult' | 'older_adult' | 'pregnancy';
+
 export interface Profile {
   id: string;
   name: string;
@@ -5,6 +14,8 @@ export interface Profile {
   /** Caregiver alert contact (optional) */
   caregiverEmail?: string;
   caregiverPhone?: string;
+  /** Context for non-medical tips (defaults to adult if unset). */
+  patientGroup?: PatientGroup;
 }
 
 export interface Medication {
@@ -19,6 +30,7 @@ export interface Medication {
   remainingQuantity?: number | null;
   /** Pills consumed each time a dose is marked “taken” (default 1) */
   pillsPerIntake?: number;
+  kind?: MedicationKind;
 }
 
 export interface DoseLogEntry {

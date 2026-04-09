@@ -1,0 +1,102 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/settings" text="Settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Learn &amp; safety</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="education-page mm-gradient-bg">
+  <div class="form-hero ion-padding">
+    <span class="material-symbols-outlined hero-icon">menu_book</span>
+    <h1>Trusted references</h1>
+    <p class="subtitle">
+      MedMinder does not diagnose or prescribe. Use these official resources to learn about medicines and report
+      concerns.
+    </p>
+  </div>
+
+  <ion-list inset="true" lines="none" class="form-card ion-margin-horizontal">
+    <ion-item class="legal-item" lines="none">
+      <span class="material-symbols-outlined input-lead" slot="start">info</span>
+      <ion-text class="ion-text-wrap">
+        <p>
+          Always follow your clinician or pharmacist. If you have an emergency, contact local emergency services — not
+          this app.
+        </p>
+      </ion-text>
+    </ion-item>
+  </ion-list>
+
+  <ng-container *ngIf="subscription.canUseEducationHub(); else plusTeaser">
+    <ion-list inset="true" lines="none" class="form-card ion-margin-horizontal ion-margin-top">
+      <ion-list-header>
+        <ion-label>
+          <span class="material-symbols-outlined section-ic">link</span>
+          External resources
+        </ion-label>
+      </ion-list-header>
+
+      <ion-item
+        button
+        detail="true"
+        href="https://www.nhs.uk/medicines/"
+        target="_blank"
+        rel="noopener noreferrer"
+        lines="none"
+      >
+        <span class="material-symbols-outlined input-lead" slot="start">open_in_new</span>
+        <ion-label class="ion-text-wrap">
+          <h3>NHS — Medicines A to Z</h3>
+          <p>UK patient information on common medicines (opens in browser).</p>
+        </ion-label>
+      </ion-item>
+
+      <ion-item
+        button
+        detail="true"
+        href="https://www.fda.gov/drugs/drug-approvals-and-databases/drugsfda"
+        target="_blank"
+        rel="noopener noreferrer"
+        lines="none"
+      >
+        <span class="material-symbols-outlined input-lead" slot="start">open_in_new</span>
+        <ion-label class="ion-text-wrap">
+          <h3>FDA — Drugs@FDA</h3>
+          <p>US labeling and approval information (opens in browser).</p>
+        </ion-label>
+      </ion-item>
+
+      <ion-item
+        button
+        detail="true"
+        href="https://www.fda.gov/safety/medwatch-fda-safety-information-and-adverse-event-reporting-program"
+        target="_blank"
+        rel="noopener noreferrer"
+        lines="none"
+      >
+        <span class="material-symbols-outlined input-lead" slot="start">flag</span>
+        <ion-label class="ion-text-wrap">
+          <h3>FDA MedWatch</h3>
+          <p>Report side effects or quality problems (US).</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </ng-container>
+
+  <ng-template #plusTeaser>
+    <ion-list inset="true" lines="none" class="form-card ion-margin-horizontal ion-margin-top plus-teaser">
+      <ion-item lines="none">
+        <span class="material-symbols-outlined input-lead" slot="start">workspace_premium</span>
+        <ion-label class="ion-text-wrap">
+          <h3>MedMinder Plus</h3>
+          <p>
+            Curated reference links and expanded learning tools are included with Plus. In-app purchases will appear here
+            when available.
+          </p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </ng-template>
+</ion-content>
