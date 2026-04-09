@@ -59,6 +59,8 @@ const MIGRATIONS = [
   `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS caregiver_phone TEXT`,
   `ALTER TABLE medications ADD COLUMN IF NOT EXISTS remaining_quantity INTEGER`,
   `ALTER TABLE medications ADD COLUMN IF NOT EXISTS pills_per_intake INTEGER NOT NULL DEFAULT 1`,
+  `ALTER TABLE medications ADD COLUMN IF NOT EXISTS kind TEXT`,
+  `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS patient_group TEXT NOT NULL DEFAULT 'adult'`,
 ];
 
 export async function createPgPool(connectionString: string): Promise<pg.Pool> {

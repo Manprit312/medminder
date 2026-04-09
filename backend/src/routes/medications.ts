@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { asyncRoute } from '../async-route.js';
 import { queryOne, runExec } from '../db.js';
-import { mapMedicationRow, type MedicationRow } from '../medication-map.js';
+import { mapMedicationRow, parseMedicationKind, type MedicationRow } from '../medication-map.js';
 import { authMiddleware } from '../middleware/auth.js';
 
 export const medicationsRouter = Router();
@@ -23,7 +23,7 @@ medicationsRouter.get(
   asyncRoute(async (req, res) => {
     const userId = req.userId!;
     const row = await queryOne<MedicationRow>(
-      `SELECT m.id, m.profile_id, m.name, m.dosage_note, m.times_json, m.enabled, m.remaining_quantity, m.pills_per_intake
+      `SELECT m.id, m.profile_id, m.name, m.dosage_note, m.times_json, m.enabled, m.remaining_quantity, m.pills_per_intake, m.kind
        FROM medications m
        INNER JOIN profiles p ON p.id = m.profile_id
        WHERE m.id = ? AND p.user_id = ?`,
@@ -47,7 +47,7 @@ medicationsRouter.patch(
       return;
     }
     const existing = await queryOne<MedicationRow>(
-      'SELECT id, profile_id, name, dosage_note, times_json, enabled, remaining_quantity, pills_per_intake FROM medications WHERE id = ?',
+      'SELECT id, profile_id, name, dosage_note, times_json, enabled, remaining_quantity, pills_per_intake, kind FROM medications WHERE id = ?',
       [id]
     );
     if (!existing) {
@@ -85,13 +85,24 @@ medicationsRouter.patch(
       pillsPerIntake = Math.max(1, Math.floor(Number(req.body.pillsPerIntake)) || 1);
     }
 
+    let kind: string | null = existing.kind;
+    if (Object.prototype.hasOwnProperty.call(req.body ?? {}, 'kind')) {
+      const v = req.body?.kind;
+      if (v === null || v === '') {
+        kind = null;
+      } else {
+        const parsed = parseMedicationKind(v);
+        kind = parsed ?? null;
+      }
+    }
+
     await runExec(
-      'UPDATE medications SET name = ?, dosage_note = ?, times_json = ?, enabled = ?, remaining_quantity = ?, pills_per_intake = ? WHERE id = ?',
-      [name, dosageNote, timesJson, enabled, remainingQuantity, pillsPerIntake, id]
+      'UPDATE medications SET name = ?, dosage_note = ?, times_json = ?, enabled = ?, remaining_quantity = ?, pills_per_intake = ?, kind = ? WHERE id = ?',
+      [name, dosageNote, timesJson, enabled, remainingQuantity, pillsPerIntake, kind, id]
     );
 
     const row = await queryOne<MedicationRow>(
-      'SELECT id, profile_id, name, dosage_note, times_json, enabled, remaining_quantity, pills_per_intake FROM medications WHERE id = ?',
+      'SELECT id, profile_id, name, dosage_note, times_json, enabled, remaining_quantity, pills_per_intake, kind FROM medications WHERE id = ?',
       [id]
     );
     if (!row) {

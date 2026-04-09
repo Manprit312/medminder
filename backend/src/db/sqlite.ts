@@ -53,7 +53,9 @@ export function openSqlite(): Database.Database {
     CREATE INDEX IF NOT EXISTS idx_dose_logs_date ON dose_logs(date);
   `);
   migrateMedicationsRefillColumns(db);
+  migrateMedicationsKindColumn(db);
   migrateProfilesCaregiverColumns(db);
+  migrateProfilesPatientGroupColumn(db);
   migratePasswordResetTokens(db);
   return db;
 }
@@ -82,6 +84,14 @@ function migrateMedicationsRefillColumns(database: Database.Database) {
   }
 }
 
+function migrateMedicationsKindColumn(database: Database.Database) {
+  const cols = database.prepare('PRAGMA table_info(medications)').all() as { name: string }[];
+  const names = new Set(cols.map((c) => c.name));
+  if (!names.has('kind')) {
+    database.exec('ALTER TABLE medications ADD COLUMN kind TEXT');
+  }
+}
+
 function migrateProfilesCaregiverColumns(database: Database.Database) {
   const cols = database.prepare('PRAGMA table_info(profiles)').all() as { name: string }[];
   const names = new Set(cols.map((c) => c.name));
@@ -90,5 +100,13 @@ function migrateProfilesCaregiverColumns(database: Database.Database) {
   }
   if (!names.has('caregiver_phone')) {
     database.exec('ALTER TABLE profiles ADD COLUMN caregiver_phone TEXT');
+  }
+}
+
+function migrateProfilesPatientGroupColumn(database: Database.Database) {
+  const cols = database.prepare('PRAGMA table_info(profiles)').all() as { name: string }[];
+  const names = new Set(cols.map((c) => c.name));
+  if (!names.has('patient_group')) {
+    database.exec(`ALTER TABLE profiles ADD COLUMN patient_group TEXT NOT NULL DEFAULT 'adult'`);
   }
 }

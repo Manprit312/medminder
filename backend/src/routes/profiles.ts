@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { v4 as uuid } from 'uuid';
 import { asyncRoute } from '../async-route.js';
 import { isPostgres, queryAll, queryOne, runExec } from '../db.js';
-import { mapMedicationRow, type MedicationRow } from '../medication-map.js';
+import { mapMedicationRow, parseMedicationKind, type MedicationRow } from '../medication-map.js';
 import { authMiddleware } from '../middleware/auth.js';
 
 export const profilesRouter = Router();
@@ -13,12 +13,20 @@ function orderByName(): string {
   return isPostgres() ? 'ORDER BY LOWER(name)' : 'ORDER BY name COLLATE NOCASE';
 }
 
+const PATIENT_GROUPS = new Set(['infant', 'child', 'adult', 'older_adult', 'pregnancy']);
+
+function parsePatientGroup(v: unknown): string {
+  const s = String(v ?? 'adult').trim();
+  return PATIENT_GROUPS.has(s) ? s : 'adult';
+}
+
 function mapProfileRow(row: {
   id: string;
   name: string;
   created_at: string;
   caregiver_email: string | null;
   caregiver_phone: string | null;
+  patient_group: string | null;
 }) {
   return {
     id: row.id,
@@ -26,6 +34,7 @@ function mapProfileRow(row: {
     created_at: row.created_at,
     caregiverEmail: row.caregiver_email ?? undefined,
     caregiverPhone: row.caregiver_phone ?? undefined,
+    patientGroup: parsePatientGroup(row.patient_group ?? 'adult'),
   };
 }
 
@@ -39,8 +48,9 @@ profilesRouter.get(
       created_at: string;
       caregiver_email: string | null;
       caregiver_phone: string | null;
+      patient_group: string | null;
     }>(
-      `SELECT id, name, created_at, caregiver_email, caregiver_phone FROM profiles WHERE user_id = ? ${orderByName()}`,
+      `SELECT id, name, created_at, caregiver_email, caregiver_phone, patient_group FROM profiles WHERE user_id = ? ${orderByName()}`,
       [userId]
     );
     res.json({ profiles: rows.map(mapProfileRow) });
@@ -63,11 +73,12 @@ profilesRouter.post(
     }
     const caregiverEmail = caregiverField(req.body?.caregiverEmail);
     const caregiverPhone = caregiverField(req.body?.caregiverPhone);
+    const patientGroup = parsePatientGroup(req.body?.patientGroup);
     const id = uuid();
     const now = new Date().toISOString();
     await runExec(
-      'INSERT INTO profiles (id, user_id, name, created_at, caregiver_email, caregiver_phone) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, userId, name, now, caregiverEmail, caregiverPhone]
+      'INSERT INTO profiles (id, user_id, name, created_at, caregiver_email, caregiver_phone, patient_group) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [id, userId, name, now, caregiverEmail, caregiverPhone, patientGroup]
     );
     const row = await queryOne<{
       id: string;
@@ -75,7 +86,8 @@ profilesRouter.post(
       created_at: string;
       caregiver_email: string | null;
       caregiver_phone: string | null;
-    }>('SELECT id, name, created_at, caregiver_email, caregiver_phone FROM profiles WHERE id = ?', [id]);
+      patient_group: string | null;
+    }>('SELECT id, name, created_at, caregiver_email, caregiver_phone, patient_group FROM profiles WHERE id = ?', [id]);
     if (!row) {
       res.status(500).json({ error: 'Failed to create profile' });
       return;
@@ -99,7 +111,7 @@ profilesRouter.get(
       return;
     }
     const rows = await queryAll<MedicationRow>(
-      `SELECT id, profile_id, name, dosage_note, times_json, enabled, remaining_quantity, pills_per_intake FROM medications WHERE profile_id = ? ${orderByName()}`,
+      `SELECT id, profile_id, name, dosage_note, times_json, enabled, remaining_quantity, pills_per_intake, kind FROM medications WHERE profile_id = ? ${orderByName()}`,
       [profileId]
     );
     res.json({ medications: rows.map(mapMedicationRow) });
@@ -138,9 +150,11 @@ profilesRouter.post(
         ? null
         : Math.max(0, Math.floor(Number(rq)) || 0);
     const pillsPerIntake = Math.max(1, Math.floor(Number(req.body?.pillsPerIntake ?? 1)) || 1);
+    const kindRaw = parseMedicationKind(req.body?.kind);
+    const kind = kindRaw ?? null;
     const id = uuid();
     await runExec(
-      'INSERT INTO medications (id, profile_id, name, dosage_note, times_json, enabled, remaining_quantity, pills_per_intake) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO medications (id, profile_id, name, dosage_note, times_json, enabled, remaining_quantity, pills_per_intake, kind) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         id,
         profileId,
@@ -150,10 +164,11 @@ profilesRouter.post(
         enabled ? 1 : 0,
         remainingQuantity,
         pillsPerIntake,
+        kind,
       ]
     );
     const row = await queryOne<MedicationRow>(
-      'SELECT id, profile_id, name, dosage_note, times_json, enabled, remaining_quantity, pills_per_intake FROM medications WHERE id = ?',
+      'SELECT id, profile_id, name, dosage_note, times_json, enabled, remaining_quantity, pills_per_intake, kind FROM medications WHERE id = ?',
       [id]
     );
     if (!row) {
@@ -174,8 +189,9 @@ profilesRouter.get(
       created_at: string;
       caregiver_email: string | null;
       caregiver_phone: string | null;
+      patient_group: string | null;
     }>(
-      'SELECT id, name, created_at, caregiver_email, caregiver_phone FROM profiles WHERE id = ? AND user_id = ?',
+      'SELECT id, name, created_at, caregiver_email, caregiver_phone, patient_group FROM profiles WHERE id = ? AND user_id = ?',
       [req.params.id, userId]
     );
     if (!row) {
@@ -197,9 +213,10 @@ profilesRouter.patch(
     }
     const caregiverEmail = caregiverField(req.body?.caregiverEmail);
     const caregiverPhone = caregiverField(req.body?.caregiverPhone);
+    const patientGroup = parsePatientGroup(req.body?.patientGroup);
     const r = await runExec(
-      'UPDATE profiles SET name = ?, caregiver_email = ?, caregiver_phone = ? WHERE id = ? AND user_id = ?',
-      [name, caregiverEmail, caregiverPhone, req.params.id, userId]
+      'UPDATE profiles SET name = ?, caregiver_email = ?, caregiver_phone = ?, patient_group = ? WHERE id = ? AND user_id = ?',
+      [name, caregiverEmail, caregiverPhone, patientGroup, req.params.id, userId]
     );
     if (r.changes === 0) {
       res.status(404).json({ error: 'Profile not found' });
@@ -211,7 +228,8 @@ profilesRouter.patch(
       created_at: string;
       caregiver_email: string | null;
       caregiver_phone: string | null;
-    }>('SELECT id, name, created_at, caregiver_email, caregiver_phone FROM profiles WHERE id = ?', [
+      patient_group: string | null;
+    }>('SELECT id, name, created_at, caregiver_email, caregiver_phone, patient_group FROM profiles WHERE id = ?', [
       req.params.id,
     ]);
     if (!row) {

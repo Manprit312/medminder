@@ -9,6 +9,7 @@ export type MedicationRow = {
   enabled: number;
   remaining_quantity: number | null;
   pills_per_intake: number | null;
+  kind: string | null;
 };
 
 export function mapMedicationRow(row: MedicationRow) {
@@ -27,5 +28,21 @@ export function mapMedicationRow(row: MedicationRow) {
     enabled: Boolean(row.enabled),
     remainingQuantity: row.remaining_quantity ?? undefined,
     pillsPerIntake: row.pills_per_intake != null ? row.pills_per_intake : 1,
+    kind: normalizeKind(row.kind),
   };
+}
+
+const KINDS = new Set(['tablet', 'capsule', 'injection', 'other']);
+
+function normalizeKind(raw: string | null | undefined): string | undefined {
+  if (raw == null || raw === '') {
+    return undefined;
+  }
+  const s = String(raw).trim();
+  return KINDS.has(s) ? s : undefined;
+}
+
+/** Accept API body value; invalid values become undefined (omit). */
+export function parseMedicationKind(raw: unknown): string | undefined {
+  return normalizeKind(raw == null ? null : String(raw));
 }

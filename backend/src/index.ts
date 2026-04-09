@@ -44,22 +44,37 @@ if (process.env.TRUST_PROXY === '1') {
 }
 
 
-/** Include Capacitor/Ionic native WebView origins (Android/iOS) so API calls are not blocked by CORS. */
-const defaultCorsOrigins =
-  'http://localhost:8100,http://localhost:4200,http://127.0.0.1:8100,' +
-  'https://localhost,capacitor://localhost,ionic://localhost';
-const origins = (process.env.CORS_ORIGINS ?? defaultCorsOrigins)
-  .split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
-
-app.use(helmet());
+/**
+ * Default Helmet sets Cross-Origin-Resource-Policy: same-origin, which can block
+ * Capacitor/WebView from reading JSON from another origin (CORS passes but the
+ * response is still blocked) — Angular shows HTTP status 0. Public APIs should
+ * use cross-origin CORP.
+ */
 app.use(
-  cors({
-    origin: origins.length ? origins : true,
-    credentials: true,
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
   })
 );
+const corsOptions: cors.CorsOptions = {
+  origin(origin, callback) {
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
+    const allowedOrigins = ['http://localhost', 'capacitor://localhost'];
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(null, true); // TEMP allow all (debug)
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors());
+
 app.use(express.json({ limit: '512kb' }));
 
 app.get('/health', (_req, res) => {
@@ -75,8 +90,28 @@ app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
+function isPgForeignKeyViolation(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'code' in err &&
+    (err as { code: string }).code === '23503'
+  );
+}
+
 app.use(
   (err: unknown, _req: express.Request, res: express.Response, _next: NextFunction) => {
+    if (isPgForeignKeyViolation(err)) {
+      console.error(
+        '[medminder-api] FK violation — user id in token missing from DB (sign out + sign in after switching API/DB):',
+        err
+      );
+      res.status(401).json({
+        error:
+          'Your session does not match this server database. Sign out in the app, then sign in or register again.',
+      });
+      return;
+    }
     console.error('[medminder-api]', err);
     res.status(500).json({ error: 'Internal server error' });
   }
