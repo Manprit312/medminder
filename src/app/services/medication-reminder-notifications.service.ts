@@ -9,6 +9,11 @@ import { MedDataService } from './med-data.service';
 const ACTION_TYPE_ID = 'MED_DOSE_V1';
 const ACTION_TAKEN = 'TAKEN';
 const ACTION_MISSED = 'MISSED';
+/** Content tap (iOS UNNotificationDefaultActionIdentifier + Android default intent). */
+const ACTION_TAP = 'tap';
+
+/** Fixed id for one-shot “test reminder” (avoids colliding with stableNotificationId hashes). */
+const TEST_NOTIFICATION_ID = 2_147_482_000;
 
 export interface MedNotificationExtra {
   medicationId: string;
@@ -29,9 +34,28 @@ export function stableNotificationId(medicationId: string, time: string): number
   return n === 0 ? 1 : n;
 }
 
-function parseTime(t: string): { hour: number; minute: number } {
-  const [h, m] = t.split(':').map((x) => parseInt(x, 10));
-  return { hour: Number.isFinite(h) ? h : 0, minute: Number.isFinite(m) ? m : 0 };
+function parseTime(t: string): { hour: number; minute: number } | null {
+  const s = t.trim();
+  if (!s) {
+    return null;
+  }
+  const parts = s.split(':');
+  if (parts.length < 2) {
+    return null;
+  }
+  const h = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  if (!Number.isFinite(h) || !Number.isFinite(m)) {
+    return null;
+  }
+  if (h < 0 || h > 23 || m < 0 || m > 59) {
+    return null;
+  }
+  return { hour: h, minute: m };
+}
+
+function encodeTimeTokenForDoseRoute(scheduledTime: string): string {
+  return scheduledTime.trim().replace(/:/g, '-');
 }
 
 /**
@@ -107,11 +131,37 @@ export class MedicationReminderNotificationsService {
     await this.medData.refresh();
   }
 
+  private navigateToDoseLog(extra: MedNotificationExtra): void {
+    const token = encodeTimeTokenForDoseRoute(extra.scheduledTime);
+    void this.router.navigateByUrl(`/tabs/today/dose/${extra.medicationId}/${token}`);
+  }
+
   private async onAction(actionId: string, notification: LocalNotificationSchema): Promise<void> {
+    const extra = notification.extra as MedNotificationExtra | undefined;
+
+    if (actionId === ACTION_TAP) {
+      if (!extra?.medicationId || !extra.scheduledTime) {
+        return;
+      }
+      const key = `tap|${extra.medicationId}|${extra.scheduledTime}`;
+      const now = Date.now();
+      const prev = this.lastActionAt.get(key) ?? 0;
+      if (now - prev < 4000) {
+        return;
+      }
+      this.lastActionAt.set(key, now);
+      try {
+        await this.medData.refresh();
+      } catch {
+        /* still open dose screen; it refreshes on enter */
+      }
+      this.navigateToDoseLog(extra);
+      return;
+    }
+
     if (actionId !== ACTION_TAKEN && actionId !== ACTION_MISSED) {
       return;
     }
-    const extra = notification.extra as MedNotificationExtra | undefined;
     if (!extra?.medicationId || !extra.scheduledTime) {
       return;
     }
@@ -133,7 +183,7 @@ export class MedicationReminderNotificationsService {
         color: status === 'taken' ? 'success' : 'warning',
       });
       await t.present();
-      await this.router.navigate(['/tabs/today'], { replaceUrl: false });
+      this.navigateToDoseLog(extra);
     } catch (e) {
       console.error('Notification action log failed', e);
       const t = await this.toastCtrl.create({
@@ -162,12 +212,37 @@ export class MedicationReminderNotificationsService {
     }
   }
 
+  /**
+   * Clear every pending local notification (e.g. logout). Does not require display permission
+   * so alarms are still removed when the user previously denied banners.
+   */
+  async cancelAllPendingLocalNotifications(): Promise<void> {
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+    const pending = await LocalNotifications.getPending();
+    if (pending.notifications.length === 0) {
+      return;
+    }
+    await LocalNotifications.cancel({
+      notifications: pending.notifications.map((n) => ({ id: n.id })),
+    });
+  }
+
   /** Cancel all pending local notifications we manage, then reschedule from current meds. */
   async rescheduleAll(): Promise<void> {
     if (!Capacitor.isNativePlatform()) {
       return;
     }
     await this.ensureAndroidChannel();
+
+    let perm = await LocalNotifications.checkPermissions();
+    if (perm.display !== 'granted') {
+      perm = await LocalNotifications.requestPermissions();
+    }
+    if (perm.display !== 'granted') {
+      return;
+    }
 
     const pending = await LocalNotifications.getPending();
     if (pending.notifications.length > 0) {
@@ -185,23 +260,32 @@ export class MedicationReminderNotificationsService {
     for (const m of meds) {
       const pname = profileNames.get(m.profileId) ?? 'Someone';
       for (const t of m.times) {
-        const { hour, minute } = parseTime(t);
+        const timeKey = t.trim();
+        const parsed = parseTime(timeKey);
+        if (!parsed) {
+          continue;
+        }
+        const { hour, minute } = parsed;
         const extra: MedNotificationExtra = {
           medicationId: m.id,
-          scheduledTime: t,
+          scheduledTime: timeKey,
           medName: m.name,
           profileName: pname,
         };
+        // Daily wall-clock time: use `on` + `repeats` only.
+        // IMPORTANT (Android): The native plugin evaluates `every` before `on`. If both are set,
+        // it uses setRepeating(interval) from *now* and never applies hour/minute — reminders won't
+        // fire at dose times. iOS evaluates `on` first; omitting `every` is correct on both.
         const n: LocalNotificationSchema = {
-          id: stableNotificationId(m.id, t),
+          id: stableNotificationId(m.id, timeKey),
           title: 'Medication reminder',
-          body: `${m.name} — ${pname} · ${t}`,
+          body: `${m.name} — ${pname} · ${timeKey}`,
           actionTypeId: ACTION_TYPE_ID,
           extra,
           schedule: {
             on: { hour, minute },
             repeats: true,
-            every: 'day',
+            allowWhileIdle: true,
           },
         };
         if (Capacitor.getPlatform() === 'android') {
@@ -215,7 +299,11 @@ export class MedicationReminderNotificationsService {
       return;
     }
 
-    await LocalNotifications.schedule({ notifications });
+    try {
+      await LocalNotifications.schedule({ notifications });
+    } catch (e) {
+      console.error('[MedMinder] LocalNotifications.schedule failed', e);
+    }
   }
 
   async requestPermissionAndSchedule(): Promise<boolean> {
@@ -231,15 +319,49 @@ export class MedicationReminderNotificationsService {
     return true;
   }
 
-  /** After permission granted on cold start. */
+  /**
+   * Ask for notification permission if needed, then reschedule. Android 13+ often stays on
+   * `prompt` until requestPermissions() runs — checking alone never schedules reminders.
+   */
   async initializeScheduling(): Promise<void> {
     if (!Capacitor.isNativePlatform()) {
       return;
     }
     await this.ensureAndroidChannel();
-    const perm = await LocalNotifications.checkPermissions();
+    let perm = await LocalNotifications.checkPermissions();
+    if (perm.display !== 'granted') {
+      perm = await LocalNotifications.requestPermissions();
+    }
     if (perm.display === 'granted') {
       await this.rescheduleAll();
     }
+  }
+
+  /**
+   * Schedule a single local notification in `seconds` (for learning / QA).
+   * Does not use Firebase — same {@link LocalNotifications} API as real dose reminders.
+   */
+  async scheduleTestNotificationIn(seconds: number): Promise<boolean> {
+    if (!Capacitor.isNativePlatform()) {
+      return false;
+    }
+    const sec = Math.max(5, Math.min(120, Math.floor(seconds)));
+    await this.ensureAndroidChannel();
+    const perm = await LocalNotifications.requestPermissions();
+    if (perm.display !== 'granted') {
+      return false;
+    }
+    const at = new Date(Date.now() + sec * 1000);
+    const n: LocalNotificationSchema = {
+      id: TEST_NOTIFICATION_ID,
+      title: 'MedMinder test',
+      body: `This is a local notification. Fires at ${at.toLocaleTimeString()}.`,
+      schedule: { at, allowWhileIdle: true },
+    };
+    if (Capacitor.getPlatform() === 'android') {
+      n.channelId = 'medminder';
+    }
+    await LocalNotifications.schedule({ notifications: [n] });
+    return true;
   }
 }

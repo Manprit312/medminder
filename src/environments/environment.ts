@@ -7,5 +7,6 @@ export const environment = {
    * `premium` (MedMinder Plus) — family profiles, caregiver fields, education hub.
    * Use `free` locally to test gating.
    */
-  subscriptionTier: 'premium' as 'free' | 'premium',
+  /** Fallback before `/api/auth/me` loads; real tier comes from the server when signed in. */
+  subscriptionTier: 'free' as 'free' | 'premium',
 };

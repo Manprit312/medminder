@@ -19,7 +19,13 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="form-screen mm-medico-form" *ngIf="profile">
+<ion-content [fullscreen]="true" class="form-screen mm-medico-form">
+  <div *ngIf="!pageReady" class="ion-padding ion-text-center mm-page-loading">
+    <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+    <p role="status">Loading…</p>
+  </div>
+
+  <ng-container *ngIf="pageReady && profile">
   <!-- Step 1 — reference “Choose Medicine Type” -->
   <div class="mm-type-step ion-padding" *ngIf="isAdd && addStep === 1">
     <h1 class="mm-type-heading">Choose medicine type</h1>
@@ -133,10 +139,12 @@
     </div>
 
     <ion-list inset="true" lines="none" class="form-card">
-      <ion-item *ngFor="let t of formTimes; let i = index">
+      <ion-item *ngFor="let t of formTimes; let i = index; trackBy: trackTimeRow">
         <ion-input
           type="time"
           [(ngModel)]="formTimes[i]"
+          (ionInput)="patchTimeFromInput(i, $event)"
+          (ionChange)="patchTimeFromInput(i, $event)"
           (ionBlur)="formTimes[i] = normalizeTime(formTimes[i])"
           [name]="'time' + i"
           label="Reminder time"
@@ -188,9 +196,23 @@
       </ion-button>
     </div>
   </form>
-</ion-content>
+  </ng-container>
 
-<ion-content *ngIf="!profile" class="ion-padding">
-  <p>Profile not found.</p>
-  <ion-button type="button" (click)="backToProfilesList()">Back to Family</ion-button>
+  <div *ngIf="pageReady && !profile && profileId" class="ion-padding">
+    <p>Profile not found.</p>
+    <ion-text color="medium">
+      <p class="ion-text-wrap ion-margin-top">
+        It may still be loading from the server. Pull to refresh from Family, or try again in a moment.
+      </p>
+    </ion-text>
+    <ion-button type="button" (click)="backToProfilesList()">Back to Family</ion-button>
+  </div>
+
+  <div *ngIf="pageReady && !profileId" class="ion-padding">
+    <p>Could not open this medication screen.</p>
+    <ion-text color="medium">
+      <p class="ion-text-wrap ion-margin-top">Go back to Family and open the medication again.</p>
+    </ion-text>
+    <ion-button type="button" (click)="backToProfilesList()">Back to Family</ion-button>
+  </div>
 </ion-content>

@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { AuthService } from '../../services/auth.service';
 import { MedDataService } from '../../services/med-data.service';
@@ -23,6 +23,7 @@ export class LoginPage {
     private readonly medData: MedDataService,
     private readonly medNotif: MedNotificationService,
     private readonly router: Router,
+    private readonly route: ActivatedRoute,
     private readonly alertCtrl: AlertController,
     private readonly loadingCtrl: LoadingController
   ) {}
@@ -39,7 +40,15 @@ export class LoginPage {
       await this.medData.refresh();
       await this.medNotif.initialize();
       await loading.dismiss();
-      await this.router.navigateByUrl('/tabs/today', { replaceUrl: true });
+      const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+      const safe =
+        returnUrl &&
+        returnUrl.startsWith('/') &&
+        !returnUrl.startsWith('//') &&
+        !returnUrl.includes('://')
+          ? returnUrl
+          : null;
+      await this.router.navigateByUrl(safe ?? '/tabs/today', { replaceUrl: true });
     } catch (e: unknown) {
       await loading.dismiss();
       let msg = 'Sign-in failed';

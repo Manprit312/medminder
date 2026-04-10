@@ -42,4 +42,8 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 12+: daily time-based local notifications need an exact alarm; see @capacitor/local-notifications README -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- Use when exact alarm timing is core to the app (dose reminders); avoids user disabling exact alarms in settings on many devices -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 </manifest>

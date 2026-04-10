@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ToastController, ViewWillEnter } from '@ionic/angular';
+import { LoadingController, ToastController, ViewWillEnter } from '@ionic/angular';
 import { PatientGroup } from '../../models/med.models';
 import { PATIENT_GROUP_OPTIONS } from '../../shared/patient-context-tips';
 import { MedDataService } from '../../services/med-data.service';
@@ -16,6 +16,8 @@ import { SubscriptionService } from '../../services/subscription.service';
 export class ProfileFormPage implements OnInit, ViewWillEnter {
   isEdit = false;
   profileId = '';
+  /** True while the initial `refresh()` for this visit runs. */
+  pageLoading = true;
   name = '';
   formCaregiverEmail = '';
   formCaregiverPhone = '';
@@ -29,6 +31,7 @@ export class ProfileFormPage implements OnInit, ViewWillEnter {
     private readonly medData: MedDataService,
     private readonly medNotif: MedNotificationService,
     private readonly toastCtrl: ToastController,
+    private readonly loadingCtrl: LoadingController,
     readonly subscription: SubscriptionService
   ) {}
 
@@ -40,7 +43,12 @@ export class ProfileFormPage implements OnInit, ViewWillEnter {
   }
 
   async ionViewWillEnter(): Promise<void> {
-    await this.medData.refresh();
+    this.pageLoading = true;
+    try {
+      await this.medData.refresh();
+    } finally {
+      this.pageLoading = false;
+    }
     if (!this.isEdit) {
       const n = this.medData.getProfilesSnapshot().length;
       if (!this.subscription.canAddProfile(n)) {
@@ -72,15 +80,23 @@ export class ProfileFormPage implements OnInit, ViewWillEnter {
       return;
     }
     const caregiver = this.caregiverPayloadForSave();
-    if (this.isEdit && this.profileId) {
-      await this.medData.updateProfile(this.profileId, n, caregiver, this.formPatientGroup);
+    const loading = await this.loadingCtrl.create({
+      message: this.isEdit ? 'Saving profile…' : 'Creating profile…',
+    });
+    await loading.present();
+    try {
+      if (this.isEdit && this.profileId) {
+        await this.medData.updateProfile(this.profileId, n, caregiver, this.formPatientGroup);
+        await this.medNotif.rescheduleAll();
+        await this.router.navigate(['/tabs/profiles', this.profileId]);
+        return;
+      }
+      const profile = await this.medData.createProfile(n, caregiver, this.formPatientGroup);
       await this.medNotif.rescheduleAll();
-      await this.router.navigate(['/tabs/profiles', this.profileId]);
-      return;
+      await this.router.navigate(['/tabs/profiles', profile.id]);
+    } finally {
+      await loading.dismiss();
     }
-    const profile = await this.medData.createProfile(n, caregiver, this.formPatientGroup);
-    await this.medNotif.rescheduleAll();
-    await this.router.navigate(['/tabs/profiles', profile.id]);
   }
 
   cancel(): void {

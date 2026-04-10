@@ -12,7 +12,13 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="mm-dose-medico" *ngIf="dose">
+<ion-content [fullscreen]="true" class="mm-dose-medico" *ngIf="!pageReady || dose">
+  <div *ngIf="!pageReady" class="ion-padding ion-text-center mm-dose-page-loading">
+    <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+    <p role="status">Loading medicine details…</p>
+  </div>
+
+  <ng-container *ngIf="pageReady && dose">
   <div class="mm-dose-panel ion-padding mm-motion-enter">
     <h1 class="mm-dose-name">{{ dose.medName }}</h1>
     <p class="mm-dose-desc">
@@ -112,9 +118,10 @@
       This is your personal log. It does not replace medical advice.
     </p>
   </div>
+  </ng-container>
 </ion-content>
 
-<ion-content *ngIf="!dose" class="ion-padding">
+<ion-content *ngIf="pageReady && !dose" class="ion-padding mm-dose-medico" [fullscreen]="true">
   <p>Dose not found for today.</p>
   <ion-button expand="block" (click)="back()">Back to Today</ion-button>
 </ion-content>

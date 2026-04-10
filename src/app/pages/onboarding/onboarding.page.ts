@@ -1,7 +1,7 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, LoadingController } from '@ionic/angular';
+import { formatApiError } from '../../shared/format-api-error';
 import { OnboardingAudience, OnboardingService } from '../../services/onboarding.service';
 import { MedDataService } from '../../services/med-data.service';
 import { MedNotificationService } from '../../services/med-notification.service';
@@ -112,11 +112,8 @@ export class OnboardingPage {
   }
 
   private async showHttpError(header: string, e: unknown): Promise<void> {
-    let msg = 'Request failed';
-    if (e instanceof HttpErrorResponse) {
-      const body = e.error as { error?: string } | undefined;
-      msg = body?.error ?? e.message;
-    }
+    console.error(header, e);
+    const msg = formatApiError(e);
     const a = await this.alertCtrl.create({ header, message: msg, buttons: ['OK'] });
     await a.present();
   }

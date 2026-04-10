@@ -160,6 +160,7 @@ ion-button[expand='block'] {
 
   .mm-stack ion-item {
     animation: mm-fade-up 0.38s var(--mm-ease-out) both;
+
   }
 
   .mm-stack ion-item:nth-child(1) {
@@ -332,8 +333,8 @@ app-medication-form .section-head {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 0.75rem;
-  padding: 8px 0 0;
+
+  padding: 8px 17px 0;
   font-size: 0.98rem;
   font-weight: 600;
   opacity: 0.92;
@@ -346,7 +347,7 @@ app-medication-form .section-head {
 
 /* Stacked list rows (Ionic lists) */
 .mm-stack ion-item {
-  --border-radius: var(--mm-radius-md);
+  border-radius: 10px;
   --padding-start: 16px;
   --padding-end: 14px;
   --inner-padding-end: 10px;

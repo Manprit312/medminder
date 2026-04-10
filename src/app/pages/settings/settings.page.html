@@ -69,6 +69,21 @@
         <span class="material-symbols-outlined btn-ic" aria-hidden="true">notifications_active</span>
         Enable reminders
       </ion-button>
+      <ion-button
+        expand="block"
+        shape="round"
+        fill="outline"
+        color="primary"
+        class="mm-settings-btn ion-margin-top"
+        type="button"
+        (click)="sendTestReminder()"
+      >
+        <span class="material-symbols-outlined btn-ic" aria-hidden="true">science</span>
+        Test reminder in 10 seconds
+      </ion-button>
+      <p class="ion-padding-horizontal ion-text-wrap mm-settings-notify-hint">
+        Local only — scheduled on this device. Not Firebase or push from a server.
+      </p>
     </div>
 
     <ion-item *ngIf="!native" lines="none" class="mm-settings-item">
@@ -133,9 +148,20 @@
       </ion-label>
     </ion-item>
 
+    <div class="mm-settings-actions ion-padding-horizontal ion-padding-bottom" *ngIf="!subscription.isPremium">
+      <ion-button expand="block" shape="round" fill="outline" color="tertiary" (click)="simulatePlus()">
+        <span class="material-symbols-outlined btn-ic" aria-hidden="true">upgrade</span>
+        Simulate Plus (dev / staging)
+      </ion-button>
+    </div>
+    <div class="mm-settings-actions ion-padding-horizontal ion-padding-bottom" *ngIf="subscription.isPremium">
+      <ion-button expand="block" shape="round" fill="outline" color="medium" (click)="simulateFree()">
+        Simulate Free (dev / staging)
+      </ion-button>
+    </div>
     <ion-item lines="none" class="mm-settings-footnote-item">
       <ion-text color="medium" class="ion-text-wrap mm-settings-footnote">
-        In-app upgrades will be available in a future update.
+        App Store / Play subscriptions can replace simulation once integrated. Production APIs may disable simulate-tier.
       </ion-text>
     </ion-item>
   </ion-list>

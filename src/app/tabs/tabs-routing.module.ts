@@ -54,6 +54,20 @@ const routes: Routes = [
           import('../pages/profiles/profiles.module').then((m) => m.ProfilesPageModule),
       },
       {
+        path: 'caring/:profileId',
+        loadChildren: () =>
+          import('../pages/caretaking-detail/caretaking-detail.module').then(
+            (m) => m.CaretakingDetailPageModule
+          ),
+      },
+      {
+        path: 'caring',
+        loadChildren: () =>
+          import('../pages/caretaking-list/caretaking-list.module').then(
+            (m) => m.CaretakingListPageModule
+          ),
+      },
+      {
         path: 'settings/education',
         loadChildren: () =>
           import('../pages/education/education.module').then((m) => m.EducationPageModule),

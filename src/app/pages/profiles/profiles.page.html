@@ -5,6 +5,12 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="profiles-page mm-gradient-bg">
+  <div *ngIf="loading" class="ion-padding ion-text-center mm-profiles-loading">
+    <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+    <p role="status">Loading family…</p>
+  </div>
+
+  <ng-container *ngIf="!loading">
   <div class="ion-padding" *ngIf="profiles.length === 0">
     <div class="mm-empty-hero">
       <img
@@ -57,4 +63,5 @@
       <span class="material-symbols-outlined fab-icon">person_add</span>
     </ion-fab-button>
   </ion-fab>
+  </ng-container>
 </ion-content>

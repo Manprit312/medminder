@@ -1,0 +1,39 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>Caring</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="mm-gradient-bg">
+  <div class="ion-padding intro">
+    <p>
+      <span class="material-symbols-outlined intro-icon">volunteer_activism</span>
+      People who invited you as a caretaker can appear here. You’ll see their medication schedule and today’s log (read-only).
+    </p>
+  </div>
+
+  <div *ngIf="loading" class="ion-padding ion-text-center mm-page-loading">
+    <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+    <p role="status">Loading…</p>
+  </div>
+
+  <div *ngIf="!loading && loadError" class="ion-padding">
+    <p>{{ loadError }}</p>
+  </div>
+
+  <ion-list *ngIf="!loading && !loadError && profiles.length > 0" inset="true" lines="none" class="form-card ion-margin">
+    <ion-item button detail="true" *ngFor="let p of profiles" (click)="openProfile(p)">
+      <span class="material-symbols-outlined slot-icon" slot="start" aria-hidden="true">person</span>
+      <ion-label>
+        <h2>{{ p.name }}</h2>
+        <p>View medication track</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <div *ngIf="!loading && !loadError && profiles.length === 0" class="ion-padding empty-state">
+    <span class="material-symbols-outlined empty-icon" aria-hidden="true">inbox</span>
+    <h2>No caretaker invites yet</h2>
+    <p>When someone with MedMinder Plus sends you an invite email, accept it from the link — then they’ll show up here.</p>
+  </div>
+</ion-content>

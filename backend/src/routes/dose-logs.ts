@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { asyncRoute } from '../async-route.js';
+import { notifyCaretakersDoseEvent } from '../caretaker-dose-notify.js';
 import { isPostgres, queryOne, queryAll, runExec } from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
 
@@ -185,6 +186,28 @@ doseLogsRouter.post(
       res.status(500).json({ error: 'Failed to save dose log' });
       return;
     }
+
+    if (status === 'skipped' || status === 'missed') {
+      const meta = await queryOne<{ name: string; profile_id: string; profile_name: string }>(
+        `SELECT m.name, p.id AS profile_id, p.name AS profile_name
+         FROM medications m INNER JOIN profiles p ON p.id = m.profile_id WHERE m.id = ?`,
+        [medicationId]
+      );
+      if (meta) {
+        setImmediate(() => {
+          void notifyCaretakersDoseEvent({
+            medicationId,
+            medicationName: meta.name,
+            profileName: meta.profile_name,
+            status,
+            date,
+            scheduledTime,
+            profileId: meta.profile_id,
+          }).catch((err) => console.error('[dose-logs] caretaker notify', err));
+        });
+      }
+    }
+
     res.status(201).json({
       log: {
         id: row.id,

@@ -3,13 +3,15 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { getApiUrl } from '../../environments/api-url';
 import { withApiTimeout } from '../shared/http-api-timeout';
+import { SubscriptionService } from './subscription.service';
 import { TokenStorageService } from './token-storage.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   constructor(
     private readonly http: HttpClient,
-    private readonly tokens: TokenStorageService
+    private readonly tokens: TokenStorageService,
+    private readonly subscription: SubscriptionService
   ) {}
 
   isLoggedIn(): boolean {
@@ -27,29 +29,32 @@ export class AuthService {
   async login(email: string, password: string): Promise<void> {
     const res = await firstValueFrom(
       withApiTimeout(
-        this.http.post<{ token: string; user: { email: string } }>(
+        this.http.post<{ token: string; user: { email: string; subscriptionTier?: string } }>(
           `${getApiUrl()}/api/auth/login`,
           { email: email.trim().toLowerCase(), password }
         )
       )
     );
     await this.tokens.setSession(res.token, res.user.email);
+    this.subscription.applyFromAuthUser(res.user);
   }
 
   async register(email: string, password: string): Promise<void> {
     const res = await firstValueFrom(
       withApiTimeout(
-        this.http.post<{ token: string; user: { email: string } }>(
+        this.http.post<{ token: string; user: { email: string; subscriptionTier?: string } }>(
           `${getApiUrl()}/api/auth/register`,
           { email: email.trim().toLowerCase(), password }
         )
       )
     );
     await this.tokens.setSession(res.token, res.user.email);
+    this.subscription.applyFromAuthUser(res.user);
   }
 
   async logout(): Promise<void> {
     await this.tokens.clear();
+    this.subscription.resetToEnvironmentDefault();
   }
 
   /** Request a password-reset email (backend sends mail when SMTP is configured). */

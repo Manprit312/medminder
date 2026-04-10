@@ -1,3 +1,23 @@
+.mm-page-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 40vh;
+  padding-top: 2rem;
+}
+
+.mm-loading-caption {
+  margin: 0;
+  color: var(--mm-text-muted, var(--ion-color-medium));
+  font-size: 0.95rem;
+}
+
+.mm-profile-missing {
+  padding-top: 2rem;
+}
+
 .patient-tips-card {
   padding: 1rem 1.1rem;
   border-radius: var(--mm-radius-md, 18px);
@@ -121,7 +141,8 @@
   align-items: center;
   gap: 8px;
 }
-
+.caregiver-line-content{display: flex;
+  align-items: center;}
 .med-row ion-label p {
   font-size: 0.98rem;
   line-height: 1.45;

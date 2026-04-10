@@ -1,19 +1,76 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { getApiUrl } from '../../environments/api-url';
+import { withApiTimeout } from '../shared/http-api-timeout';
+import { TokenStorageService } from './token-storage.service';
 
 /**
- * Client-side plan tier. Replace with API / store billing when ready.
- * Free: one profile, reminders, dose logging, basic Today view.
- * Plus: multiple family profiles, caregiver contacts, education hub.
+ * Plan tier: server `/api/auth/me` when logged in; falls back to `environment.subscriptionTier`.
  */
 @Injectable({ providedIn: 'root' })
 export class SubscriptionService {
-  /** True when user is on MedMinder Plus (premium). */
-  get isPremium(): boolean {
-    return environment.subscriptionTier === 'premium';
+  private readonly tier$ = new BehaviorSubject<'free' | 'premium'>(this.envDefault());
+
+  constructor(
+    private readonly http: HttpClient,
+    private readonly tokens: TokenStorageService
+  ) {}
+
+  private envDefault(): 'free' | 'premium' {
+    return environment.subscriptionTier === 'premium' ? 'premium' : 'free';
   }
 
-  /** Additional profiles beyond the first require Plus. */
+  readonly tier = this.tier$.asObservable();
+
+  /** True when user is on MedMinder Plus (premium). */
+  get isPremium(): boolean {
+    return this.tier$.value === 'premium';
+  }
+
+  applyFromAuthUser(user: { subscriptionTier?: string } | undefined | null): void {
+    const t = user?.subscriptionTier === 'premium' ? 'premium' : 'free';
+    this.tier$.next(t);
+  }
+
+  resetToEnvironmentDefault(): void {
+    this.tier$.next(this.envDefault());
+  }
+
+  /** Refresh tier from GET /api/auth/me (Bearer token via interceptor). */
+  async refreshFromApi(): Promise<void> {
+    if (!this.tokens.hasToken()) {
+      this.resetToEnvironmentDefault();
+      return;
+    }
+    try {
+      const res = await firstValueFrom(
+        withApiTimeout(
+          this.http.get<{ user: { subscriptionTier?: string } }>(`${getApiUrl()}/api/auth/me`)
+        )
+      );
+      this.applyFromAuthUser(res.user);
+    } catch {
+      /* keep last known tier */
+    }
+  }
+
+  /**
+   * Dev/staging: POST /api/billing/simulate-tier — disabled in production unless DEV_BILLING_SIMULATION is set server-side.
+   */
+  async simulateTier(tier: 'free' | 'premium'): Promise<void> {
+    const res = await firstValueFrom(
+      withApiTimeout(
+        this.http.post<{ subscriptionTier: string }>(`${getApiUrl()}/api/billing/simulate-tier`, {
+          tier: tier === 'premium' ? 'premium' : 'free',
+        })
+      )
+    );
+    this.applyFromAuthUser({ subscriptionTier: res.subscriptionTier });
+  }
+
   canAddProfile(currentProfileCount: number): boolean {
     if (this.isPremium) {
       return true;
@@ -21,12 +78,10 @@ export class SubscriptionService {
     return currentProfileCount < 1;
   }
 
-  /** Caregiver email/phone on profiles are a Plus feature. */
   canUseCaregiverFields(): boolean {
     return this.isPremium;
   }
 
-  /** Curated reference links & expanded education — Plus only (see Education page). */
   canUseEducationHub(): boolean {
     return this.isPremium;
   }

@@ -55,14 +55,12 @@ authRouter.post(
     const id = uuid();
     const hash = bcrypt.hashSync(password, SALT_ROUNDS);
     const now = new Date().toISOString();
-    await runExec('INSERT INTO users (id, email, password_hash, created_at) VALUES (?, ?, ?, ?)', [
-      id,
-      email,
-      hash,
-      now,
-    ]);
+    await runExec(
+      'INSERT INTO users (id, email, password_hash, created_at, subscription_tier) VALUES (?, ?, ?, ?, ?)',
+      [id, email, hash, now, 'free']
+    );
     const token = jwt.sign({ sub: id, email } satisfies AuthPayload, jwtSecret(), { expiresIn: '30d' });
-    res.status(201).json({ token, user: { id, email } });
+    res.status(201).json({ token, user: { id, email, subscriptionTier: 'free' } });
   })
 );
 
@@ -88,7 +86,12 @@ authRouter.post(
     const token = jwt.sign({ sub: row.id, email: row.email } satisfies AuthPayload, jwtSecret(), {
       expiresIn: '30d',
     });
-    res.json({ token, user: { id: row.id, email: row.email } });
+    const tierRow = await queryOne<{ subscription_tier: string }>(
+      'SELECT subscription_tier FROM users WHERE id = ?',
+      [row.id]
+    );
+    const subscriptionTier = tierRow?.subscription_tier === 'premium' ? 'premium' : 'free';
+    res.json({ token, user: { id: row.id, email: row.email, subscriptionTier } });
   })
 );
 
@@ -185,15 +188,25 @@ authRouter.get(
     }
     try {
       const decoded = jwt.verify(header.slice(7), jwtSecret()) as AuthPayload;
-      const u = await queryOne<{ id: string; email: string; created_at: string }>(
-        'SELECT id, email, created_at FROM users WHERE id = ?',
-        [decoded.sub]
-      );
+      const u = await queryOne<{
+        id: string;
+        email: string;
+        created_at: string;
+        subscription_tier: string | null;
+      }>('SELECT id, email, created_at, subscription_tier FROM users WHERE id = ?', [decoded.sub]);
       if (!u) {
         res.status(404).json({ error: 'User not found' });
         return;
       }
-      res.json({ user: u });
+      const subscriptionTier = u.subscription_tier === 'premium' ? 'premium' : 'free';
+      res.json({
+        user: {
+          id: u.id,
+          email: u.email,
+          created_at: u.created_at,
+          subscriptionTier,
+        },
+      });
     } catch {
       res.status(401).json({ error: 'Invalid token' });
     }

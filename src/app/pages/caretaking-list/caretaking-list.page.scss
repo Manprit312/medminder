@@ -1,0 +1,35 @@
+.intro {
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.intro-icon {
+  vertical-align: middle;
+  margin-right: 0.35rem;
+}
+
+.mm-page-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 30vh;
+  padding-top: 2rem;
+  color: var(--ion-color-medium);
+}
+
+.slot-icon {
+  color: var(--ion-color-primary);
+}
+
+.empty-state {
+  text-align: center;
+  max-width: 420px;
+  margin: 2rem auto;
+  color: var(--ion-color-medium);
+
+  .empty-icon {
+    font-size: 3rem;
+    opacity: 0.5;
+  }
+}

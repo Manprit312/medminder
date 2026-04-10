@@ -19,6 +19,22 @@
   color: var(--mm-cream-bright);
 }
 
+.mm-dose-page-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 42vh;
+  padding-top: 2rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.mm-dose-page-loading ion-spinner {
+  --color: var(--mm-cream-bright);
+  transform: scale(1.15);
+}
+
 .mm-dose-panel {
   max-width: 440px;
   margin: 0 auto;

@@ -1,0 +1,57 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/caring" text="Caring"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ data?.profile?.name || 'Care view' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="mm-gradient-bg">
+  <div *ngIf="loading" class="ion-padding ion-text-center mm-page-loading">
+    <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+    <p role="status">Loading medication track…</p>
+  </div>
+
+  <div *ngIf="!loading && error" class="ion-padding">
+    <p>{{ error }}</p>
+  </div>
+
+  <ng-container *ngIf="!loading && data && !error">
+    <div class="ion-padding head-block">
+      <p class="date-line">
+        <span class="material-symbols-outlined tiny" aria-hidden="true">calendar_today</span>
+        {{ data.date }}
+      </p>
+      <p class="hint">Read-only — you can’t edit their medications here.</p>
+    </div>
+
+    <div *ngIf="data.medications.length === 0" class="ion-padding">
+      <p>No medications listed for this person.</p>
+    </div>
+
+    <ion-list *ngIf="data.medications.length > 0" inset="true" lines="none" class="form-card ion-margin">
+      <ion-item *ngFor="let med of data.medications" lines="none" class="med-block">
+        <ion-label>
+          <h2>
+            {{ med.name }}
+            <ion-badge *ngIf="!med.enabled" color="medium">Off</ion-badge>
+          </h2>
+          <p *ngIf="med.dosageNote" class="dosage">{{ med.dosageNote }}</p>
+          <p class="times">
+            <span class="material-symbols-outlined tiny" aria-hidden="true">schedule</span>
+            Scheduled: {{ med.times.join(', ') }}
+          </p>
+          <div class="log-lines" *ngIf="slotsForMed(med) as slots">
+            <p *ngFor="let s of slots" class="slot-row">
+              <span class="time-pill">{{ formatTime12h(s.scheduledTime) }}</span>
+              <ion-badge [color]="s.status === 'taken' ? 'success' : s.status === 'pending' ? 'medium' : 'warning'">
+                {{ s.status }}
+              </ion-badge>
+            </p>
+          </div>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </ng-container>
+</ion-content>

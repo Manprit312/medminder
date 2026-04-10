@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ViewWillEnter } from '@ionic/angular';
+import { LoadingController, ViewWillEnter } from '@ionic/angular';
 import { Medication, TodayDose } from '../../models/med.models';
 import { MedDataService } from '../../services/med-data.service';
 import { RefillService } from '../../services/refill.service';
@@ -19,23 +19,31 @@ export class DoseLogPage implements ViewWillEnter {
   medicationId = '';
   time = '';
   dose: TodayDose | null = null;
+  /** False until `refresh()` finishes — avoids empty / wrong states while the API is slow. */
+  pageReady = false;
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly medData: MedDataService,
+    private readonly loadingCtrl: LoadingController,
     readonly refill: RefillService
   ) {}
 
   async ionViewWillEnter(): Promise<void> {
+    this.pageReady = false;
     this.medicationId =
       this.route.snapshot.paramMap.get('medicationId') ??
       this.route.parent?.snapshot.paramMap.get('medicationId') ??
       '';
     const token = this.route.snapshot.paramMap.get('timeToken') ?? '';
     this.time = decodeTimeToken(token);
-    await this.medData.refresh();
-    this.refreshLocal();
+    try {
+      await this.medData.refresh();
+      this.refreshLocal();
+    } finally {
+      this.pageReady = true;
+    }
   }
 
   refreshLocal(): void {
@@ -107,8 +115,14 @@ export class DoseLogPage implements ViewWillEnter {
     if (!this.dose) {
       return;
     }
-    await this.medData.logDose(this.dose.medicationId, this.dose.time, status);
-    this.refreshLocal();
+    const loading = await this.loadingCtrl.create({ message: 'Updating dose log…' });
+    await loading.present();
+    try {
+      await this.medData.logDose(this.dose.medicationId, this.dose.time, status);
+      this.refreshLocal();
+    } finally {
+      await loading.dismiss();
+    }
   }
 
   back(): void {

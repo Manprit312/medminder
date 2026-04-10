@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { ViewWillEnter } from '@ionic/angular';
+import { LoadingController, ViewWillEnter } from '@ionic/angular';
 import { Medication, TodayDose } from '../../models/med.models';
 
 function timeToMinutes(time: string): number {
@@ -19,6 +19,8 @@ import { RefillService } from '../../services/refill.service';
   standalone: false,
 })
 export class TodayPage implements ViewWillEnter {
+  /** True while `refresh()` / summaries run for this visit. */
+  loading = true;
   doses: TodayDose[] = [];
   /** Calendar date for headings (refreshed when screen loads) */
   todayDate = new Date();
@@ -40,16 +42,22 @@ export class TodayPage implements ViewWillEnter {
     private readonly adherence: AdherenceService,
     private readonly refill: RefillService,
     private readonly router: Router,
-    private readonly mealLog: MealLogService
+    private readonly mealLog: MealLogService,
+    private readonly loadingCtrl: LoadingController
   ) {}
 
   async ionViewWillEnter(): Promise<void> {
+    this.loading = true;
     this.expandedDose = null;
     this.mealLogDateKey = formatLocalDate(new Date());
-    await this.medData.refresh();
-    this.refreshLocal();
-    await this.refreshWeeklySummary();
-    await this.loadMealsForToday();
+    try {
+      await this.medData.refresh();
+      this.refreshLocal();
+      await this.refreshWeeklySummary();
+      await this.loadMealsForToday();
+    } finally {
+      this.loading = false;
+    }
   }
 
   refreshLocal(): void {
@@ -63,7 +71,13 @@ export class TodayPage implements ViewWillEnter {
   }
 
   async saveMealsJournal(): Promise<void> {
-    await this.mealLog.saveForDate(this.mealLogDateKey, { ...this.mealDraft });
+    const overlay = await this.loadingCtrl.create({ message: 'Saving journal…' });
+    await overlay.present();
+    try {
+      await this.mealLog.saveForDate(this.mealLogDateKey, { ...this.mealDraft });
+    } finally {
+      await overlay.dismiss();
+    }
   }
 
   private updateTodayAdherence(): void {
@@ -349,9 +363,15 @@ export class TodayPage implements ViewWillEnter {
   }
 
   async mark(dose: TodayDose, status: 'taken' | 'skipped' | 'missed'): Promise<void> {
-    await this.medData.logDose(dose.medicationId, dose.time, status);
-    this.refreshLocal();
-    await this.refreshWeeklySummary();
+    const overlay = await this.loadingCtrl.create({ message: 'Updating dose log…' });
+    await overlay.present();
+    try {
+      await this.medData.logDose(dose.medicationId, dose.time, status);
+      this.refreshLocal();
+      await this.refreshWeeklySummary();
+    } finally {
+      await overlay.dismiss();
+    }
   }
 
   medForDose(dose: TodayDose): Medication | undefined {

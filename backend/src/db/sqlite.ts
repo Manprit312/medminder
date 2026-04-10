@@ -57,6 +57,8 @@ export function openSqlite(): Database.Database {
   migrateProfilesCaregiverColumns(db);
   migrateProfilesPatientGroupColumn(db);
   migratePasswordResetTokens(db);
+  migrateUserSubscriptionTier(db);
+  migrateCaretakerTables(db);
   return db;
 }
 
@@ -109,4 +111,37 @@ function migrateProfilesPatientGroupColumn(database: Database.Database) {
   if (!names.has('patient_group')) {
     database.exec(`ALTER TABLE profiles ADD COLUMN patient_group TEXT NOT NULL DEFAULT 'adult'`);
   }
+}
+
+function migrateUserSubscriptionTier(database: Database.Database) {
+  const cols = database.prepare('PRAGMA table_info(users)').all() as { name: string }[];
+  const names = new Set(cols.map((c) => c.name));
+  if (!names.has('subscription_tier')) {
+    database.exec(`ALTER TABLE users ADD COLUMN subscription_tier TEXT NOT NULL DEFAULT 'free'`);
+  }
+}
+
+function migrateCaretakerTables(database: Database.Database) {
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS caretaker_invites (
+      id TEXT PRIMARY KEY,
+      profile_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+      inviter_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      invitee_email TEXT NOT NULL COLLATE NOCASE,
+      token_hash TEXT NOT NULL UNIQUE,
+      expires_at TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending',
+      created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_caretaker_invites_profile ON caretaker_invites(profile_id);
+    CREATE INDEX IF NOT EXISTS idx_caretaker_invites_email ON caretaker_invites(invitee_email);
+
+    CREATE TABLE IF NOT EXISTS caretaker_links (
+      profile_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+      caretaker_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_at TEXT NOT NULL,
+      PRIMARY KEY (profile_id, caretaker_user_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_caretaker_links_user ON caretaker_links(caretaker_user_id);
+  `);
 }

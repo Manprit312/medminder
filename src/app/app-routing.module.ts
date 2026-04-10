@@ -34,6 +34,13 @@ const routes: Routes = [
     canActivate: [onboardingIncompleteGuard],
   },
   {
+    path: 'accept-caretaker-invite',
+    loadChildren: () =>
+      import('./pages/accept-caretaker-invite/accept-caretaker-invite.module').then(
+        (m) => m.AcceptCaretakerInvitePageModule
+      ),
+  },
+  {
     path: 'tabs',
     loadChildren: () => import('./tabs/tabs.module').then((m) => m.TabsPageModule),
     canActivate: [authGuard],

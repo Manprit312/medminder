@@ -1,8 +1,8 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController, ViewWillEnter } from '@ionic/angular';
+import { AlertController, LoadingController, ViewWillEnter } from '@ionic/angular';
 import { Medication, MedicationKind, Profile } from '../../models/med.models';
+import { formatApiError } from '../../shared/format-api-error';
 import { MedDataService } from '../../services/med-data.service';
 import { MedExternalLinksService } from '../../services/med-external-links.service';
 import { MedNotificationService } from '../../services/med-notification.service';
@@ -30,6 +30,8 @@ export class MedicationFormPage implements OnInit, ViewWillEnter {
   /** Add flow: step 1 = choose type (reference UI), step 2 = details */
   addStep: 1 | 2 = 1;
   formKind: MedicationKind | null = null;
+  /** False until `refresh()` finishes — avoids “Profile not found” while the API is slow. */
+  pageReady = false;
 
   readonly typeOptions: { id: MedicationKind; label: string; icon: string }[] = [
     { id: 'tablet', label: 'Tablet', icon: 'pill' },
@@ -44,7 +46,8 @@ export class MedicationFormPage implements OnInit, ViewWillEnter {
     private readonly medData: MedDataService,
     private readonly medNotif: MedNotificationService,
     private readonly medLinks: MedExternalLinksService,
-    private readonly alertCtrl: AlertController
+    private readonly alertCtrl: AlertController,
+    private readonly loadingCtrl: LoadingController
   ) {}
 
   /** Lazy-loaded `profiles/:id/medications/...` often keeps `:id` on a parent route — walk the tree. */
@@ -60,32 +63,51 @@ export class MedicationFormPage implements OnInit, ViewWillEnter {
     return '';
   }
 
-  private async showHttpError(header: string, e: unknown): Promise<void> {
-    let msg = 'Request failed';
-    if (e instanceof HttpErrorResponse) {
-      const body = e.error as { error?: string } | undefined;
-      msg = body?.error ?? e.message;
-    } else if (e instanceof Error) {
-      msg = e.message;
+  /**
+   * Ionic stack + lazy children sometimes omit params on `ActivatedRoute` snapshots.
+   * URL is the source of truth for `/tabs/profiles/:id/medications/(add|:medId)`.
+   */
+  private readMedicationIdsFromUrl(): { profileId: string; medId: string } {
+    const path = this.router.url.split(/[?#]/)[0];
+    const m = path.match(/profiles\/([^/]+)\/medications\/(add|[^/]+)/);
+    if (!m) {
+      return { profileId: '', medId: '' };
     }
+    const medSeg = m[2];
+    return {
+      profileId: m[1],
+      medId: medSeg === 'add' ? '' : medSeg,
+    };
+  }
+
+  private resolveMedicationRouteIds(): void {
+    const fromTree = { profileId: this.readRouteParam('id'), medId: this.readRouteParam('medId') };
+    const fromUrl = this.readMedicationIdsFromUrl();
+    this.profileId = fromTree.profileId || fromUrl.profileId;
+    this.medId = fromTree.medId || fromUrl.medId;
+    this.isAdd = this.router.url.includes('/medications/add');
+  }
+
+  private async showHttpError(header: string, e: unknown): Promise<void> {
+    console.error(header, e);
+    const msg = formatApiError(e);
     const a = await this.alertCtrl.create({ header, message: msg, buttons: ['OK'] });
     await a.present();
   }
 
   ngOnInit(): void {
-    this.profileId = this.readRouteParam('id');
-    this.medId = this.readRouteParam('medId');
-    this.isAdd = this.router.url.includes('/medications/add');
+    this.resolveMedicationRouteIds();
     if (this.isAdd) {
       this.addStep = 1;
       this.formKind = null;
     }
   }
 
-  ionViewWillEnter(): void {
-    this.profileId = this.readRouteParam('id');
-    this.medId = this.readRouteParam('medId');
-    void this.medData.refresh().then(() => {
+  async ionViewWillEnter(): Promise<void> {
+    this.pageReady = false;
+    this.resolveMedicationRouteIds();
+    try {
+      await this.medData.refresh();
       this.profile = this.medData.getProfile(this.profileId);
       if (!this.isAdd && this.medId) {
         const m = this.medData.getMedicationById(this.medId);
@@ -103,7 +125,9 @@ export class MedicationFormPage implements OnInit, ViewWillEnter {
         this.formRemainingQuantity = '';
         this.formPillsPerIntake = 1;
       }
-    });
+    } finally {
+      this.pageReady = true;
+    }
   }
 
   backHref(): string {
@@ -137,6 +161,10 @@ export class MedicationFormPage implements OnInit, ViewWillEnter {
       return;
     }
     this.formTimes.splice(index, 1);
+  }
+
+  trackTimeRow(index: number, _item: string): number {
+    return index;
   }
 
   openLearnMore(): void {
@@ -173,13 +201,33 @@ export class MedicationFormPage implements OnInit, ViewWillEnter {
     if (!value) {
       return '09:00';
     }
-    const parts = value.split(':');
-    const h = `${parseInt(parts[0], 10) || 0}`.padStart(2, '0');
-    const m = `${parseInt(parts[1] ?? '0', 10) || 0}`.padStart(2, '0');
+    const segment = value.trim().split(':');
+    const h = `${parseInt(segment[0], 10) || 0}`.padStart(2, '0');
+    const m = `${parseInt(segment[1] ?? '0', 10) || 0}`.padStart(2, '0');
     return `${h}:${m}`;
   }
 
+  /**
+   * ion-input type="time" may not update ngModel until blur; header Save can read stale values.
+   * Sync from the control whenever the user picks a time (also handles HH:mm:ss from WebKit).
+   */
+  patchTimeFromInput(index: number, ev: Event): void {
+    const detail = (ev as CustomEvent<{ value?: string | null }>).detail;
+    const raw = detail?.value;
+    if (raw === undefined || raw === null) {
+      return;
+    }
+    this.formTimes[index] = this.normalizeTime(String(raw));
+  }
+
   async save(): Promise<void> {
+    const ae = document.activeElement;
+    if (ae instanceof HTMLElement) {
+      ae.blur();
+    }
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    this.formTimes = this.formTimes.map((t) => this.normalizeTime(String(t ?? '')));
+
     const name = this.formName.trim();
     if (!name || !this.profileId) {
       if (!this.profileId) {
@@ -192,13 +240,35 @@ export class MedicationFormPage implements OnInit, ViewWillEnter {
       }
       return;
     }
-    const times = this.formTimes.map((t) => this.normalizeTime(t));
+    const times = [...this.formTimes];
     const unique = [...new Set(times)].sort();
     if (unique.length === 0) {
       return;
     }
+    if (unique.length !== times.length) {
+      const dup = await this.alertCtrl.create({
+        header: 'Duplicate times',
+        message: 'Two or more reminders use the same time. Change or remove duplicates, then save again.',
+        buttons: ['OK'],
+      });
+      await dup.present();
+      return;
+    }
 
     const pillsPerIntake = this.parsePillsPerIntake();
+    let existing: Medication | undefined;
+    if (!this.isAdd) {
+      existing = this.medData.getMedicationById(this.medId);
+      if (!existing) {
+        await this.showHttpError('Could not save', new Error('Medication not found in app data. Pull to refresh or reopen this screen.'));
+        return;
+      }
+    }
+
+    const loading = await this.loadingCtrl.create({
+      message: this.isAdd ? 'Adding medication…' : 'Saving changes…',
+    });
+    await loading.present();
     try {
       if (this.isAdd) {
         await this.medData.createMedication(this.profileId, {
@@ -210,12 +280,7 @@ export class MedicationFormPage implements OnInit, ViewWillEnter {
           pillsPerIntake,
           kind: this.formKind ?? undefined,
         });
-      } else {
-        const existing = this.medData.getMedicationById(this.medId);
-        if (!existing) {
-          await this.showHttpError('Could not save', new Error('Medication not found in app data. Pull to refresh or reopen this screen.'));
-          return;
-        }
+      } else if (existing) {
         await this.medData.updateMedication({
           ...existing,
           name,
@@ -231,6 +296,8 @@ export class MedicationFormPage implements OnInit, ViewWillEnter {
       await this.router.navigate([this.backHref()]);
     } catch (e: unknown) {
       await this.showHttpError(this.isAdd ? 'Could not add medication' : 'Could not save medication', e);
+    } finally {
+      await loading.dismiss();
     }
   }
 
@@ -247,12 +314,16 @@ export class MedicationFormPage implements OnInit, ViewWillEnter {
           text: 'Remove',
           role: 'destructive',
           handler: async () => {
+            const loading = await this.loadingCtrl.create({ message: 'Removing medication…' });
+            await loading.present();
             try {
               await this.medData.deleteMedication(this.medId);
               await this.medNotif.rescheduleAll();
               await this.router.navigate([this.backHref()]);
             } catch (e: unknown) {
               await this.showHttpError('Could not remove medication', e);
+            } finally {
+              await loading.dismiss();
             }
           },
         },

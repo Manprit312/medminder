@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ViewWillEnter } from '@ionic/angular';
+import { LoadingController, ViewWillEnter } from '@ionic/angular';
 import { Profile } from '../../models/med.models';
 import { MedDataService } from '../../services/med-data.service';
 import { VitalReading, VitalsStorageService } from '../../services/vitals-storage.service';
@@ -26,7 +26,8 @@ export class VitalsPage implements ViewWillEnter {
 
   constructor(
     private readonly medData: MedDataService,
-    private readonly vitals: VitalsStorageService
+    private readonly vitals: VitalsStorageService,
+    private readonly loadingCtrl: LoadingController
   ) {}
 
   async ionViewWillEnter(): Promise<void> {
@@ -103,24 +104,36 @@ export class VitalsPage implements ViewWillEnter {
       return;
     }
 
-    await this.vitals.add({
-      profileId: this.selectedProfileId,
-      recordedAt: recorded.toISOString(),
-      systolic: sys,
-      diastolic: dia,
-      heartRateBpm: hr,
-    });
+    const loading = await this.loadingCtrl.create({ message: 'Saving reading…' });
+    await loading.present();
+    try {
+      await this.vitals.add({
+        profileId: this.selectedProfileId,
+        recordedAt: recorded.toISOString(),
+        systolic: sys,
+        diastolic: dia,
+        heartRateBpm: hr,
+      });
 
-    this.formSystolic = '';
-    this.formDiastolic = '';
-    this.formHeartRate = '';
-    this.resetFormTime();
-    await this.loadReadings();
+      this.formSystolic = '';
+      this.formDiastolic = '';
+      this.formHeartRate = '';
+      this.resetFormTime();
+      await this.loadReadings();
+    } finally {
+      await loading.dismiss();
+    }
   }
 
   async deleteReading(r: VitalReading): Promise<void> {
-    await this.vitals.remove(r.id);
-    await this.loadReadings();
+    const loading = await this.loadingCtrl.create({ message: 'Removing reading…' });
+    await loading.present();
+    try {
+      await this.vitals.remove(r.id);
+      await this.loadReadings();
+    } finally {
+      await loading.dismiss();
+    }
   }
 
   formatWhen(iso: string): string {

@@ -61,6 +61,28 @@ const MIGRATIONS = [
   `ALTER TABLE medications ADD COLUMN IF NOT EXISTS pills_per_intake INTEGER NOT NULL DEFAULT 1`,
   `ALTER TABLE medications ADD COLUMN IF NOT EXISTS kind TEXT`,
   `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS patient_group TEXT NOT NULL DEFAULT 'adult'`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_tier TEXT DEFAULT 'free'`,
+  `
+CREATE TABLE IF NOT EXISTS caretaker_invites (
+  id TEXT PRIMARY KEY,
+  profile_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  inviter_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  invitee_email TEXT NOT NULL,
+  token_hash TEXT NOT NULL UNIQUE,
+  expires_at TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  created_at TEXT NOT NULL
+)`,
+  `CREATE INDEX IF NOT EXISTS idx_caretaker_invites_profile ON caretaker_invites(profile_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_caretaker_invites_email_lower ON caretaker_invites(LOWER(invitee_email))`,
+  `
+CREATE TABLE IF NOT EXISTS caretaker_links (
+  profile_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  caretaker_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TEXT NOT NULL,
+  PRIMARY KEY (profile_id, caretaker_user_id)
+)`,
+  `CREATE INDEX IF NOT EXISTS idx_caretaker_links_user ON caretaker_links(caretaker_user_id)`,
 ];
 
 export async function createPgPool(connectionString: string): Promise<pg.Pool> {

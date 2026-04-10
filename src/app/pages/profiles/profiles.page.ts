@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertController, ToastController, ViewWillEnter } from '@ionic/angular';
+import { AlertController, LoadingController, ToastController, ViewWillEnter } from '@ionic/angular';
 import { Profile } from '../../models/med.models';
 import { MedDataService } from '../../services/med-data.service';
 import { MedNotificationService } from '../../services/med-notification.service';
@@ -23,6 +23,8 @@ const AVATAR_COLORS = [
 })
 export class ProfilesPage implements ViewWillEnter {
   profiles: Profile[] = [];
+  /** True while the first `refresh()` for this visit is in flight. */
+  loading = true;
   avatarColors = AVATAR_COLORS;
 
   constructor(
@@ -30,13 +32,19 @@ export class ProfilesPage implements ViewWillEnter {
     private readonly medNotif: MedNotificationService,
     private readonly router: Router,
     private readonly alertCtrl: AlertController,
+    private readonly loadingCtrl: LoadingController,
     private readonly toastCtrl: ToastController,
     readonly subscription: SubscriptionService
   ) {}
 
   async ionViewWillEnter(): Promise<void> {
-    await this.medData.refresh();
-    this.profiles = this.medData.getProfilesSnapshot();
+    this.loading = true;
+    try {
+      await this.medData.refresh();
+      this.profiles = this.medData.getProfilesSnapshot();
+    } finally {
+      this.loading = false;
+    }
   }
 
   avatarColor(index: number): string {
@@ -63,9 +71,15 @@ export class ProfilesPage implements ViewWillEnter {
           text: 'Remove',
           role: 'destructive',
           handler: async () => {
-            await this.medData.deleteProfile(p.id);
-            await this.medNotif.rescheduleAll();
-            this.profiles = this.medData.getProfilesSnapshot();
+            const loading = await this.loadingCtrl.create({ message: 'Removing profile…' });
+            await loading.present();
+            try {
+              await this.medData.deleteProfile(p.id);
+              await this.medNotif.rescheduleAll();
+              this.profiles = this.medData.getProfilesSnapshot();
+            } finally {
+              await loading.dismiss();
+            }
           },
         },
       ],

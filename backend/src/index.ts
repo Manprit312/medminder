@@ -31,6 +31,8 @@ if (!jwtSecret || jwtSecret.length < 16) {
   process.exit(1);
 }
 import { authRouter } from './routes/auth.js';
+import { billingRouter } from './routes/billing.js';
+import { caretakerRouter } from './routes/caretaker.js';
 import { profilesRouter } from './routes/profiles.js';
 import { medicationsRouter } from './routes/medications.js';
 import { doseLogsRouter } from './routes/dose-logs.js';
@@ -82,6 +84,8 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRouter);
+app.use('/api/billing', billingRouter);
+app.use('/api/caretaker', caretakerRouter);
 app.use('/api/profiles', profilesRouter);
 app.use('/api/medications', medicationsRouter);
 app.use('/api/dose-logs', doseLogsRouter);

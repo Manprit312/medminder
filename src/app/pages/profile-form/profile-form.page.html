@@ -17,6 +17,11 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="form-screen">
+  <div *ngIf="pageLoading" class="ion-padding ion-text-center mm-page-loading">
+    <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+    <p role="status">Loading…</p>
+  </div>
+  <ng-container *ngIf="!pageLoading">
   <div class="form-hero ion-padding">
     <span class="material-symbols-outlined hero-icon">badge</span>
     <h1>{{ isEdit ? 'Edit profile' : 'New profile' }}</h1>
@@ -138,4 +143,5 @@
       </ion-button>
     </div>
   </form>
+  </ng-container>
 </ion-content>

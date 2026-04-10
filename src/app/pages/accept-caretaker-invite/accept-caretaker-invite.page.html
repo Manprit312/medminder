@@ -1,0 +1,47 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>Caretaker invite</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="mm-gradient-bg ion-padding">
+  <div *ngIf="loadingPreview" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+    <p role="status">Checking invite…</p>
+  </div>
+
+  <div *ngIf="!loadingPreview && previewError">
+    <p>{{ previewError }}</p>
+    <ion-button expand="block" routerLink="/login" class="ion-margin-top">Sign in</ion-button>
+  </div>
+
+  <div *ngIf="!loadingPreview && preview && !previewError" class="invite-card">
+    <span class="material-symbols-outlined hero-icon" aria-hidden="true">mail</span>
+    <h1>Care invitation</h1>
+    <p>
+      You’re invited to follow <strong>{{ preview.profileName }}</strong>’s medication track in MedMinder.
+    </p>
+    <p class="email-line">
+      This invite is for <strong>{{ preview.inviteeEmail }}</strong> — use that email when you sign in.
+    </p>
+
+    <ng-container *ngIf="!loggedIn">
+      <ion-button expand="block" color="tertiary" [routerLink]="['/login']" [queryParams]="{ returnUrl: returnUrlForAuth }">
+        Sign in
+      </ion-button>
+      <ion-button expand="block" fill="outline" [routerLink]="['/register']" [queryParams]="{ returnUrl: returnUrlForAuth }">
+        Create account
+      </ion-button>
+    </ng-container>
+
+    <ion-button
+      *ngIf="loggedIn"
+      expand="block"
+      color="tertiary"
+      (click)="accept()"
+      [disabled]="accepting"
+    >
+      {{ accepting ? 'Accepting…' : 'Accept invitation' }}
+    </ion-button>
+  </div>
+</ion-content>
