@@ -64,13 +64,19 @@ export class CaretakerApiService {
     );
   }
 
-  sendInvite(profileId: string, inviteeEmail: string): Promise<{ invite: { id: string; expiresAt: string; emailed: boolean }; acceptUrl?: string }> {
+  sendInvite(profileId: string, inviteeEmail: string): Promise<{
+    invite: { id: string; expiresAt: string; emailed: boolean };
+    acceptUrl?: string;
+    /** Why email was not sent (missing config or SMTP error). */
+    mailHint?: string;
+  }> {
     return firstValueFrom(
       withApiTimeout(
-        this.http.post<{ invite: { id: string; expiresAt: string; emailed: boolean }; acceptUrl?: string }>(
-          `${this.base()}/api/caretaker/invites`,
-          { profileId, inviteeEmail }
-        )
+        this.http.post<{
+          invite: { id: string; expiresAt: string; emailed: boolean };
+          acceptUrl?: string;
+          mailHint?: string;
+        }>(`${this.base()}/api/caretaker/invites`, { profileId, inviteeEmail })
       )
     );
   }

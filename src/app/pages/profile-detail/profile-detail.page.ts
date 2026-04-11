@@ -117,11 +117,13 @@ export class ProfileDetailPage implements ViewWillEnter {
     try {
       const res = await this.caretakerApi.sendInvite(this.profileId, email);
       const msg = res.invite.emailed
-        ? `Invite sent to ${email}.`
-        : `Invite created. Share the link from the server log if email is not configured.`;
+        ? `Invite email sent to ${email}.`
+        : `Invite saved. Email was not sent — use the link below or fix mail on the server.`;
+      const detail = res.mailHint ? ` ${res.mailHint}` : '';
+      const linkPart = res.acceptUrl ? ` Link: ${res.acceptUrl}` : '';
       const t = await this.toastCtrl.create({
-        message: res.acceptUrl ? `${msg} Link: ${res.acceptUrl}` : msg,
-        duration: res.acceptUrl ? 8000 : 3500,
+        message: `${msg}${detail}${linkPart}`,
+        duration: res.acceptUrl || res.mailHint ? 14000 : 3500,
         color: 'success',
         position: 'bottom',
       });

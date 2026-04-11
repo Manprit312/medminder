@@ -6,7 +6,7 @@ import { v4 as uuid } from 'uuid';
 import { asyncRoute } from '../async-route.js';
 import { forgotPasswordLimiter, resetPasswordLimiter } from '../auth-rate-limit.js';
 import { queryOne, runExec } from '../db.js';
-import { isSmtpConfigured, sendPasswordResetEmail } from '../email.js';
+import { isSmtpConfigured, publicAppUrl, sendPasswordResetEmail } from '../email.js';
 import type { AuthPayload } from '../middleware/auth.js';
 
 export const authRouter = Router();
@@ -24,12 +24,6 @@ function jwtSecret(): string {
     throw new Error('JWT_SECRET must be set (min 16 chars)');
   }
   return s;
-}
-
-/** Base URL of the Ionic web app (used in password-reset emails). No trailing slash. */
-function publicAppUrl(): string {
-  const raw = process.env.APP_PUBLIC_URL?.trim().replace(/\/$/, '');
-  return raw || 'http://localhost:8100';
 }
 
 function hashResetToken(token: string): string {

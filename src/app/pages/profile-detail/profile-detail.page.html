@@ -26,6 +26,30 @@
       </p>
     </div>
 
+    <!-- Free tier: explain where caretaker invites live (Plus); avoids “no option after login” confusion -->
+    <ion-list
+      *ngIf="!subscription.isPremium && profile"
+      inset="true"
+      lines="none"
+      class="form-card ion-margin-horizontal ion-margin-top mm-caretaker-teaser"
+    >
+      <ion-item lines="none">
+        <span class="material-symbols-outlined input-lead" slot="start" aria-hidden="true">volunteer_activism</span>
+        <ion-label class="ion-text-wrap">
+          <h2 class="mm-caretaker-teaser-title">Invite a caretaker</h2>
+          <p class="hint">
+            Send an email invite so someone can follow this person’s medication track in their own account (read-only).
+            <strong>MedMinder Plus</strong> — turn on a Plus plan in Settings, then return here to send invites.
+          </p>
+        </ion-label>
+      </ion-item>
+      <div class="ion-padding-horizontal ion-padding-bottom">
+        <ion-button expand="block" fill="outline" color="primary" routerLink="/tabs/settings">
+          Open Settings (plan)
+        </ion-button>
+      </div>
+    </ion-list>
+
     <ion-list
       *ngIf="subscription.isPremium && profile"
       inset="true"

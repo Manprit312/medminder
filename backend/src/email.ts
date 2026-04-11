@@ -1,32 +1,80 @@
 import nodemailer from 'nodemailer';
 
-/** True when SMTP env is set enough to send mail (production deployments). */
+/**
+ * Mail can be sent via:
+ * 1) **Resend** — set `RESEND_API_KEY` (SMTP: smtp.resend.com, user `resend`, key as password), or
+ * 2) **Generic SMTP** — set `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`.
+ */
+type ResolvedSmtp = {
+  host: string;
+  port: number;
+  secure: boolean;
+  user: string;
+  pass: string;
+};
+
+function resolveSmtp(): ResolvedSmtp | null {
+  const resend = process.env.RESEND_API_KEY?.trim();
+  if (resend) {
+    const port = Number(process.env.SMTP_PORT) || 465;
+    const secure = port === 465 || port === 2465;
+    return {
+      host: 'smtp.resend.com',
+      port,
+      secure,
+      user: 'resend',
+      pass: resend,
+    };
+  }
+
+  const host = process.env.SMTP_HOST?.trim();
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  if (!host || user === undefined || pass === undefined || String(pass).length === 0) {
+    return null;
+  }
+  const port = Number(process.env.SMTP_PORT ?? 587);
+  const secure = process.env.SMTP_SECURE === 'true' || port === 465 || port === 2465;
+  return { host, port, secure, user, pass: String(pass) };
+}
+
+/** True when Resend API key or full generic SMTP env is set. */
 export function isSmtpConfigured(): boolean {
-  return Boolean(
-    process.env.SMTP_HOST?.trim() &&
-      process.env.SMTP_USER !== undefined &&
-      process.env.SMTP_PASS !== undefined &&
-      String(process.env.SMTP_PASS).length > 0
-  );
+  return resolveSmtp() !== null;
+}
+
+function createTransporter() {
+  const opts = resolveSmtp();
+  if (!opts) {
+    throw new Error('SMTP_NOT_CONFIGURED');
+  }
+  return nodemailer.createTransport({
+    host: opts.host,
+    port: opts.port,
+    secure: opts.secure,
+    auth: {
+      user: opts.user,
+      pass: opts.pass,
+    },
+  });
+}
+
+/** From header — Resend requires a verified domain or onboarding@resend.dev for testing. */
+function mailFrom(): string {
+  const from = process.env.EMAIL_FROM?.trim();
+  if (from) {
+    return from;
+  }
+  if (process.env.RESEND_API_KEY?.trim()) {
+    return 'MedMinder <onboarding@resend.dev>';
+  }
+  const user = process.env.SMTP_USER?.trim();
+  return user ? `"MedMinder" <${user}>` : '"MedMinder" <noreply@localhost>';
 }
 
 export async function sendPasswordResetEmail(to: string, resetUrl: string): Promise<void> {
-  if (!isSmtpConfigured()) {
-    throw new Error('SMTP_NOT_CONFIGURED');
-  }
-  const port = Number(process.env.SMTP_PORT ?? 587);
-  const secure = process.env.SMTP_SECURE === 'true' || port === 465;
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port,
-    secure,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-  const from =
-    process.env.EMAIL_FROM?.trim() || `"MedMinder" <${process.env.SMTP_USER}>`;
+  const transporter = createTransporter();
+  const from = mailFrom();
   await transporter.sendMail({
     from,
     to,
@@ -36,32 +84,27 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string): Prom
   });
 }
 
-/** Base URL of the Ionic web app (invite links). */
+/**
+ * Base URL of the Ionic web app (invite + password-reset links). No trailing slash.
+ * Use **one** URL only. If `APP_PUBLIC_URL` is mistakenly a comma-separated list (e.g. CORS origins),
+ * the **first** entry is used so links are not broken.
+ */
 export function publicAppUrl(): string {
-  const raw = process.env.APP_PUBLIC_URL?.trim().replace(/\/$/, '');
-  return raw || 'http://localhost:8100';
+  const fallback = 'http://localhost:8100';
+  const raw = process.env.APP_PUBLIC_URL?.trim() ?? '';
+  if (!raw) {
+    return fallback;
+  }
+  const first = raw.split(',')[0]?.trim().replace(/\/$/, '') ?? '';
+  return first || fallback;
 }
 
 export async function sendCaretakerInviteEmail(
   to: string,
   payload: { inviterHint: string; profileName: string; acceptUrl: string }
 ): Promise<void> {
-  if (!isSmtpConfigured()) {
-    throw new Error('SMTP_NOT_CONFIGURED');
-  }
-  const port = Number(process.env.SMTP_PORT ?? 587);
-  const secure = process.env.SMTP_SECURE === 'true' || port === 465;
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port,
-    secure,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-  const from =
-    process.env.EMAIL_FROM?.trim() || `"MedMinder" <${process.env.SMTP_USER}>`;
+  const transporter = createTransporter();
+  const from = mailFrom();
   const { inviterHint, profileName, acceptUrl } = payload;
   await transporter.sendMail({
     from,
@@ -82,22 +125,8 @@ export async function sendCaretakerDoseAlertEmail(
     statusLabel: string;
   }
 ): Promise<void> {
-  if (!isSmtpConfigured()) {
-    throw new Error('SMTP_NOT_CONFIGURED');
-  }
-  const port = Number(process.env.SMTP_PORT ?? 587);
-  const secure = process.env.SMTP_SECURE === 'true' || port === 465;
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port,
-    secure,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-  const from =
-    process.env.EMAIL_FROM?.trim() || `"MedMinder" <${process.env.SMTP_USER}>`;
+  const transporter = createTransporter();
+  const from = mailFrom();
   const { profileName, medicationName, date, scheduledTime, statusLabel } = payload;
   const subj = `MedMinder — ${profileName}: dose ${statusLabel}`;
   const body = `Dose update for ${profileName}:\n${medicationName} on ${date} at ${scheduledTime} was marked ${statusLabel}.\n\nOpen the MedMinder app for details.`;
