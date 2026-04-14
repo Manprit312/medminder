@@ -29,9 +29,15 @@
         presentation="date"
         [value]="selectedDate"
         [max]="maxDateKey"
+        [highlightedDates]="highlightedDates"
         (ionChange)="onDateChanged($event)"
       ></ion-datetime>
       <p class="pending-note">Choose any date to review taken/skipped/missed status.</p>
+      <div class="calendar-legend">
+        <span class="lg lg--taken">Taken</span>
+        <span class="lg lg--skipped">Skipped</span>
+        <span class="lg lg--missed">Missed</span>
+      </div>
     </div>
 
     <div *ngIf="data.medications.length === 0" class="ion-padding">

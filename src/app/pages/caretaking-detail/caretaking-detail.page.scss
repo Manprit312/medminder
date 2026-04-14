@@ -22,6 +22,34 @@
   --background: rgba(255, 255, 255, 0.75);
 }
 
+.calendar-legend {
+  margin-top: 0.35rem;
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.lg {
+  font-size: 0.72rem;
+  padding: 0.14rem 0.45rem;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  color: #1b221f;
+  font-weight: 600;
+}
+
+.lg--taken {
+  background: #b8e3c3;
+}
+
+.lg--skipped {
+  background: #f4ddb3;
+}
+
+.lg--missed {
+  background: #f7b8b8;
+}
+
 .mm-page-loading {
   display: flex;
   flex-direction: column;

@@ -24,6 +24,7 @@ export class CaretakingDetailPage implements ViewWillEnter {
   loading = true;
   error: string | null = null;
   selectedDate = todayStr();
+  calendarStatusByDate: Record<string, 'taken' | 'skipped' | 'missed'> = {};
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -47,6 +48,7 @@ export class CaretakingDetailPage implements ViewWillEnter {
       return;
     }
     this.selectedDate = value;
+    void this.loadCalendarForVisibleMonth(value);
     void this.loadForDate(value);
   }
 
@@ -62,12 +64,63 @@ export class CaretakingDetailPage implements ViewWillEnter {
       await this.caretakerApi.markProfileAlertsRead(this.profileId);
       this.data = await this.caretakerApi.getCaretakingDetail(this.profileId, date);
       this.selectedDate = this.data.date;
+      await this.loadCalendarForVisibleMonth(this.selectedDate);
     } catch {
       this.error = 'Could not load this care profile.';
     } finally {
       this.loading = false;
     }
   }
+
+  private parseDateKey(key: string): Date {
+    const [y, m, d] = key.split('-').map(Number);
+    return new Date(y, (m || 1) - 1, d || 1);
+  }
+
+  private formatDateKey(d: Date): string {
+    const y = d.getFullYear();
+    const m = `${d.getMonth() + 1}`.padStart(2, '0');
+    const day = `${d.getDate()}`.padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  private async loadCalendarForVisibleMonth(dateKey: string): Promise<void> {
+    if (!this.profileId) {
+      return;
+    }
+    const ref = this.parseDateKey(dateKey);
+    const from = new Date(ref.getFullYear(), ref.getMonth(), 1);
+    const to = new Date(ref.getFullYear(), ref.getMonth() + 1, 0);
+    const res = await this.caretakerApi.getCaretakingCalendarStatus(
+      this.profileId,
+      this.formatDateKey(from),
+      this.formatDateKey(to)
+    );
+    const map: Record<string, 'taken' | 'skipped' | 'missed'> = {};
+    for (const d of res.days) {
+      if (d.status === 'taken' || d.status === 'skipped' || d.status === 'missed') {
+        map[d.date] = d.status;
+      }
+    }
+    this.calendarStatusByDate = map;
+  }
+
+  highlightedDates = (
+    isoDate: string
+  ): { textColor: string; backgroundColor: string } | undefined => {
+    const key = isoDate.trim().slice(0, 10);
+    const status = this.calendarStatusByDate[key];
+    if (!status) {
+      return undefined;
+    }
+    if (status === 'taken') {
+      return { textColor: '#103220', backgroundColor: '#b8e3c3' };
+    }
+    if (status === 'skipped') {
+      return { textColor: '#3d2a00', backgroundColor: '#f4ddb3' };
+    }
+    return { textColor: '#490c0c', backgroundColor: '#f7b8b8' };
+  };
 
   /** Each scheduled time with log status, or `pending` if not logged yet today. */
   slotsForMed(med: Medication): { scheduledTime: string; status: string }[] {

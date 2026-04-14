@@ -390,3 +390,60 @@ caretakerRouter.get(
     });
   })
 );
+
+/** GET calendar summary: one status per day for a profile over a date range (caretaker read-only). */
+caretakerRouter.get(
+  '/caretaking/:profileId/calendar-status',
+  authMiddleware,
+  asyncRoute(async (req, res) => {
+    const uid = req.userId!;
+    const profileId = req.params.profileId;
+    const link = await queryOne<{ x: number }>(
+      'SELECT 1 AS x FROM caretaker_links WHERE profile_id = ? AND caretaker_user_id = ?',
+      [profileId, uid]
+    );
+    if (!link) {
+      res.status(404).json({ error: 'Not a caretaker for this profile' });
+      return;
+    }
+    const from = String(req.query.from ?? '').trim();
+    const to = String(req.query.to ?? '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to) || from > to) {
+      res.status(400).json({ error: 'from and to must be YYYY-MM-DD and from <= to' });
+      return;
+    }
+
+    const rows = await queryAll<{ date: string; status: string }>(
+      `SELECT d.date, d.status
+       FROM dose_logs d
+       INNER JOIN medications m ON m.id = d.medication_id
+       WHERE m.profile_id = ? AND d.date >= ? AND d.date <= ?`,
+      [profileId, from, to]
+    );
+
+    const rank = (status: string): number => {
+      if (status === 'missed') {
+        return 3;
+      }
+      if (status === 'skipped') {
+        return 2;
+      }
+      if (status === 'taken') {
+        return 1;
+      }
+      return 0;
+    };
+    const byDate = new Map<string, string>();
+    for (const r of rows) {
+      const prev = byDate.get(r.date);
+      if (!prev || rank(r.status) > rank(prev)) {
+        byDate.set(r.date, r.status);
+      }
+    }
+    const days = Array.from(byDate.entries())
+      .map(([date, status]) => ({ date, status }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    res.json({ from, to, days });
+  })
+);

@@ -62,6 +62,20 @@ export class CaretakerApiService {
     );
   }
 
+  getCaretakingCalendarStatus(
+    profileId: string,
+    from: string,
+    to: string
+  ): Promise<{ from: string; to: string; days: { date: string; status: string }[] }> {
+    return firstValueFrom(
+      withApiTimeout(
+        this.http.get<{ from: string; to: string; days: { date: string; status: string }[] }>(
+          `${this.base()}/api/caretaker/caretaking/${profileId}/calendar-status?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+        )
+      )
+    );
+  }
+
   previewInvite(token: string): Promise<{ inviteeEmail: string; profileName: string }> {
     return firstValueFrom(
       withApiTimeout(
