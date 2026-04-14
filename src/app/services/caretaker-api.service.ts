@@ -24,6 +24,20 @@ export interface CaretakingDetailResponse {
   }[];
 }
 
+export interface CaretakerAlert {
+  id: string;
+  profileId: string;
+  medicationId: string;
+  profileName: string;
+  medicationName: string;
+  date: string;
+  scheduledTime: string;
+  status: string;
+  message: string;
+  createdAt: string;
+  readAt: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CaretakerApiService {
   constructor(private readonly http: HttpClient) {}
@@ -77,6 +91,34 @@ export class CaretakerApiService {
           acceptUrl?: string;
           mailHint?: string;
         }>(`${this.base()}/api/caretaker/invites`, { profileId, inviteeEmail })
+      )
+    );
+  }
+
+  listAlerts(unreadOnly = false, limit = 25): Promise<{ unreadCount: number; alerts: CaretakerAlert[] }> {
+    const unread = unreadOnly ? '1' : '0';
+    return firstValueFrom(
+      withApiTimeout(
+        this.http.get<{ unreadCount: number; alerts: CaretakerAlert[] }>(
+          `${this.base()}/api/caretaker/alerts?unread=${unread}&limit=${Math.max(1, Math.min(100, limit))}`
+        )
+      )
+    );
+  }
+
+  markAlertRead(id: string): Promise<{ ok: boolean }> {
+    return firstValueFrom(
+      withApiTimeout(this.http.post<{ ok: boolean }>(`${this.base()}/api/caretaker/alerts/${encodeURIComponent(id)}/read`, {}))
+    );
+  }
+
+  markProfileAlertsRead(profileId: string): Promise<{ ok: boolean }> {
+    return firstValueFrom(
+      withApiTimeout(
+        this.http.post<{ ok: boolean }>(
+          `${this.base()}/api/caretaker/alerts/read-profile/${encodeURIComponent(profileId)}`,
+          {}
+        )
       )
     );
   }

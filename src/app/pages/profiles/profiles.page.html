@@ -1,13 +1,13 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
-    <ion-title>Family</ion-title>
+    <ion-title>{{ subscription.isPremium ? 'Family' : 'Profile' }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="profiles-page mm-gradient-bg">
   <div *ngIf="loading" class="ion-padding ion-text-center mm-profiles-loading">
     <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
-    <p role="status">Loading family…</p>
+    <p role="status">{{ subscription.isPremium ? 'Loading family…' : 'Loading profile…' }}</p>
   </div>
 
   <ng-container *ngIf="!loading">

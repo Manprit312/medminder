@@ -8,6 +8,11 @@ export const doseLogsRouter = Router();
 
 doseLogsRouter.use(authMiddleware);
 
+function todayStr(): string {
+  const d = new Date();
+  return d.toISOString().slice(0, 10);
+}
+
 async function medOwnedByUser(medicationId: string, userId: string): Promise<boolean> {
   const row = await queryOne<{ id: string }>(
     `SELECT m.id FROM medications m
@@ -187,7 +192,7 @@ doseLogsRouter.post(
       return;
     }
 
-    if (status === 'skipped' || status === 'missed') {
+    if (status === 'missed' && date === todayStr()) {
       const meta = await queryOne<{ name: string; profile_id: string; profile_name: string }>(
         `SELECT m.name, p.id AS profile_id, p.name AS profile_name
          FROM medications m INNER JOIN profiles p ON p.id = m.profile_id WHERE m.id = ?`,

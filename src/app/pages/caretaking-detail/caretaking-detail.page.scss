@@ -15,6 +15,13 @@
   font-size: 0.9rem;
 }
 
+.caretaking-calendar {
+  margin-top: 0.75rem;
+  border-radius: 12px;
+  border: 1px solid rgba(96, 106, 88, 0.18);
+  --background: rgba(255, 255, 255, 0.75);
+}
+
 .mm-page-loading {
   display: flex;
   flex-direction: column;

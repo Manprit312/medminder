@@ -24,12 +24,14 @@
       <p class="mm-today-kicker">Medicine reminder</p>
       <h2 class="mm-today-title">Medicine reminder app</h2>
       <p class="mm-today-empty-copy">
-        This screen lists <strong>today’s medication times</strong> for everyone in your family. Add people and meds
-        first, then reminders appear here as stacked cards.
+        Start by adding a medicine. If this is your first time, we’ll ask who it belongs to first.
       </p>
-      <ion-button expand="block" class="ion-margin-top mm-today-cta" shape="round" color="tertiary" routerLink="/tabs/profiles">
-        <span class="material-symbols-outlined btn-lead">groups</span>
-        Set up in Family
+      <ion-button expand="block" class="ion-margin-top mm-today-cta" shape="round" color="tertiary" (click)="addMedicationNow()">
+        <span class="material-symbols-outlined btn-lead">pill</span>
+        Add medication
+      </ion-button>
+      <ion-button expand="block" fill="clear" class="mm-today-secondary-cta" routerLink="/tabs/profiles">
+        Manage people / family
       </ion-button>
     </div>
   </div>
@@ -47,7 +49,11 @@
       </div>
       <p class="mm-today-kicker">Medicine reminder</p>
       <h1 class="mm-today-title">Medicine reminder app</h1>
-      <p class="mm-today-date">{{ todayDate | date : 'EEEE, MMM d' }}</p>
+      <p class="mm-today-date">{{ selectedDate | date : 'EEEE, MMM d' }}</p>
+      <ion-button expand="block" shape="round" color="tertiary" class="mm-today-primary-cta" (click)="addMedicationNow()">
+        <span class="material-symbols-outlined btn-lead">add_circle</span>
+        Add medication
+      </ion-button>
     </section>
 
     <div class="mm-today-panels ion-padding-horizontal">
@@ -92,7 +98,7 @@
       <div class="mm-meals-card mm-surface-cream">
         <h3 class="mm-meals-title">
           <span class="material-symbols-outlined mm-meals-title-ic" aria-hidden="true">restaurant</span>
-          Today’s meals
+          {{ isViewingToday ? 'Today’s meals' : 'Meals journal' }}
           <span class="mm-meals-optional">(optional)</span>
         </h3>
         <p class="mm-meals-intro">
@@ -240,6 +246,32 @@
         }}
       </p>
 
+      <section class="mm-history-wrap" aria-label="Dose history by day">
+        <div class="mm-history-head">
+          <h3>Dose calendar</h3>
+          <p>{{ formatTime12h(dose.time) }} for this medicine — pick any date</p>
+        </div>
+        <div class="mm-history-calendar" *ngIf="!expandedHistoryLoading">
+          <ion-datetime
+            presentation="date"
+            [value]="selectedDateKey"
+            [max]="maxDateKey"
+            [highlightedDates]="historyDateHighlight"
+            (ionChange)="onHistoryDatePickerChange($event)"
+          ></ion-datetime>
+        </div>
+        <p class="mm-history-loading" *ngIf="expandedHistoryLoading">Loading calendar…</p>
+        <p class="mm-history-selected" *ngIf="!expandedHistoryLoading">
+          {{ selectedDateKey }}: <strong>{{ historyStatusLabel(expandedDateStatus) }}</strong>
+        </p>
+        <div class="mm-history-legend">
+          <span class="lg lg--taken">Taken</span>
+          <span class="lg lg--skipped">Skipped</span>
+          <span class="lg lg--missed">Missed</span>
+          <span class="lg lg--pending">Not logged</span>
+        </div>
+      </section>
+
       <div class="mm-expanded-chips" *ngIf="expandedMedication() as med">
         <span class="mm-xp-chip" *ngIf="estimatedDaysRemainingMed(med) as days">
           <span class="material-symbols-outlined mm-xp-chip-ic" aria-hidden="true">calendar_month</span>
@@ -284,15 +316,15 @@
       </ion-button>
 
       <div class="mm-expanded-actions" *ngIf="dose.status === 'pending'">
-        <ion-button expand="block" size="large" color="dark" (click)="markExpanded('taken')">
+        <ion-button expand="block" size="large" color="dark" class="mm-act mm-act-taken" (click)="markExpanded('taken')">
           <span class="material-symbols-outlined btn-ic" aria-hidden="true">check</span>
           Medicine taken
         </ion-button>
-        <ion-button expand="block" fill="outline" color="light" class="mm-xp-outline" (click)="markExpanded('skipped')">
+        <ion-button expand="block" fill="outline" color="light" class="mm-act mm-act-skip mm-xp-outline" (click)="markExpanded('skipped')">
           <span class="material-symbols-outlined btn-ic" aria-hidden="true">block</span>
           Skip this dose
         </ion-button>
-        <ion-button expand="block" fill="outline" color="warning" (click)="markExpanded('missed')">
+        <ion-button expand="block" fill="outline" color="warning" class="mm-act mm-act-missed" (click)="markExpanded('missed')">
           <span class="material-symbols-outlined btn-ic" aria-hidden="true">priority_high</span>
           Mark as missed
         </ion-button>
@@ -304,7 +336,9 @@
           <h3 class="mm-xp-status-h">Marked as taken</h3>
           <p class="mm-xp-status-p">You can change this below if you tapped by mistake.</p>
         </div>
-        <ion-button expand="block" fill="clear" color="light" (click)="markExpanded('skipped')">Change to skipped</ion-button>
+        <div class="mm-xp-status-actions">
+          <ion-button expand="block" fill="clear" color="light" (click)="markExpanded('skipped')">Change to skipped</ion-button>
+        </div>
       </div>
 
       <div class="mm-xp-status" *ngIf="dose.status === 'skipped'">
@@ -313,7 +347,9 @@
           <h3 class="mm-xp-status-h">Skipped</h3>
           <p class="mm-xp-status-p">You can mark as taken if that was a mistake.</p>
         </div>
-        <ion-button expand="block" fill="clear" color="success" (click)="markExpanded('taken')">Mark as taken</ion-button>
+        <div class="mm-xp-status-actions">
+          <ion-button expand="block" fill="clear" color="success" (click)="markExpanded('taken')">Mark as taken</ion-button>
+        </div>
       </div>
 
       <div class="mm-xp-status" *ngIf="dose.status === 'missed'">
@@ -322,8 +358,10 @@
           <h3 class="mm-xp-status-h">Missed</h3>
           <p class="mm-xp-status-p">You can correct the log below.</p>
         </div>
-        <ion-button expand="block" fill="clear" color="success" (click)="markExpanded('taken')">Mark as taken</ion-button>
-        <ion-button expand="block" fill="clear" color="light" (click)="markExpanded('skipped')">Change to skipped</ion-button>
+        <div class="mm-xp-status-actions">
+          <ion-button expand="block" fill="clear" color="success" (click)="markExpanded('taken')">Mark as taken</ion-button>
+          <ion-button expand="block" fill="clear" color="light" (click)="markExpanded('skipped')">Change to skipped</ion-button>
+        </div>
       </div>
 
       <p class="mm-expanded-footnote">

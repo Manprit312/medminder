@@ -5,6 +5,7 @@ import { formatApiError } from '../../shared/format-api-error';
 import { OnboardingAudience, OnboardingService } from '../../services/onboarding.service';
 import { MedDataService } from '../../services/med-data.service';
 import { MedNotificationService } from '../../services/med-notification.service';
+import { SubscriptionService } from '../../services/subscription.service';
 
 @Component({
   selector: 'app-onboarding',
@@ -14,7 +15,6 @@ import { MedNotificationService } from '../../services/med-notification.service'
 })
 export class OnboardingPage {
   step = 1;
-  readonly totalSteps = 5;
 
   audience: OnboardingAudience | null = null;
 
@@ -30,15 +30,54 @@ export class OnboardingPage {
     private readonly medNotif: MedNotificationService,
     private readonly router: Router,
     private readonly alertCtrl: AlertController,
-    private readonly loadingCtrl: LoadingController
+    private readonly loadingCtrl: LoadingController,
+    readonly subscription: SubscriptionService
   ) {}
+
+  get totalSteps(): number {
+    return this.subscription.isPremium ? 5 : 4;
+  }
 
   progress(): number {
     return this.step / this.totalSteps;
   }
 
+  /** Plus: step 2 = who the medicines are for. */
+  showAudience(): boolean {
+    return this.subscription.isPremium && this.step === 2;
+  }
+
+  /** Free: step 2; Plus: step 3 — first profile name. */
+  showProfile(): boolean {
+    return (
+      (!this.subscription.isPremium && this.step === 2) ||
+      (this.subscription.isPremium && this.step === 3)
+    );
+  }
+
+  /** Free: step 3; Plus: step 4 — first medication. */
+  showMed(): boolean {
+    return (
+      (!this.subscription.isPremium && this.step === 3) ||
+      (this.subscription.isPremium && this.step === 4)
+    );
+  }
+
+  /** Free: step 4; Plus: step 5 — done. */
+  showDone(): boolean {
+    return (
+      (!this.subscription.isPremium && this.step === 4) ||
+      (this.subscription.isPremium && this.step === 5)
+    );
+  }
+
   nextFromWelcome(): void {
-    this.step = 2;
+    if (this.subscription.isPremium) {
+      this.step = 2;
+    } else {
+      void this.onboarding.setAudience('self');
+      this.step = 2;
+    }
   }
 
   async nextFromAudience(): Promise<void> {
@@ -66,7 +105,7 @@ export class OnboardingPage {
       const p = await this.medData.createProfile(name);
       this.profileId = p.id;
       await loading.dismiss();
-      this.step = 4;
+      this.step = this.subscription.isPremium ? 4 : 3;
     } catch (e: unknown) {
       await loading.dismiss();
       await this.showHttpError('Could not add profile', e);
@@ -90,7 +129,7 @@ export class OnboardingPage {
       await this.medNotif.rescheduleAll();
       await this.onboarding.setComplete();
       await loading.dismiss();
-      this.step = 5;
+      this.step = this.subscription.isPremium ? 5 : 4;
     } catch (e: unknown) {
       await loading.dismiss();
       await this.showHttpError('Could not add medication', e);

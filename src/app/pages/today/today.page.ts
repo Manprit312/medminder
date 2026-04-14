@@ -22,15 +22,19 @@ export class TodayPage implements ViewWillEnter {
   /** True while `refresh()` / summaries run for this visit. */
   loading = true;
   doses: TodayDose[] = [];
-  /** Calendar date for headings (refreshed when screen loads) */
-  todayDate = new Date();
-  /** Today's adherence (taken / scheduled × 100) */
+  /** Selected calendar day shown on this screen (defaults to today). */
+  selectedDate = new Date();
+  selectedDateKey = formatLocalDate(new Date());
+  /** Selected-day adherence (taken / scheduled × 100) */
   todaySummary: AdherencePeriodSummary | null = null;
-  /** Current ISO week (Mon–Sun) */
+  /** ISO week (Mon–Sun) for the selected day */
   weeklySummary: AdherencePeriodSummary | null = null;
   /** Full-screen expanded detail (same tone as tapped stack card) */
   expandedDose: TodayDose | null = null;
   expandedDeckIndex = 0;
+  expandedHistoryLoading = false;
+  expandedDateStatus: 'taken' | 'skipped' | 'missed' | 'pending' = 'pending';
+  historyStatusByDate: Record<string, 'taken' | 'skipped' | 'missed'> = {};
 
   /** Local date key (YYYY-MM-DD) for meal journal persistence */
   mealLogDateKey = '';
@@ -49,24 +53,73 @@ export class TodayPage implements ViewWillEnter {
   async ionViewWillEnter(): Promise<void> {
     this.loading = true;
     this.expandedDose = null;
-    this.mealLogDateKey = formatLocalDate(new Date());
+    this.selectedDate = new Date();
+    this.selectedDateKey = formatLocalDate(this.selectedDate);
+    this.mealLogDateKey = this.selectedDateKey;
     try {
       await this.medData.refresh();
-      this.refreshLocal();
-      await this.refreshWeeklySummary();
-      await this.loadMealsForToday();
+      await this.refreshForSelectedDate();
     } finally {
       this.loading = false;
     }
   }
 
-  refreshLocal(): void {
-    this.todayDate = new Date();
-    this.doses = this.medData.getTodayDoses();
-    this.updateTodayAdherence();
+  get maxDateKey(): string {
+    return formatLocalDate(new Date());
   }
 
-  private async loadMealsForToday(): Promise<void> {
+  get isViewingToday(): boolean {
+    return this.selectedDateKey === this.maxDateKey;
+  }
+
+  onDateChanged(value: string | null | undefined): void {
+    const key = this.normalizeDateValue(value);
+    if (!key || key === this.selectedDateKey) {
+      return;
+    }
+    this.selectedDateKey = key;
+    this.selectedDate = this.parseLocalDateKey(key);
+    this.expandedDateStatus = this.historyStatusByDate[key] ?? 'pending';
+    void this.refreshForSelectedDate();
+  }
+
+  onHistoryDatePickerChange(event: Event): void {
+    const detail = event as CustomEvent<{ value?: string | null }>;
+    this.onDateChanged(detail.detail?.value);
+  }
+
+  private parseLocalDateKey(key: string): Date {
+    const [y, m, d] = key.split('-').map(Number);
+    return new Date(y, (m || 1) - 1, d || 1);
+  }
+
+  private normalizeDateValue(raw: string | null | undefined): string | null {
+    if (!raw) {
+      return null;
+    }
+    return raw.trim().slice(0, 10);
+  }
+
+  private async refreshForSelectedDate(): Promise<void> {
+    this.mealLogDateKey = this.selectedDateKey;
+    this.doses = await this.medData.getDosesForDate(this.selectedDateKey);
+    if (this.expandedDose) {
+      const synced = this.doses.find(
+        (d) =>
+          d.medicationId === this.expandedDose!.medicationId &&
+          d.time === this.expandedDose!.time &&
+          d.profileId === this.expandedDose!.profileId
+      );
+      if (synced) {
+        this.expandedDose = synced;
+      }
+    }
+    await this.updateSelectedDayAdherence();
+    await this.refreshWeeklySummary();
+    await this.loadMealsForSelectedDate();
+  }
+
+  private async loadMealsForSelectedDate(): Promise<void> {
     this.mealDraft = await this.mealLog.getForDate(this.mealLogDateKey);
   }
 
@@ -80,15 +133,26 @@ export class TodayPage implements ViewWillEnter {
     }
   }
 
-  private updateTodayAdherence(): void {
+  /** Primary app action: add medication quickly from Today. */
+  addMedicationNow(): void {
+    const profiles = this.medData.getProfilesSnapshot();
+    if (profiles.length === 0) {
+      void this.router.navigateByUrl('/tabs/profiles/add');
+      return;
+    }
+    const profileId = profiles[0].id;
+    void this.router.navigateByUrl(`/tabs/profiles/${profileId}/medications/add`);
+  }
+
+  private async updateSelectedDayAdherence(): Promise<void> {
     const meds = this.medData.getMedicationsSnapshot();
-    const day = formatLocalDate(new Date());
-    const logsToday = this.medData.getLogsSnapshot().filter((l) => l.date === day);
+    const day = this.selectedDateKey;
+    const logsToday = await this.medData.fetchDoseLogsRange(day, day);
     this.todaySummary = this.adherence.todayAdherence(meds, logsToday, day);
   }
 
   private async refreshWeeklySummary(): Promise<void> {
-    const { monday, sunday } = this.adherence.currentIsoWeekBounds();
+    const { monday, sunday } = this.adherence.currentIsoWeekBounds(this.selectedDate);
     try {
       const weekLogs = await this.medData.fetchDoseLogsRange(monday, sunday);
       this.weeklySummary = this.adherence.summarizePeriod(
@@ -272,14 +336,16 @@ export class TodayPage implements ViewWillEnter {
     return this.takenCount / this.totalCount;
   }
 
-  openDose(dose: TodayDose): void {
+  async openDose(dose: TodayDose): Promise<void> {
     const idx = this.dosesForDeck.findIndex((d) => d.key === dose.key);
     this.expandedDeckIndex = idx >= 0 ? idx : 0;
     this.expandedDose = dose;
+    await this.loadExpandedHistory(dose);
   }
 
   closeExpanded(): void {
     this.expandedDose = null;
+    this.expandedHistoryLoading = false;
   }
 
   /** Jump to medication form (times, stock, notes) without going through Family. */
@@ -356,9 +422,10 @@ export class TodayPage implements ViewWillEnter {
     }
     const key = this.expandedDose.key;
     await this.mark(this.expandedDose, status);
-    const next = this.medData.getTodayDoses().find((d) => d.key === key);
+    const next = this.doses.find((d) => d.key === key);
     if (next) {
       this.expandedDose = next;
+      await this.loadExpandedHistory(next);
     }
   }
 
@@ -366,11 +433,89 @@ export class TodayPage implements ViewWillEnter {
     const overlay = await this.loadingCtrl.create({ message: 'Updating dose log…' });
     await overlay.present();
     try {
-      await this.medData.logDose(dose.medicationId, dose.time, status);
-      this.refreshLocal();
-      await this.refreshWeeklySummary();
+      await this.medData.logDose(dose.medicationId, dose.time, status, this.selectedDateKey);
+      await this.refreshForSelectedDate();
+      if (this.expandedDose && this.expandedDose.key === dose.key) {
+        await this.loadExpandedHistory(this.expandedDose);
+      }
     } finally {
       await overlay.dismiss();
+    }
+  }
+
+  private historyAnchorDate(): Date {
+    return this.isViewingToday ? new Date() : this.selectedDate;
+  }
+
+  private historyDateRange(days: number): { from: string; to: string; dates: string[] } {
+    const anchor = this.historyAnchorDate();
+    const to = formatLocalDate(anchor);
+    const fromDate = new Date(anchor);
+    fromDate.setDate(fromDate.getDate() - (days - 1));
+    const from = formatLocalDate(fromDate);
+    const dates: string[] = [];
+    for (let t = fromDate.getTime(); t <= anchor.getTime(); t += 86400000) {
+      dates.push(formatLocalDate(new Date(t)));
+    }
+    return { from, to, dates };
+  }
+
+  historyStatusLabel(status: 'taken' | 'skipped' | 'missed' | 'pending'): string {
+    if (status === 'taken') {
+      return 'Taken';
+    }
+    if (status === 'skipped') {
+      return 'Skipped';
+    }
+    if (status === 'missed') {
+      return 'Missed';
+    }
+    return 'Not logged';
+  }
+
+  historyDateHighlight = (isoDate: string): { textColor: string; backgroundColor: string } | undefined => {
+    const key = this.normalizeDateValue(isoDate);
+    if (!key) {
+      return undefined;
+    }
+    const s = this.historyStatusByDate[key];
+    if (!s) {
+      return undefined;
+    }
+    if (s === 'taken') {
+      return { textColor: '#153322', backgroundColor: '#b8e3c3' };
+    }
+    if (s === 'skipped') {
+      return { textColor: '#3f2a08', backgroundColor: '#f4ddb3' };
+    }
+    return { textColor: '#4c0b0b', backgroundColor: '#f7b8b8' };
+  };
+
+  private async loadExpandedHistory(dose: TodayDose): Promise<void> {
+    this.expandedHistoryLoading = true;
+    try {
+      const { from, to } = this.historyDateRange(365);
+      const logs = await this.medData.fetchDoseLogsRange(from, to);
+      const map = new Map<string, 'taken' | 'skipped' | 'missed'>();
+      for (const l of logs) {
+        if (l.medicationId !== dose.medicationId || l.scheduledTime !== dose.time) {
+          continue;
+        }
+        const status = l.status === 'taken' || l.status === 'skipped' ? l.status : 'missed';
+        map.set(l.date, status);
+      }
+      const statusByDate: Record<string, 'taken' | 'skipped' | 'missed'> = {};
+      for (const [dateKey, status] of map.entries()) {
+        statusByDate[dateKey] = status;
+      }
+      this.historyStatusByDate = statusByDate;
+      this.expandedDateStatus = this.historyStatusByDate[this.selectedDateKey] ?? 'pending';
+    } catch (err) {
+      console.error('Dose history load failed', err);
+      this.historyStatusByDate = {};
+      this.expandedDateStatus = 'pending';
+    } finally {
+      this.expandedHistoryLoading = false;
     }
   }
 

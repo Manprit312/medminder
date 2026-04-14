@@ -15,8 +15,13 @@
     <div class="hero-block">
       <span class="material-symbols-outlined hero-icon">waving_hand</span>
       <h1>Welcome to MedMinder</h1>
-      <p class="lead">
-        We’ll set up one family member and one medicine so you can see how reminders work.
+      <p class="lead" *ngIf="subscription.isPremium">
+        We’ll set up one family member and one medicine so you can see how reminders work. You can add more people later
+        in Family.
+      </p>
+      <p class="lead" *ngIf="!subscription.isPremium">
+        We’ll create your profile and add one medicine so you can see how reminders work. On Free you track one person;
+        MedMinder Plus adds multiple family profiles and caretaker invites.
       </p>
     </div>
     <ion-button expand="block" size="large" (click)="nextFromWelcome()">
@@ -25,8 +30,8 @@
     </ion-button>
   </section>
 
-  <!-- 2 Who -->
-  <section class="ion-padding step-panel" *ngIf="step === 2">
+  <!-- 2 Plus only: Who -->
+  <section class="ion-padding step-panel" *ngIf="showAudience()">
     <h2 class="question">Who are you tracking medicines for?</h2>
     <p class="hint">You can add more people later in Family.</p>
     <ion-radio-group [(ngModel)]="audience" class="audience-group">
@@ -48,10 +53,16 @@
     </ion-button>
   </section>
 
-  <!-- 3 First profile -->
-  <section class="ion-padding step-panel" *ngIf="step === 3">
-    <h2 class="question">Add your first family member</h2>
-    <p class="hint">Use their name as you’d like to see it in reminders.</p>
+  <!-- First profile (Free step 2 / Plus step 3) -->
+  <section class="ion-padding step-panel" *ngIf="showProfile()">
+    <ng-container *ngIf="subscription.isPremium">
+      <h2 class="question">Add your first family member</h2>
+      <p class="hint">Use their name as you’d like to see it in reminders.</p>
+    </ng-container>
+    <ng-container *ngIf="!subscription.isPremium">
+      <h2 class="question">Your profile</h2>
+      <p class="hint">Enter your name or a short label (e.g. “Me”). This is who these reminders are for.</p>
+    </ng-container>
     <ion-list inset="true" lines="none" class="form-card">
       <ion-item>
         <span class="material-symbols-outlined input-lead" slot="start">person</span>
@@ -65,12 +76,12 @@
       </ion-item>
     </ion-list>
     <ion-button expand="block" size="large" (click)="nextFromProfile()" [disabled]="!profileName.trim()">
-      Add person
+      {{ subscription.isPremium ? 'Add person' : 'Continue' }}
     </ion-button>
   </section>
 
-  <!-- 4 First medicine -->
-  <section class="ion-padding step-panel" *ngIf="step === 4">
+  <!-- First medicine -->
+  <section class="ion-padding step-panel" *ngIf="showMed()">
     <h2 class="question">Add a first medicine</h2>
     <p class="hint">You can add more doses and details later.</p>
     <ion-list inset="true" lines="none" class="form-card">
@@ -98,8 +109,8 @@
     </ion-button>
   </section>
 
-  <!-- 5 Done -->
-  <section class="ion-padding step-panel" *ngIf="step === 5">
+  <!-- Done -->
+  <section class="ion-padding step-panel" *ngIf="showDone()">
     <div class="hero-block">
       <span class="material-symbols-outlined hero-icon success">check_circle</span>
       <h1>You’re ready</h1>

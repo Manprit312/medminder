@@ -339,9 +339,9 @@ export class MedDataService {
   async logDose(
     medicationId: string,
     scheduledTime: string,
-    status: 'taken' | 'skipped' | 'missed'
+    status: 'taken' | 'skipped' | 'missed',
+    date: string = todayStr()
   ): Promise<void> {
-    const date = todayStr();
     await firstValueFrom(
       withApiTimeout(
         this.http.post(`${this.base()}/api/dose-logs`, {
@@ -353,7 +353,7 @@ export class MedDataService {
       )
     );
     await this.refresh();
-    if (status === 'missed') {
+    if (status === 'missed' && date === todayStr()) {
       const med = this.getMedicationById(medicationId);
       const profile = med ? this.getProfile(med.profileId) : undefined;
       if (profile && med) {
@@ -370,13 +370,12 @@ export class MedDataService {
     }
   }
 
-  getTodayDoses(): TodayDose[] {
-    const date = todayStr();
+  private buildDosesForDate(date: string, logs: DoseLogEntry[]): TodayDose[] {
     const profiles = this.profiles$.value;
     const profileMap = new Map(profiles.map((p) => [p.id, p.name]));
     const meds = this.medications$.value.filter((m) => m.enabled);
     const logMap = new Map<string, DoseLogEntry>();
-    for (const l of this.logs$.value) {
+    for (const l of logs) {
       if (l.date === date) {
         logMap.set(doseKey(l.medicationId, l.date, l.scheduledTime), l);
       }
@@ -412,5 +411,15 @@ export class MedDataService {
     }
     out.sort((a, b) => a.time.localeCompare(b.time));
     return out;
+  }
+
+  getTodayDoses(): TodayDose[] {
+    const date = todayStr();
+    return this.buildDosesForDate(date, this.logs$.value);
+  }
+
+  async getDosesForDate(date: string): Promise<TodayDose[]> {
+    const logs = date === todayStr() ? this.logs$.value : await this.fetchDoseLogsRange(date, date);
+    return this.buildDosesForDate(date, logs);
   }
 }

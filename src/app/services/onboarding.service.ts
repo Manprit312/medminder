@@ -37,4 +37,19 @@ export class OnboardingService {
       await this.setComplete();
     }
   }
+
+  /**
+   * Use when a session exists but local "onboarding complete" may be missing (new device, cleared storage,
+   * or first navigation after login — `migrateIfHasExistingData` in AppComponent does not run again after sign-in).
+   * Loads profiles from the API if needed, then marks onboarding complete if the account already has profiles.
+   */
+  async syncCompletionWithServerProfiles(): Promise<void> {
+    if (await this.isComplete()) {
+      return;
+    }
+    if (this.medData.getProfilesSnapshot().length === 0) {
+      await this.medData.refresh();
+    }
+    await this.migrateIfHasExistingData();
+  }
 }

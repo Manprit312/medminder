@@ -810,8 +810,37 @@ app-dose-log .big-actions ion-button {
 .mm-expanded-actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 0.5rem;
+  gap: 12px;
+  margin-top: 0.65rem;
+}
+
+.mm-expanded-actions .mm-act {
+  margin: 0;
+  min-height: 54px;
+  font-size: 1.03rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  --border-radius: 16px;
+}
+
+.mm-expanded-actions .mm-act .btn-ic {
+  font-size: 1.18rem;
+  margin-inline-end: 8px;
+}
+
+.mm-act-taken {
+  --background: #2f3a2f;
+  --background-activated: #2a332a;
+  --color: #f7f9f1;
+  --box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+}
+
+.mm-act-skip {
+  --background: rgba(255, 255, 255, 0.06);
+}
+
+.mm-act-missed {
+  --background: rgba(var(--ion-color-warning-rgb), 0.08);
 }
 
 .mm-xp-outline {
@@ -826,8 +855,8 @@ app-dose-log .big-actions ion-button {
 
 .mm-xp-status {
   margin-top: 0.75rem;
-  padding: 14px;
-  border-radius: var(--mm-radius-md);
+  padding: 14px 14px 12px;
+  border-radius: 16px;
   background: rgba(0, 0, 0, 0.12);
 }
 
@@ -847,6 +876,17 @@ app-dose-log .big-actions ion-button {
   margin: 0 0 0.75rem;
   font-size: 0.9rem;
   opacity: 0.85;
+}
+
+.mm-xp-status-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.mm-xp-status-actions ion-button {
+  min-height: 44px;
+  --border-radius: 12px;
+  font-weight: 600;
 }
 
 .mm-xp-done-ic {

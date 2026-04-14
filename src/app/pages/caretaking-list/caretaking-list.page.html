@@ -6,6 +6,11 @@
 
 <ion-content [fullscreen]="true" class="mm-gradient-bg">
   <div class="ion-padding intro">
+    <div class="alerts-strip" *ngIf="(caretakerAlerts.unreadCount | async) as unread">
+      <ion-badge color="danger" *ngIf="unread > 0">{{ unread }}</ion-badge>
+      <span class="alerts-copy" *ngIf="unread > 0">{{ unread }} missed-dose alert{{ unread === 1 ? '' : 's' }}</span>
+      <span class="alerts-copy" *ngIf="unread === 0">No new missed-dose alerts</span>
+    </div>
     <p>
       <span class="material-symbols-outlined intro-icon">volunteer_activism</span>
       People who invited you as a caretaker can appear here. You’ll see their medication schedule and today’s log (read-only).

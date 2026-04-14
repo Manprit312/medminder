@@ -1,11 +1,37 @@
 .tab-icon {
   font-size: 1.4rem;
+  opacity: 0.75;
+}
 
-  opacity: 0.92;
+ion-label {
+  font-size: 0.6rem;
 }
-ion-label{
-  font-size: 0.6rem
-}
-ion-tab-button.tab-selected .tab-icon {
+
+ion-tab-button.tab-selected .tab-icon,
+ion-tab-button.mm-tab-active .tab-icon {
   opacity: 1;
+}
+
+ion-tab-button.mm-tab-active {
+  --color: var(--ion-color-secondary-shade, var(--ion-color-secondary));
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40%;
+    max-width: 3rem;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+    background: var(--ion-color-secondary);
+  }
+
+  ion-label {
+    font-weight: 600;
+    color: var(--ion-color-secondary-shade, var(--ion-color-secondary));
+    opacity: 1;
+  }
 }

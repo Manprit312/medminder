@@ -230,6 +230,99 @@ caretakerRouter.get(
   })
 );
 
+/** List caretaker alerts for current user. */
+caretakerRouter.get(
+  '/alerts',
+  authMiddleware,
+  asyncRoute(async (req, res) => {
+    const uid = req.userId!;
+    const unreadOnly = String(req.query.unread ?? '').trim() === '1';
+    const limitRaw = Number(req.query.limit ?? 25);
+    const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(100, Math.floor(limitRaw))) : 25;
+    const rows = await queryAll<{
+      id: string;
+      caretaker_user_id: string;
+      profile_id: string;
+      medication_id: string;
+      profile_name: string;
+      medication_name: string;
+      date: string;
+      scheduled_time: string;
+      status: string;
+      message: string;
+      created_at: string;
+      read_at: string | null;
+    }>(
+      `SELECT id, caretaker_user_id, profile_id, medication_id, profile_name, medication_name,
+              date, scheduled_time, status, message, created_at, read_at
+       FROM caretaker_alerts
+       WHERE caretaker_user_id = ? ${unreadOnly ? 'AND read_at IS NULL' : ''}
+       ORDER BY created_at DESC
+       LIMIT ${limit}`,
+      [uid]
+    );
+    const unreadRow = await queryOne<{ c: number }>(
+      'SELECT COUNT(1) AS c FROM caretaker_alerts WHERE caretaker_user_id = ? AND read_at IS NULL',
+      [uid]
+    );
+    res.json({
+      unreadCount: Number(unreadRow?.c ?? 0),
+      alerts: rows.map((r) => ({
+        id: r.id,
+        profileId: r.profile_id,
+        medicationId: r.medication_id,
+        profileName: r.profile_name,
+        medicationName: r.medication_name,
+        date: r.date,
+        scheduledTime: r.scheduled_time,
+        status: r.status,
+        message: r.message,
+        createdAt: r.created_at,
+        readAt: r.read_at,
+      })),
+    });
+  })
+);
+
+/** Mark one alert read (owner caretaker only). */
+caretakerRouter.post(
+  '/alerts/:id/read',
+  authMiddleware,
+  asyncRoute(async (req, res) => {
+    const uid = req.userId!;
+    const id = String(req.params.id ?? '').trim();
+    if (!id) {
+      res.status(400).json({ error: 'alert id required' });
+      return;
+    }
+    await runExec('UPDATE caretaker_alerts SET read_at = ? WHERE id = ? AND caretaker_user_id = ?', [
+      new Date().toISOString(),
+      id,
+      uid,
+    ]);
+    res.json({ ok: true });
+  })
+);
+
+/** Mark all alerts for a profile as read. */
+caretakerRouter.post(
+  '/alerts/read-profile/:profileId',
+  authMiddleware,
+  asyncRoute(async (req, res) => {
+    const uid = req.userId!;
+    const profileId = String(req.params.profileId ?? '').trim();
+    if (!profileId) {
+      res.status(400).json({ error: 'profileId required' });
+      return;
+    }
+    await runExec(
+      'UPDATE caretaker_alerts SET read_at = ? WHERE caretaker_user_id = ? AND profile_id = ? AND read_at IS NULL',
+      [new Date().toISOString(), uid, profileId]
+    );
+    res.json({ ok: true });
+  })
+);
+
 /** GET detail: medications + dose logs for a date (caretaker read-only) */
 caretakerRouter.get(
   '/caretaking/:profileId',

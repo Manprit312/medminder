@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
@@ -66,10 +67,23 @@ export class AcceptCaretakerInvitePage implements OnInit {
       await this.caretakerApi.acceptInvite(this.token);
       await this.medData.refresh();
       await this.router.navigateByUrl('/tabs/caring', { replaceUrl: true });
-    } catch {
+    } catch (err: unknown) {
+      const invited = this.preview?.inviteeEmail ?? 'the address this invite was sent to';
+      let message = 'Something went wrong. Try again in a moment.';
+      if (err instanceof HttpErrorResponse) {
+        if (err.status === 403) {
+          message = `You’re signed in with a different email than this invite. Sign out, then sign in or create an account using ${invited}.`;
+        } else if (err.status === 404) {
+          message = 'This invite is invalid or was already used.';
+        } else if (err.status === 410) {
+          message = 'This invite has expired. Ask for a new invite.';
+        } else if (err.status === 0) {
+          message = 'Network error — check your connection and try again.';
+        }
+      }
       const a = await this.alertCtrl.create({
         header: 'Could not accept',
-        message: 'Sign in with the invited email address, or ask for a new invite.',
+        message,
         buttons: ['OK'],
       });
       await a.present();

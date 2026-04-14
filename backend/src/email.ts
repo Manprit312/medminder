@@ -91,14 +91,53 @@ async function sendViaResendApi(payload: ResendEmailPayload): Promise<void> {
   }
 }
 
+function extractEmailAddress(fromHeader: string): string | null {
+  const m = fromHeader.match(/<([^>]+)>/);
+  if (m) {
+    return m[1].trim();
+  }
+  const t = fromHeader.trim();
+  if (/^[^\s@]+@[^\s@]+$/.test(t)) {
+    return t;
+  }
+  return null;
+}
+
+/** Resend only sends from verified domains (or onboarding@resend.dev). PaaS hostnames like *.onrender.com cannot be verified as your DNS. */
+function isLikelyUnverifiableResendSender(fromHeader: string): boolean {
+  const addr = extractEmailAddress(fromHeader);
+  if (!addr) {
+    return false;
+  }
+  const at = addr.lastIndexOf('@');
+  if (at < 0) {
+    return false;
+  }
+  const domain = addr.slice(at + 1).toLowerCase();
+  return (
+    domain.endsWith('.onrender.com') ||
+    domain.endsWith('.railway.app') ||
+    domain === 'localhost' ||
+    domain.endsWith('.localhost')
+  );
+}
+
 /** From header — Resend requires a verified domain or onboarding@resend.dev for testing. */
 function mailFrom(): string {
   const from = process.env.EMAIL_FROM?.trim();
+  if (resendApiKey()) {
+    if (from && !isLikelyUnverifiableResendSender(from)) {
+      return from;
+    }
+    if (from && isLikelyUnverifiableResendSender(from)) {
+      console.warn(
+        '[email] EMAIL_FROM uses a domain Resend cannot verify (e.g. *.onrender.com). Using onboarding@resend.dev. Verify a domain at https://resend.com/domains and set EMAIL_FROM to an address on that domain.'
+      );
+    }
+    return 'MedMinder <onboarding@resend.dev>';
+  }
   if (from) {
     return from;
-  }
-  if (resendApiKey()) {
-    return 'MedMinder <onboarding@resend.dev>';
   }
   const user = process.env.SMTP_USER?.trim();
   return user ? `"MedMinder" <${user}>` : '"MedMinder" <noreply@localhost>';
@@ -116,19 +155,59 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string): Prom
   await transporter.sendMail({ from, to, subject: 'Reset your MedMinder password', text, html });
 }
 
+function originFromUrl(urlish: string): string | null {
+  const s = urlish.trim();
+  if (!s) {
+    return null;
+  }
+  try {
+    const u = new URL(s.includes('://') ? s : `https://${s}`);
+    return `${u.protocol}//${u.host}`;
+  } catch {
+    return null;
+  }
+}
+
+function isLocalhostOrigin(url: string): boolean {
+  const o = originFromUrl(url);
+  if (!o) {
+    return false;
+  }
+  try {
+    const h = new URL(o).hostname;
+    return h === 'localhost' || h === '127.0.0.1' || h === '[::1]';
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Base URL of the Ionic web app (invite + password-reset links). No trailing slash.
  * Use **one** URL only. If `APP_PUBLIC_URL` is mistakenly a comma-separated list (e.g. CORS origins),
  * the **first** entry is used so links are not broken.
+ * On Render, if `APP_PUBLIC_URL` is unset or still points at localhost, `RENDER_EXTERNAL_URL` is used
+ * so invite links are not `http://localhost:8100` in production (set `APP_PUBLIC_URL` if the app is hosted elsewhere).
  */
 export function publicAppUrl(): string {
   const fallback = 'http://localhost:8100';
   const raw = process.env.APP_PUBLIC_URL?.trim() ?? '';
-  if (!raw) {
-    return fallback;
+  const first = raw ? raw.split(',')[0]?.trim().replace(/\/$/, '') ?? '' : '';
+  const renderExternal = process.env.RENDER_EXTERNAL_URL?.trim();
+  const onRender = process.env.RENDER === 'true';
+
+  if (first && !isLocalhostOrigin(first)) {
+    return first;
   }
-  const first = raw.split(',')[0]?.trim().replace(/\/$/, '') ?? '';
-  return first || fallback;
+  if (onRender && renderExternal) {
+    const o = originFromUrl(renderExternal);
+    if (o) {
+      return o;
+    }
+  }
+  if (first) {
+    return first;
+  }
+  return fallback;
 }
 
 export async function sendCaretakerInviteEmail(

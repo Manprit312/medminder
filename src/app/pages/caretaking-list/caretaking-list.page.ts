@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { ViewWillEnter } from '@ionic/angular';
 import { CaretakerApiService, CaretakingProfileRef } from '../../services/caretaker-api.service';
+import { CaretakerAlertsService } from '../../services/caretaker-alerts.service';
 
 @Component({
   selector: 'app-caretaking-list',
@@ -16,6 +17,7 @@ export class CaretakingListPage implements ViewWillEnter {
 
   constructor(
     private readonly caretakerApi: CaretakerApiService,
+    readonly caretakerAlerts: CaretakerAlertsService,
     private readonly router: Router
   ) {}
 
@@ -23,6 +25,7 @@ export class CaretakingListPage implements ViewWillEnter {
     this.loading = true;
     this.loadError = null;
     try {
+      await this.caretakerAlerts.refreshNow();
       this.profiles = await this.caretakerApi.listCaretakingProfiles();
     } catch {
       this.loadError = 'Could not load people you care for.';

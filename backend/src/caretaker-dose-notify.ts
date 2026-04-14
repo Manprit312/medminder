@@ -1,4 +1,5 @@
 import { queryAll, queryOne } from './db.js';
+import { runExec } from './db.js';
 import { isSmtpConfigured, sendCaretakerDoseAlertEmail } from './email.js';
 
 /**
@@ -13,10 +14,7 @@ export async function notifyCaretakersDoseEvent(payload: {
   scheduledTime: string;
   profileId: string;
 }): Promise<void> {
-  if (payload.status !== 'skipped' && payload.status !== 'missed') {
-    return;
-  }
-  if (!isSmtpConfigured()) {
+  if (payload.status !== 'missed') {
     return;
   }
 
@@ -32,19 +30,52 @@ export async function notifyCaretakersDoseEvent(payload: {
     emails.add(row.caregiver_email.trim().toLowerCase());
   }
 
-  const linked = await queryAll<{ email: string }>(
-    `SELECT u.email FROM caretaker_links cl
+  const linked = await queryAll<{ caretaker_user_id: string; email: string }>(
+    `SELECT cl.caretaker_user_id, u.email FROM caretaker_links cl
      INNER JOIN users u ON u.id = cl.caretaker_user_id
      WHERE cl.profile_id = ?`,
     [payload.profileId]
   );
+  const linkedUserIds = new Set<string>();
   for (const l of linked) {
+    if (l.caretaker_user_id) {
+      linkedUserIds.add(l.caretaker_user_id);
+    }
     if (l.email?.trim()) {
       emails.add(l.email.trim().toLowerCase());
     }
   }
 
-  const statusLabel = payload.status === 'skipped' ? 'skipped' : 'missed';
+  const message = `${payload.profileName} missed ${payload.medicationName} at ${payload.scheduledTime} on ${payload.date}.`;
+  for (const caretakerUserId of linkedUserIds) {
+    const id = `${caretakerUserId}|${payload.medicationId}|${payload.date}|${payload.scheduledTime}|missed`;
+    const exists = await queryOne<{ id: string }>('SELECT id FROM caretaker_alerts WHERE id = ?', [id]);
+    if (exists) {
+      continue;
+    }
+    await runExec(
+      `INSERT INTO caretaker_alerts
+        (id, caretaker_user_id, profile_id, medication_id, profile_name, medication_name, date, scheduled_time, status, message, created_at, read_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`,
+      [
+        id,
+        caretakerUserId,
+        payload.profileId,
+        payload.medicationId,
+        payload.profileName,
+        payload.medicationName,
+        payload.date,
+        payload.scheduledTime,
+        'missed',
+        message,
+        new Date().toISOString(),
+      ]
+    );
+  }
+
+  if (!isSmtpConfigured()) {
+    return;
+  }
   for (const to of emails) {
     try {
       await sendCaretakerDoseAlertEmail(to, {
@@ -52,7 +83,7 @@ export async function notifyCaretakersDoseEvent(payload: {
         medicationName: payload.medicationName,
         date: payload.date,
         scheduledTime: payload.scheduledTime,
-        statusLabel,
+        statusLabel: 'missed',
       });
     } catch (e) {
       console.error('[caretaker-dose-notify] send failed', to, e);

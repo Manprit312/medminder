@@ -143,5 +143,22 @@ function migrateCaretakerTables(database: Database.Database) {
       PRIMARY KEY (profile_id, caretaker_user_id)
     );
     CREATE INDEX IF NOT EXISTS idx_caretaker_links_user ON caretaker_links(caretaker_user_id);
+
+    CREATE TABLE IF NOT EXISTS caretaker_alerts (
+      id TEXT PRIMARY KEY,
+      caretaker_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      profile_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+      medication_id TEXT NOT NULL REFERENCES medications(id) ON DELETE CASCADE,
+      profile_name TEXT NOT NULL,
+      medication_name TEXT NOT NULL,
+      date TEXT NOT NULL,
+      scheduled_time TEXT NOT NULL,
+      status TEXT NOT NULL,
+      message TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      read_at TEXT
+    );
+    CREATE INDEX IF NOT EXISTS idx_caretaker_alerts_user_created ON caretaker_alerts(caretaker_user_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_caretaker_alerts_user_read ON caretaker_alerts(caretaker_user_id, read_at);
   `);
 }

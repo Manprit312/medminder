@@ -23,6 +23,7 @@ export class CaretakingDetailPage implements ViewWillEnter {
   data: CaretakingDetailResponse | null = null;
   loading = true;
   error: string | null = null;
+  selectedDate = todayStr();
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -31,16 +32,36 @@ export class CaretakingDetailPage implements ViewWillEnter {
 
   async ionViewWillEnter(): Promise<void> {
     this.profileId = this.route.snapshot.paramMap.get('profileId') ?? '';
-    this.loading = true;
-    this.error = null;
-    this.data = null;
     if (!this.profileId) {
       this.error = 'Missing profile.';
       this.loading = false;
       return;
     }
+    await this.loadForDate(this.selectedDate);
+  }
+
+  onDateChanged(event: Event): void {
+    const detail = event as CustomEvent<{ value?: string | null }>;
+    const value = detail.detail?.value?.trim().slice(0, 10);
+    if (!value || value === this.selectedDate) {
+      return;
+    }
+    this.selectedDate = value;
+    void this.loadForDate(value);
+  }
+
+  get maxDateKey(): string {
+    return todayStr();
+  }
+
+  private async loadForDate(date: string): Promise<void> {
+    this.loading = true;
+    this.error = null;
+    this.data = null;
     try {
-      this.data = await this.caretakerApi.getCaretakingDetail(this.profileId, todayStr());
+      await this.caretakerApi.markProfileAlertsRead(this.profileId);
+      this.data = await this.caretakerApi.getCaretakingDetail(this.profileId, date);
+      this.selectedDate = this.data.date;
     } catch {
       this.error = 'Could not load this care profile.';
     } finally {

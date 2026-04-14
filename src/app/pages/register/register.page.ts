@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { AuthService } from '../../services/auth.service';
+import { CaretakerAlertsService } from '../../services/caretaker-alerts.service';
 import { MedDataService } from '../../services/med-data.service';
 import { MedNotificationService } from '../../services/med-notification.service';
 import { getApiUrl } from '../../../environments/api-url';
@@ -21,6 +22,7 @@ export class RegisterPage {
 
   constructor(
     private readonly auth: AuthService,
+    private readonly caretakerAlerts: CaretakerAlertsService,
     private readonly medData: MedDataService,
     private readonly medNotif: MedNotificationService,
     private readonly router: Router,
@@ -56,6 +58,7 @@ export class RegisterPage {
     await loading.present();
     try {
       await this.auth.register(email, this.password);
+      await this.caretakerAlerts.start();
       await this.medData.refresh();
       await this.medNotif.initialize();
       await loading.dismiss();

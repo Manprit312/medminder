@@ -21,6 +21,7 @@ export const authGuard: CanActivateFn = async () => {
   if (!tokens.hasToken()) {
     return router.parseUrl('/login');
   }
+  await onboarding.syncCompletionWithServerProfiles();
   if (!(await onboarding.isComplete())) {
     return router.parseUrl('/onboarding');
   }

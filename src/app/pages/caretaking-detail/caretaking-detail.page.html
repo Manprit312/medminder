@@ -24,6 +24,14 @@
         {{ data.date }}
       </p>
       <p class="hint">Read-only — you can’t edit their medications here.</p>
+      <ion-datetime
+        class="caretaking-calendar"
+        presentation="date"
+        [value]="selectedDate"
+        [max]="maxDateKey"
+        (ionChange)="onDateChanged($event)"
+      ></ion-datetime>
+      <p class="pending-note">Choose any date to review taken/skipped/missed status.</p>
     </div>
 
     <div *ngIf="data.medications.length === 0" class="ion-padding">

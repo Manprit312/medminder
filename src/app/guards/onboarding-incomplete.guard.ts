@@ -11,6 +11,7 @@ export const onboardingIncompleteGuard: CanActivateFn = async () => {
   if (!tokens.hasToken()) {
     return router.parseUrl('/login');
   }
+  await onboarding.syncCompletionWithServerProfiles();
   if (await onboarding.isComplete()) {
     return router.parseUrl('/tabs/today');
   }

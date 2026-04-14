@@ -4,6 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { LoadingController, ToastController, ViewWillEnter } from '@ionic/angular';
 import { AuthService } from '../../services/auth.service';
+import { CaretakerAlertsService } from '../../services/caretaker-alerts.service';
 import { MedDataService } from '../../services/med-data.service';
 import { MedNotificationService } from '../../services/med-notification.service';
 import { SubscriptionService } from '../../services/subscription.service';
@@ -20,6 +21,7 @@ export class SettingsPage implements ViewWillEnter {
 
   constructor(
     private readonly auth: AuthService,
+    private readonly caretakerAlerts: CaretakerAlertsService,
     private readonly medData: MedDataService,
     private readonly medNotif: MedNotificationService,
     private readonly router: Router,
@@ -133,6 +135,7 @@ export class SettingsPage implements ViewWillEnter {
     await loading.present();
     try {
       await this.auth.logout();
+      this.caretakerAlerts.stop();
       this.medData.clear();
       await this.medNotif.cancelAllPendingLocalNotifications();
       await this.router.navigateByUrl('/login', { replaceUrl: true });

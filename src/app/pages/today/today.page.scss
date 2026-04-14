@@ -80,6 +80,77 @@
   opacity: 0.88;
 }
 
+.mm-history-wrap {
+  margin: 0.9rem 0 0.6rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.mm-history-head h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--mm-cream-bright);
+}
+
+.mm-history-head p {
+  margin: 0.2rem 0 0.6rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.mm-history-calendar ion-datetime {
+  --background: rgba(255, 255, 255, 0.12);
+  --wheel-highlight-background: transparent;
+  --title-color: #f9fbf4;
+  --ion-text-color: #f9fbf4;
+  --ion-color-step-600: #e9efdf;
+  --ion-color-step-850: #f4f7ee;
+  --ion-color-primary: #f9fbf4;
+  --ion-color-primary-contrast: #1b241c;
+  --border-color: rgba(255, 255, 255, 0.25);
+  width: 100%;
+  border-radius: 10px;
+  color: var(--mm-cream-bright);
+  opacity: 1;
+}
+
+.mm-history-calendar ion-datetime::part(calendar-day) {
+  color: #f8fbf3;
+  font-weight: 600;
+}
+
+.mm-history-calendar ion-datetime::part(calendar-day today),.mm-history-calendar ion-datetime::part(calendar-day active){border-radius:8px}
+
+.mm-history-legend {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.lg {
+  font-size: .7rem;
+  padding: .12rem .45rem;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  color: #1a1f1c;
+  font-weight: 600;
+}
+
+.lg--taken {
+  background: #b8e3c3;
+}
+
+.lg--skipped {
+  background: #f4ddb3;
+}
+
+.lg--missed {
+  background: #f7b8b8;
+}
+
+.lg--pending {
+  background: #e5e5e5;
+}
+
 .mm-today-empty-copy {
   margin: 0.75rem 0 0;
   font-size: 1rem;
@@ -92,6 +163,7 @@
 .mm-today-cta {
   --box-shadow: 0 8px 24px rgba(var(--ion-color-tertiary-rgb), 0.35);
 }
+
 
 .mm-today-panels {
   display: flex;
