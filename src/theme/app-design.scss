@@ -53,6 +53,44 @@ ion-toolbar {
   --min-height: 56px;
 }
 
+/* Unified app header look across screens using color="primary" toolbars */
+ion-header ion-toolbar[color='primary'] {
+  --background: linear-gradient(
+    180deg,
+    rgba(72, 84, 63, 0.96) 0%,
+    rgba(95, 105, 86, 0.96) 100%
+  );
+  --color: #f9fcf7;
+  --border-color: rgba(255, 255, 255, 0.12);
+  --min-height: 60px;
+  box-shadow: 0 6px 18px rgba(33, 41, 30, 0.18);
+}
+
+ion-header ion-toolbar[color='primary'] ion-title {
+  font-size: 1.12rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+ion-header ion-toolbar[color='primary'] ion-back-button,
+ion-header ion-toolbar[color='primary'] ion-button {
+  --color: #f9fcf7;
+}
+
+/* ion-datetime shadow part `calendar-day` — square day cells (Ionic default is 50% circles) */
+ion-datetime::part(calendar-day) {
+  min-width: 5px;
+  height: 32px;
+  width: 33px;
+  border-radius: 4px;
+}
+
+ion-datetime::part(calendar-day today),
+ion-datetime::part(calendar-day active),
+ion-datetime::part(calendar-day disabled) {
+  border-radius: 4px;
+}
+
 ion-toolbar ion-title {
   font-weight: 700;
   font-size: 1.125rem;
@@ -916,4 +954,292 @@ app-dose-log .big-actions ion-button {
 
 .mm-rc-cream .mm-expanded-footnote {
   color: var(--mm-text-muted);
+}
+
+
+
+
+.mm-hero-compact .mm-today-hero-alarm {
+  max-height: 120px;
+  width: auto;
+  margin: 0 auto;
+  display: block;
+  box-shadow: none;
+}
+
+.mm-today--cta-pad {
+  --padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+}
+
+.mm-progress-premium__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.mm-progress-premium__eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mm-text-muted);
+}
+
+.mm-progress-premium__pct {
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--ion-text-color);
+  font-variant-numeric: tabular-nums;
+}
+
+.mm-progress-premium__bar {
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.mm-progress-premium__doses {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ion-text-color);
+}
+
+.mm-progress-premium__micro {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--mm-text-muted);
+}
+
+.mm-weekly-premium .weekly-range {
+  margin-bottom: 10px;
+}
+
+.weekly-adh--large {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.weekly-adh__value {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.weekly-adh__label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--mm-text-muted);
+}
+
+.mm-week-strip {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  align-items: flex-end;
+  padding-top: 4px;
+}
+
+.mm-week-strip__cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.mm-week-strip__day {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--mm-text-muted);
+}
+
+.mm-week-strip__bar {
+  width: 100%;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(var(--ion-color-medium-rgb), 0.22);
+}
+
+.mm-week-strip__bar--empty {
+  opacity: 0.4;
+}
+
+.mm-week-strip__bar--bad {
+  background: linear-gradient(
+    180deg,
+    rgba(var(--ion-color-danger-rgb), 0.35),
+    rgba(var(--ion-color-danger-rgb), 0.85)
+  );
+}
+
+.mm-week-strip__bar--mid {
+  background: linear-gradient(
+    180deg,
+    rgba(var(--ion-color-warning-rgb), 0.35),
+    rgba(var(--ion-color-warning-rgb), 0.85)
+  );
+}
+
+.mm-week-strip__bar--good {
+  background: linear-gradient(
+    180deg,
+    rgba(var(--ion-color-success-rgb), 0.35),
+    rgba(var(--ion-color-success-rgb), 0.85)
+  );
+}
+
+.mm-today-sticky-cta {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 0%, rgba(58, 66, 54, 0.92) 35%, #2f362c 100%);
+}
+
+.mm-sticky-cta-btn {
+  pointer-events: auto;
+  min-height: 52px;
+  font-size: 1.05rem;
+  --box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mm-sticky-cta-btn:active {
+    transform: scale(0.98);
+    transition: transform 0.12s ease;
+  }
+}
+
+.mm-reminder-stack--spaced {
+  gap: 16px;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+
+.mm-track-card.mm-track-status--pending {
+  box-shadow:
+    0 8px 26px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(255, 107, 53, 0.35);
+}
+
+.mm-track-card.mm-track-status--taken {
+  box-shadow:
+    0 8px 26px rgba(74, 103, 65, 0.2),
+    inset 0 0 0 2px rgba(74, 103, 65, 0.35);
+}
+
+.mm-track-card.mm-track-status--missed {
+  box-shadow:
+    0 8px 26px rgba(194, 65, 65, 0.15),
+    inset 0 0 0 1px rgba(194, 65, 65, 0.45);
+}
+
+.mm-track-card.mm-track-status--skipped {
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.1);
+  opacity: 0.96;
+}
+
+.mm-rc-taken-primary {
+  --box-shadow: 0 4px 14px rgba(var(--ion-color-success-rgb), 0.45);
+  font-weight: 800;
+}
+
+.mm-rc-cream .mm-track-pill {
+  border-color: rgba(26, 26, 26, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.mm-meals-compact .mm-meals-intro {
+  margin-bottom: 10px;
+  font-size: 0.8rem;
+}
+
+.mm-meals-compact .mm-meals-field ion-textarea {
+  min-height: 2.5rem;
+}
+
+.mm-assistant-card__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.mm-assistant-card__list {
+  margin: 0;
+  padding-inline-start: 1rem;
+  color: var(--ion-text-color);
+}
+
+.mm-assistant-card__list li {
+  margin: 0 0 6px;
+  line-height: 1.45;
+}
+
+.mm-assistant-card__foot {
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+  color: var(--mm-text-muted);
+}
+
+.mm-dose-checkin {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.mm-rc-cream .mm-dose-checkin {
+  border-top-color: rgba(26, 26, 26, 0.12);
+}
+
+.mm-dose-checkin__title {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.mm-dose-checkin__hint {
+  margin: 0.3rem 0 0.55rem;
+  font-size: 0.82rem;
+  opacity: 0.85;
+}
+
+.mm-dose-checkin__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mm-missed-playbook {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: rgba(194, 65, 65, 0.12);
+  border: 1px solid rgba(194, 65, 65, 0.28);
+}
+
+.mm-missed-playbook h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+}
+
+.mm-missed-playbook ul {
+  margin: 0;
+  padding-inline-start: 1rem;
 }

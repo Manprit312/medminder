@@ -1,16 +1,22 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoadingController, ViewWillEnter } from '@ionic/angular';
-import { Medication, TodayDose } from '../../models/med.models';
+import { DoseLogEntry, Medication, TodayDose } from '../../models/med.models';
 
 function timeToMinutes(time: string): number {
   const [h, m] = time.split(':').map(Number);
   return (h || 0) * 60 + (m || 0);
 }
-import { AdherencePeriodSummary, AdherenceService, formatLocalDate } from '../../services/adherence.service';
+import {
+  AdherencePeriodSummary,
+  AdherenceService,
+  enumerateDatesInclusive,
+  formatLocalDate,
+} from '../../services/adherence.service';
 import { DailyMeals, MealLogService } from '../../services/meal-log.service';
 import { MedDataService } from '../../services/med-data.service';
 import { RefillService } from '../../services/refill.service';
+import { DoseCheckinLevel, HealthAssistantService } from '../../services/health-assistant.service';
 
 @Component({
   selector: 'app-today',
@@ -29,6 +35,8 @@ export class TodayPage implements ViewWillEnter {
   todaySummary: AdherencePeriodSummary | null = null;
   /** ISO week (Mon–Sun) for the selected day */
   weeklySummary: AdherencePeriodSummary | null = null;
+  /** Mini week chart: one cell per day Mon–Sun */
+  weekStrip: { label: string; tone: 'empty' | 'bad' | 'mid' | 'good' }[] = [];
   /** Full-screen expanded detail (same tone as tapped stack card) */
   expandedDose: TodayDose | null = null;
   expandedDeckIndex = 0;
@@ -40,6 +48,9 @@ export class TodayPage implements ViewWillEnter {
   mealLogDateKey = '';
   /** Optional notes — synced to device storage only */
   mealDraft: DailyMeals = { breakfast: '', lunch: '', dinner: '' };
+  assistantBullets: string[] = [];
+  assistantFooter = '';
+  checkinByDoseKey: Record<string, DoseCheckinLevel> = {};
 
   constructor(
     private readonly medData: MedDataService,
@@ -47,7 +58,8 @@ export class TodayPage implements ViewWillEnter {
     private readonly refill: RefillService,
     private readonly router: Router,
     private readonly mealLog: MealLogService,
-    private readonly loadingCtrl: LoadingController
+    private readonly loadingCtrl: LoadingController,
+    private readonly assistant: HealthAssistantService
   ) {}
 
   async ionViewWillEnter(): Promise<void> {
@@ -70,6 +82,18 @@ export class TodayPage implements ViewWillEnter {
 
   get isViewingToday(): boolean {
     return this.selectedDateKey === this.maxDateKey;
+  }
+
+  /** Friendly greeting from the device clock (shown with today’s date on the home hero). */
+  get timeGreeting(): string {
+    const h = new Date().getHours();
+    if (h < 12) {
+      return 'Good morning';
+    }
+    if (h < 17) {
+      return 'Good afternoon';
+    }
+    return 'Good evening';
   }
 
   onDateChanged(value: string | null | undefined): void {
@@ -117,6 +141,57 @@ export class TodayPage implements ViewWillEnter {
     await this.updateSelectedDayAdherence();
     await this.refreshWeeklySummary();
     await this.loadMealsForSelectedDate();
+    await this.loadCheckinsForSelectedDate();
+    this.updateAssistantBriefing();
+  }
+
+  private updateAssistantBriefing(): void {
+    const bullets: string[] = [];
+    const next = this.nextUpcomingPending;
+    if (next) {
+      bullets.push(`Next dose: ${next.medName} at ${this.formatTime12h(next.time)}.`);
+    }
+    if (this.pendingCount > 0) {
+      bullets.push(`${this.pendingCount} dose(s) still pending today.`);
+    }
+    if (this.missedCount > 0) {
+      bullets.push(`${this.missedCount} missed dose(s) logged today. Review and correct if needed.`);
+    }
+    const low = this.doses.find((d) => this.warnRefill(d));
+    if (low) {
+      bullets.push(`Refill soon: ${low.medName}.`);
+    }
+    if (bullets.length === 0) {
+      bullets.push("You're on track today. Keep your routine steady.");
+    }
+    this.assistantBullets = bullets.slice(0, 4);
+    this.assistantFooter = 'Assistant guidance is educational only and does not replace clinician advice.';
+  }
+
+  private doseCheckinKey(dose: TodayDose): string {
+    return `${dose.medicationId}|${this.selectedDateKey}|${dose.time}`;
+  }
+
+  private async loadCheckinsForSelectedDate(): Promise<void> {
+    const map: Record<string, DoseCheckinLevel> = {};
+    for (const dose of this.doses) {
+      const key = this.doseCheckinKey(dose);
+      const v = await this.assistant.getDoseCheckin(key);
+      if (v) {
+        map[key] = v;
+      }
+    }
+    this.checkinByDoseKey = map;
+  }
+
+  doseCheckinStatus(dose: TodayDose): DoseCheckinLevel | null {
+    return this.checkinByDoseKey[this.doseCheckinKey(dose)] ?? null;
+  }
+
+  async setDoseCheckin(dose: TodayDose, level: DoseCheckinLevel): Promise<void> {
+    const key = this.doseCheckinKey(dose);
+    await this.assistant.setDoseCheckin(key, level);
+    this.checkinByDoseKey = { ...this.checkinByDoseKey, [key]: level };
   }
 
   private async loadMealsForSelectedDate(): Promise<void> {
@@ -155,16 +230,40 @@ export class TodayPage implements ViewWillEnter {
     const { monday, sunday } = this.adherence.currentIsoWeekBounds(this.selectedDate);
     try {
       const weekLogs = await this.medData.fetchDoseLogsRange(monday, sunday);
-      this.weeklySummary = this.adherence.summarizePeriod(
-        weekLogs,
-        this.medData.getMedicationsSnapshot(),
-        monday,
-        sunday
-      );
+      const meds = this.medData.getMedicationsSnapshot();
+      this.weeklySummary = this.adherence.summarizePeriod(weekLogs, meds, monday, sunday);
+      this.buildWeekStrip(monday, sunday, weekLogs, meds);
     } catch (err) {
       console.error('Weekly adherence fetch failed', err);
       this.weeklySummary = null;
+      this.weekStrip = [];
     }
+  }
+
+  private buildWeekStrip(
+    monday: string,
+    sunday: string,
+    weekLogs: DoseLogEntry[],
+    meds: Medication[]
+  ): void {
+    const dates = enumerateDatesInclusive(monday, sunday);
+    this.weekStrip = dates.map((d) => {
+      const dayLogs = weekLogs.filter((l) => l.date === d);
+      const s = this.adherence.summarizePeriod(dayLogs, meds, d, d);
+      const pct = s.adherencePercent;
+      let tone: 'empty' | 'bad' | 'mid' | 'good' = 'empty';
+      if (s.totalScheduled > 0 && pct != null) {
+        if (pct < 40) {
+          tone = 'bad';
+        } else if (pct < 80) {
+          tone = 'mid';
+        } else {
+          tone = 'good';
+        }
+      }
+      const label = new Date(`${d}T12:00:00`).toLocaleDateString(undefined, { weekday: 'narrow' });
+      return { label, tone };
+    });
   }
 
   get totalCount(): number {
@@ -277,11 +376,6 @@ export class TodayPage implements ViewWillEnter {
     return `Reminder for ${dose.profileName}. Tap for details or to log this dose.`;
   }
 
-  /** Bottom card in the list sits on top of the stack (deck order). */
-  deckZIndex(index: number): number {
-    return 1 + index;
-  }
-
   minutesUntilScheduled(time: string): number | null {
     const [th, tm] = time.split(':').map(Number);
     const now = new Date();
@@ -334,6 +428,55 @@ export class TodayPage implements ViewWillEnter {
       return 0;
     }
     return this.takenCount / this.totalCount;
+  }
+
+  /** Whole-number % for UI (matches dose list: taken / scheduled slots). */
+  get todayAdherenceDisplayPercent(): number {
+    if (this.totalCount === 0) {
+      return 0;
+    }
+    return Math.round((this.takenCount / this.totalCount) * 100);
+  }
+
+  /**
+   * Dynamic progress color: red ≤30%, yellow &lt;70%, green ≥70%.
+   * Aligns with ion-progress-bar color tokens.
+   */
+  get adherenceProgressIonColor(): string {
+    if (this.totalCount === 0) {
+      return 'medium';
+    }
+    const p = this.todayAdherenceDisplayPercent;
+    if (p <= 30) {
+      return 'danger';
+    }
+    if (p < 70) {
+      return 'warning';
+    }
+    return 'success';
+  }
+
+  get doseCountLine(): string {
+    return `${this.takenCount}/${this.totalCount} doses taken`;
+  }
+
+  get adherenceMicroFeedback(): string {
+    if (this.totalCount === 0) {
+      return '';
+    }
+    const f = this.progressFraction;
+    if (f === 0) {
+      return "Let's get started";
+    }
+    if (f < 1) {
+      return 'Good progress';
+    }
+    return 'Great job';
+  }
+
+  /** Status strip for card tint (pending / taken / skipped / missed). */
+  doseCardStatusClass(dose: TodayDose): string {
+    return `mm-track-status--${dose.status}`;
   }
 
   async openDose(dose: TodayDose): Promise<void> {

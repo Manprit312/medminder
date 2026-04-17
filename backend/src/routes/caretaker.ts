@@ -5,7 +5,12 @@ import { asyncRoute } from '../async-route.js';
 import { queryAll, queryOne, runExec } from '../db.js';
 import { mapMedicationRow, type MedicationRow } from '../medication-map.js';
 import { authMiddleware } from '../middleware/auth.js';
-import { isSmtpConfigured, publicAppUrl, sendCaretakerInviteEmail } from '../email.js';
+import {
+  isSmtpConfigured,
+  publicAppUrl,
+  sendCaretakerInviteEmail,
+  sendCaretakerWeeklyDigestEmail,
+} from '../email.js';
 
 export const caretakerRouter = Router();
 
@@ -29,6 +34,42 @@ async function profileOwnedByUser(profileId: string, userId: string): Promise<bo
     [profileId, userId]
   );
   return Boolean(row);
+}
+
+function isoDate(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
+async function weeklyDigestForProfile(profileId: string): Promise<{
+  from: string;
+  to: string;
+  taken: number;
+  skipped: number;
+  missed: number;
+  adherencePercent: number | null;
+}> {
+  const toDate = new Date();
+  const fromDate = new Date(toDate);
+  fromDate.setDate(fromDate.getDate() - 6);
+  const from = isoDate(fromDate);
+  const to = isoDate(toDate);
+
+  const counts = await queryOne<{ taken: number; skipped: number; missed: number }>(
+    `SELECT
+      SUM(CASE WHEN d.status = 'taken' THEN 1 ELSE 0 END) AS taken,
+      SUM(CASE WHEN d.status = 'skipped' THEN 1 ELSE 0 END) AS skipped,
+      SUM(CASE WHEN d.status = 'missed' THEN 1 ELSE 0 END) AS missed
+     FROM dose_logs d
+     INNER JOIN medications m ON m.id = d.medication_id
+     WHERE m.profile_id = ? AND d.date >= ? AND d.date <= ?`,
+    [profileId, from, to]
+  );
+  const taken = Number(counts?.taken ?? 0);
+  const skipped = Number(counts?.skipped ?? 0);
+  const missed = Number(counts?.missed ?? 0);
+  const totalLogged = taken + skipped + missed;
+  const adherencePercent = totalLogged > 0 ? Math.round((taken / totalLogged) * 1000) / 10 : null;
+  return { from, to, taken, skipped, missed, adherencePercent };
 }
 
 /** POST { profileId, inviteeEmail } — inviter must own profile + MedMinder Plus */
@@ -281,6 +322,146 @@ caretakerRouter.get(
         readAt: r.read_at,
       })),
     });
+  })
+);
+
+/** Owner-configured escalation rules for caretaker notifications. */
+caretakerRouter.get(
+  '/escalation-rules/:profileId',
+  authMiddleware,
+  asyncRoute(async (req, res) => {
+    const uid = req.userId!;
+    const profileId = String(req.params.profileId ?? '').trim();
+    if (!profileId || !(await profileOwnedByUser(profileId, uid))) {
+      res.status(404).json({ error: 'Profile not found' });
+      return;
+    }
+    const row = await queryOne<{
+      enabled: number;
+      window_days: number;
+      missed_threshold: number;
+      updated_at: string;
+    }>(
+      `SELECT enabled, window_days, missed_threshold, updated_at
+       FROM caretaker_escalation_rules WHERE profile_id = ?`,
+      [profileId]
+    );
+    res.json({
+      profileId,
+      enabled: Boolean(row?.enabled ?? 0),
+      windowDays: Number(row?.window_days ?? 3),
+      missedThreshold: Number(row?.missed_threshold ?? 2),
+      updatedAt: row?.updated_at ?? null,
+    });
+  })
+);
+
+caretakerRouter.post(
+  '/escalation-rules/:profileId',
+  authMiddleware,
+  asyncRoute(async (req, res) => {
+    const uid = req.userId!;
+    const profileId = String(req.params.profileId ?? '').trim();
+    if (!profileId || !(await profileOwnedByUser(profileId, uid))) {
+      res.status(404).json({ error: 'Profile not found' });
+      return;
+    }
+    const enabled = Boolean(req.body?.enabled);
+    const windowDays = Math.max(1, Math.min(30, Number(req.body?.windowDays ?? 3) || 3));
+    const missedThreshold = Math.max(1, Math.min(20, Number(req.body?.missedThreshold ?? 2) || 2));
+    const now = new Date().toISOString();
+    await runExec(
+      `INSERT INTO caretaker_escalation_rules
+       (profile_id, owner_user_id, enabled, window_days, missed_threshold, last_trigger_date, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, NULL, ?, ?)
+       ON CONFLICT(profile_id) DO UPDATE SET
+         enabled = excluded.enabled,
+         window_days = excluded.window_days,
+         missed_threshold = excluded.missed_threshold,
+         owner_user_id = excluded.owner_user_id,
+         updated_at = excluded.updated_at`,
+      [profileId, uid, enabled ? 1 : 0, windowDays, missedThreshold, now, now]
+    );
+    res.json({ ok: true, profileId, enabled, windowDays, missedThreshold, updatedAt: now });
+  })
+);
+
+/** Owner weekly digest preview for a profile. */
+caretakerRouter.get(
+  '/digest/weekly/:profileId',
+  authMiddleware,
+  asyncRoute(async (req, res) => {
+    const uid = req.userId!;
+    const profileId = String(req.params.profileId ?? '').trim();
+    if (!profileId || !(await profileOwnedByUser(profileId, uid))) {
+      res.status(404).json({ error: 'Profile not found' });
+      return;
+    }
+    const profile = await queryOne<{ name: string }>('SELECT name FROM profiles WHERE id = ?', [profileId]);
+    if (!profile) {
+      res.status(404).json({ error: 'Profile not found' });
+      return;
+    }
+    const digest = await weeklyDigestForProfile(profileId);
+    res.json({ profileId, profileName: profile.name, ...digest });
+  })
+);
+
+/** Owner triggers weekly digest: creates in-app caretaker alerts + sends email if configured. */
+caretakerRouter.post(
+  '/digest/weekly/:profileId/send',
+  authMiddleware,
+  asyncRoute(async (req, res) => {
+    const uid = req.userId!;
+    const profileId = String(req.params.profileId ?? '').trim();
+    if (!profileId || !(await profileOwnedByUser(profileId, uid))) {
+      res.status(404).json({ error: 'Profile not found' });
+      return;
+    }
+    const profile = await queryOne<{ name: string }>('SELECT name FROM profiles WHERE id = ?', [profileId]);
+    if (!profile) {
+      res.status(404).json({ error: 'Profile not found' });
+      return;
+    }
+    const digest = await weeklyDigestForProfile(profileId);
+    const linked = await queryAll<{ caretaker_user_id: string; email: string }>(
+      `SELECT cl.caretaker_user_id, u.email
+       FROM caretaker_links cl
+       INNER JOIN users u ON u.id = cl.caretaker_user_id
+       WHERE cl.profile_id = ?`,
+      [profileId]
+    );
+    const now = new Date().toISOString();
+    const msg =
+      `Weekly digest for ${profile.name}: ` +
+      `${digest.adherencePercent == null ? 'N/A' : `${digest.adherencePercent}%`} adherence, ` +
+      `${digest.taken} taken, ${digest.skipped} skipped, ${digest.missed} missed.`;
+    for (const c of linked) {
+      const id = `${c.caretaker_user_id}|${profileId}|${digest.to}|weekly-digest`;
+      await runExec(
+        `INSERT INTO caretaker_alerts
+          (id, caretaker_user_id, profile_id, medication_id, profile_name, medication_name, date, scheduled_time, status, message, created_at, read_at)
+         VALUES (?, ?, ?, '', ?, '', ?, '', 'digest', ?, ?, NULL)
+         ON CONFLICT(id) DO NOTHING`,
+        [id, c.caretaker_user_id, profileId, profile.name, digest.to, msg, now]
+      );
+      if (isSmtpConfigured() && c.email?.trim()) {
+        try {
+          await sendCaretakerWeeklyDigestEmail(c.email.trim().toLowerCase(), {
+            profileName: profile.name,
+            dateFrom: digest.from,
+            dateTo: digest.to,
+            adherencePercent: digest.adherencePercent,
+            taken: digest.taken,
+            skipped: digest.skipped,
+            missed: digest.missed,
+          });
+        } catch (e) {
+          console.error('[caretaker] weekly digest email failed', c.email, e);
+        }
+      }
+    }
+    res.json({ ok: true, sentTo: linked.length, digest: { profileName: profile.name, ...digest } });
   })
 );
 

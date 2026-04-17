@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { LoadingController, ViewWillEnter } from '@ionic/angular';
 import { Profile } from '../../models/med.models';
+import { HealthAssistantService, SymptomEntry } from '../../services/health-assistant.service';
 import { MedDataService } from '../../services/med-data.service';
 import { VitalReading, VitalsStorageService } from '../../services/vitals-storage.service';
 
@@ -18,15 +19,22 @@ export class VitalsPage implements ViewWillEnter {
   formSystolic = '';
   formDiastolic = '';
   formHeartRate = '';
+  formGlucose = '';
+  formSpo2 = '';
   /** datetime-local value */
   formRecordedAt = '';
 
   readings: VitalReading[] = [];
+  symptoms: SymptomEntry[] = [];
+  symptomTag = 'nausea';
+  symptomSeverity: 1 | 2 | 3 | 4 | 5 = 2;
+  symptomNotes = '';
   saveError: string | null = null;
 
   constructor(
     private readonly medData: MedDataService,
     private readonly vitals: VitalsStorageService,
+    private readonly assistant: HealthAssistantService,
     private readonly loadingCtrl: LoadingController
   ) {}
 
@@ -39,6 +47,7 @@ export class VitalsPage implements ViewWillEnter {
     }
     this.resetFormTime();
     await this.loadReadings();
+    await this.loadSymptoms();
   }
 
   private resetFormTime(): void {
@@ -56,8 +65,17 @@ export class VitalsPage implements ViewWillEnter {
     this.readings = await this.vitals.getForProfile(this.selectedProfileId);
   }
 
+  private async loadSymptoms(): Promise<void> {
+    if (!this.selectedProfileId) {
+      this.symptoms = [];
+      return;
+    }
+    this.symptoms = await this.assistant.listSymptoms(this.selectedProfileId);
+  }
+
   async onProfileChange(): Promise<void> {
     await this.loadReadings();
+    await this.loadSymptoms();
   }
 
   parseOptionalInt(raw: string): number | undefined {
@@ -82,6 +100,8 @@ export class VitalsPage implements ViewWillEnter {
     const sys = this.parseOptionalInt(this.formSystolic);
     const dia = this.parseOptionalInt(this.formDiastolic);
     const hr = this.parseOptionalInt(this.formHeartRate);
+    const glucose = this.parseOptionalInt(this.formGlucose);
+    const spo2 = this.parseOptionalInt(this.formSpo2);
 
     const hasBp = sys != null && dia != null;
     const hasPartialBp = (sys != null) !== (dia != null);
@@ -89,8 +109,8 @@ export class VitalsPage implements ViewWillEnter {
       this.saveError = 'Enter both blood pressure numbers, or leave both empty.';
       return;
     }
-    if (!hasBp && hr == null) {
-      this.saveError = 'Enter blood pressure (systolic and diastolic) and/or heart rate.';
+    if (!hasBp && hr == null && glucose == null && spo2 == null) {
+      this.saveError = 'Enter at least one reading (BP, heart rate, glucose, or SpO2).';
       return;
     }
     if (hasBp && sys <= dia) {
@@ -113,11 +133,15 @@ export class VitalsPage implements ViewWillEnter {
         systolic: sys,
         diastolic: dia,
         heartRateBpm: hr,
+        glucoseMgDl: glucose,
+        spo2Pct: spo2,
       });
 
       this.formSystolic = '';
       this.formDiastolic = '';
       this.formHeartRate = '';
+      this.formGlucose = '';
+      this.formSpo2 = '';
       this.resetFormTime();
       await this.loadReadings();
     } finally {
@@ -158,6 +182,34 @@ export class VitalsPage implements ViewWillEnter {
     if (r.heartRateBpm != null) {
       parts.push(`HR ${r.heartRateBpm} bpm`);
     }
+    if (r.glucoseMgDl != null) {
+      parts.push(`Glucose ${r.glucoseMgDl} mg/dL`);
+    }
+    if (r.spo2Pct != null) {
+      parts.push(`SpO2 ${r.spo2Pct}%`);
+    }
     return parts.length > 0 ? parts.join(' · ') : '—';
+  }
+
+  async addSymptom(): Promise<void> {
+    if (!this.selectedProfileId) {
+      this.saveError = 'Choose a profile first.';
+      return;
+    }
+    const now = new Date().toISOString();
+    await this.assistant.addSymptom({
+      profileId: this.selectedProfileId,
+      recordedAt: now,
+      tag: this.symptomTag,
+      severity: this.symptomSeverity,
+      notes: this.symptomNotes.trim(),
+    });
+    this.symptomNotes = '';
+    await this.loadSymptoms();
+  }
+
+  async removeSymptom(id: string): Promise<void> {
+    await this.assistant.removeSymptom(id);
+    await this.loadSymptoms();
   }
 }

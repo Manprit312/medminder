@@ -38,6 +38,25 @@ export interface CaretakerAlert {
   readAt: string | null;
 }
 
+export interface WeeklyDigest {
+  profileId: string;
+  profileName: string;
+  from: string;
+  to: string;
+  adherencePercent: number | null;
+  taken: number;
+  skipped: number;
+  missed: number;
+}
+
+export interface EscalationRules {
+  profileId: string;
+  enabled: boolean;
+  windowDays: number;
+  missedThreshold: number;
+  updatedAt: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CaretakerApiService {
   constructor(private readonly http: HttpClient) {}
@@ -131,6 +150,51 @@ export class CaretakerApiService {
       withApiTimeout(
         this.http.post<{ ok: boolean }>(
           `${this.base()}/api/caretaker/alerts/read-profile/${encodeURIComponent(profileId)}`,
+          {}
+        )
+      )
+    );
+  }
+
+  getEscalationRules(profileId: string): Promise<EscalationRules> {
+    return firstValueFrom(
+      withApiTimeout(
+        this.http.get<EscalationRules>(
+          `${this.base()}/api/caretaker/escalation-rules/${encodeURIComponent(profileId)}`
+        )
+      )
+    );
+  }
+
+  saveEscalationRules(
+    profileId: string,
+    payload: { enabled: boolean; windowDays: number; missedThreshold: number }
+  ): Promise<EscalationRules & { ok: boolean }> {
+    return firstValueFrom(
+      withApiTimeout(
+        this.http.post<EscalationRules & { ok: boolean }>(
+          `${this.base()}/api/caretaker/escalation-rules/${encodeURIComponent(profileId)}`,
+          payload
+        )
+      )
+    );
+  }
+
+  getWeeklyDigest(profileId: string): Promise<WeeklyDigest> {
+    return firstValueFrom(
+      withApiTimeout(
+        this.http.get<WeeklyDigest>(
+          `${this.base()}/api/caretaker/digest/weekly/${encodeURIComponent(profileId)}`
+        )
+      )
+    );
+  }
+
+  sendWeeklyDigest(profileId: string): Promise<{ ok: boolean; sentTo: number; digest: WeeklyDigest }> {
+    return firstValueFrom(
+      withApiTimeout(
+        this.http.post<{ ok: boolean; sentTo: number; digest: WeeklyDigest }>(
+          `${this.base()}/api/caretaker/digest/weekly/${encodeURIComponent(profileId)}/send`,
           {}
         )
       )

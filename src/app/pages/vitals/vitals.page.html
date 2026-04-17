@@ -10,7 +10,7 @@
 <ion-content [fullscreen]="true" class="vitals-page mm-gradient-bg">
   <div class="form-hero ion-padding">
     <span class="material-symbols-outlined hero-icon">cardiology</span>
-    <h1>Blood pressure &amp; heart rate</h1>
+    <h1>Vitals &amp; symptoms</h1>
     <p class="subtitle">
       Log readings you take at home (cuff, pharmacy kiosk, or watch). Optional context for you and your care team —
       <strong>not</strong> a medical device and not for diagnosis.
@@ -24,7 +24,7 @@
         <p>
           <strong>Future:</strong> We plan to connect to <strong>Apple Health</strong> and <strong>Health Connect</strong>
           (Android) so heart rate and blood pressure can sync when you allow it. For now, type values from your own
-          devices.
+          devices. You can also track glucose, SpO2, and symptoms.
         </p>
       </ion-text>
     </ion-item>
@@ -56,6 +56,34 @@
           placeholder="e.g. 120"
           min="0"
           max="400"
+          autocomplete="off"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Glucose (mg/dL)"
+          labelPlacement="stacked"
+          type="number"
+          inputmode="numeric"
+          name="glucose"
+          [(ngModel)]="formGlucose"
+          placeholder="e.g. 105"
+          min="0"
+          max="400"
+          autocomplete="off"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="SpO2 (%)"
+          labelPlacement="stacked"
+          type="number"
+          inputmode="numeric"
+          name="spo2"
+          [(ngModel)]="formSpo2"
+          placeholder="e.g. 98"
+          min="0"
+          max="100"
           autocomplete="off"
         ></ion-input>
       </ion-item>
@@ -125,6 +153,70 @@
           <p>{{ formatReadingLine(r) }}</p>
         </ion-label>
         <ion-button slot="end" fill="clear" color="danger" type="button" (click)="deleteReading(r)" [attr.aria-label]="'Delete reading ' + formatWhen(r.recordedAt)">
+          <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+        </ion-button>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <ion-list inset="true" lines="none" class="form-card ion-margin-horizontal ion-margin-top" *ngIf="profiles.length > 0">
+    <ion-list-header>
+      <ion-label>
+        <span class="material-symbols-outlined section-ic">symptoms</span>
+        Symptom journal
+      </ion-label>
+    </ion-list-header>
+    <ion-item>
+      <ion-select label="Symptom" labelPlacement="stacked" interface="popover" [(ngModel)]="symptomTag" name="symptomTag">
+        <ion-select-option value="nausea">Nausea</ion-select-option>
+        <ion-select-option value="dizziness">Dizziness</ion-select-option>
+        <ion-select-option value="fatigue">Fatigue</ion-select-option>
+        <ion-select-option value="headache">Headache</ion-select-option>
+        <ion-select-option value="other">Other</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-range
+        label="Severity"
+        labelPlacement="stacked"
+        min="1"
+        max="5"
+        snaps="true"
+        pin="true"
+        [(ngModel)]="symptomSeverity"
+        name="symptomSeverity"
+      ></ion-range>
+    </ion-item>
+    <ion-item>
+      <ion-textarea
+        label="Notes (optional)"
+        labelPlacement="stacked"
+        rows="2"
+        [autoGrow]="true"
+        maxlength="280"
+        [(ngModel)]="symptomNotes"
+        name="symptomNotes"
+        placeholder="What happened around this time?"
+      ></ion-textarea>
+    </ion-item>
+    <div class="ion-padding">
+      <ion-button expand="block" shape="round" fill="outline" color="primary" (click)="addSymptom()">
+        <span class="material-symbols-outlined btn-ic" aria-hidden="true">note_add</span>
+        Save symptom
+      </ion-button>
+      <p class="symptom-footnote">Timeline helps spot patterns only. Correlation is not causation.</p>
+    </div>
+  </ion-list>
+
+  <div class="ion-padding-horizontal ion-padding-bottom" *ngIf="symptoms.length > 0">
+    <h2 class="history-h">Recent symptoms</h2>
+    <ion-list lines="none" class="history-list">
+      <ion-item *ngFor="let s of symptoms" class="history-row">
+        <ion-label>
+          <h3>{{ formatWhen(s.recordedAt) }} · {{ s.tag | titlecase }}</h3>
+          <p>Severity {{ s.severity }}<span *ngIf="s.notes"> · {{ s.notes }}</span></p>
+        </ion-label>
+        <ion-button slot="end" fill="clear" color="danger" (click)="removeSymptom(s.id)" [attr.aria-label]="'Delete symptom ' + s.tag">
           <span class="material-symbols-outlined" aria-hidden="true">delete</span>
         </ion-button>
       </ion-item>

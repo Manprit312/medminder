@@ -43,6 +43,14 @@
   color: var(--ion-color-primary);
 }
 
+.section-ic {
+  vertical-align: -4px;
+  margin-inline-end: 8px;
+  font-size: 1.2rem;
+  opacity: 0.88;
+  color: var(--ion-color-primary);
+}
+
 .legal-item {
   align-items: flex-start;
 
@@ -100,4 +108,10 @@
     font-size: 0.88rem;
     color: var(--mm-text-muted);
   }
+}
+
+.symptom-footnote {
+  margin: 0.6rem 0 0;
+  font-size: 0.8rem;
+  color: var(--mm-text-muted);
 }

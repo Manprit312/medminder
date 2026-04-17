@@ -68,6 +68,13 @@ const routes: Routes = [
           ),
       },
       {
+        path: 'settings/assistant',
+        loadChildren: () =>
+          import('../pages/health-assistant/health-assistant.module').then(
+            (m) => m.HealthAssistantPageModule
+          ),
+      },
+      {
         path: 'settings/education',
         loadChildren: () =>
           import('../pages/education/education.module').then((m) => m.EducationPageModule),

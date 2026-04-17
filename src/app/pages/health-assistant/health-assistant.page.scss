@@ -1,0 +1,49 @@
+.assistant-page {
+  --padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+}
+
+.assistant-hero {
+  text-align: center;
+}
+
+.hero-ic {
+  font-size: 2.3rem;
+  color: var(--ion-color-primary);
+  opacity: 0.7;
+}
+
+.assistant-hero h1 {
+  margin: 0.35rem 0;
+  font-family: var(--mm-font-heading);
+}
+
+.assistant-hero p {
+  margin: 0;
+  color: var(--mm-text-muted);
+}
+
+.footnote {
+  --min-height: auto;
+  font-size: 0.82rem;
+}
+
+.chat-list {
+  padding: 0 12px 8px;
+}
+
+.bubble {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.bubble--assistant {
+  background: rgba(var(--ion-color-primary-rgb), 0.12);
+}
+
+.bubble--user {
+  background: rgba(var(--ion-color-tertiary-rgb), 0.14);
+}
+

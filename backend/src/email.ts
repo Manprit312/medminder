@@ -249,3 +249,43 @@ export async function sendCaretakerDoseAlertEmail(
   const transporter = createTransporter();
   await transporter.sendMail({ from, to, subject, text, html });
 }
+
+export async function sendCaretakerWeeklyDigestEmail(
+  to: string,
+  payload: {
+    profileName: string;
+    dateFrom: string;
+    dateTo: string;
+    adherencePercent: number | null;
+    taken: number;
+    skipped: number;
+    missed: number;
+  }
+): Promise<void> {
+  const from = mailFrom();
+  const pct = payload.adherencePercent == null ? 'N/A' : `${payload.adherencePercent}%`;
+  const subject = `MedMinder weekly digest — ${payload.profileName}`;
+  const text =
+    `Weekly summary for ${payload.profileName} (${payload.dateFrom} to ${payload.dateTo}).\n` +
+    `Adherence: ${pct}\n` +
+    `Taken: ${payload.taken}\n` +
+    `Skipped: ${payload.skipped}\n` +
+    `Missed: ${payload.missed}\n\n` +
+    'Open the MedMinder app for details.';
+  const html =
+    `<p><strong>Weekly summary for ${payload.profileName}</strong></p>` +
+    `<p>${payload.dateFrom} to ${payload.dateTo}</p>` +
+    `<ul>` +
+    `<li>Adherence: <strong>${pct}</strong></li>` +
+    `<li>Taken: ${payload.taken}</li>` +
+    `<li>Skipped: ${payload.skipped}</li>` +
+    `<li>Missed: ${payload.missed}</li>` +
+    `</ul>` +
+    `<p>Open the MedMinder app for details.</p>`;
+  if (resendApiKey()) {
+    await sendViaResendApi({ from, to: [to], subject, text, html });
+    return;
+  }
+  const transporter = createTransporter();
+  await transporter.sendMail({ from, to, subject, text, html });
+}

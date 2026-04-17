@@ -1,0 +1,115 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/settings" text="Settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Health assistant</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="mm-gradient-bg assistant-page">
+  <div class="ion-padding assistant-hero">
+    <span class="material-symbols-outlined hero-ic" aria-hidden="true">assistant</span>
+    <h1>Health assistant</h1>
+    <p>
+      Educational support only. This assistant uses your logs and reminders, and does not diagnose or replace clinician
+      advice.
+    </p>
+  </div>
+
+  <ion-list inset="true" lines="none" class="form-card">
+    <ion-list-header>
+      <ion-label>Safety and policy</ion-label>
+    </ion-list-header>
+    <ion-item lines="none">
+      <ion-toggle [(ngModel)]="strictGuardrails" (ionChange)="saveAssistantPrefs()">
+        Keep strict medical guardrails
+      </ion-toggle>
+    </ion-item>
+    <ion-item lines="none">
+      <ion-toggle [(ngModel)]="aiEnabled" (ionChange)="saveAssistantPrefs()">Enable AI Q&amp;A mode</ion-toggle>
+    </ion-item>
+    <ion-item lines="none" class="footnote">
+      <ion-text color="medium">
+        The assistant can summarize doses, reminders, and trends. It should not be used for emergencies or diagnosis.
+      </ion-text>
+    </ion-item>
+  </ion-list>
+
+  <ion-list inset="true" lines="none" class="form-card ion-margin-top">
+    <ion-list-header>
+      <ion-label>Care team digest and escalation</ion-label>
+    </ion-list-header>
+    <ion-item lines="none">
+      <ion-select
+        label="Profile"
+        labelPlacement="stacked"
+        interface="popover"
+        [(ngModel)]="selectedProfileId"
+        (ionChange)="onProfileChanged()"
+      >
+        <ion-select-option *ngFor="let p of profiles" [value]="p.id">{{ p.name }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item lines="none">
+      <ion-label>Escalation enabled</ion-label>
+      <ion-toggle slot="end" [(ngModel)]="escalationEnabled"></ion-toggle>
+    </ion-item>
+    <ion-item lines="none">
+      <ion-input
+        type="number"
+        min="1"
+        max="30"
+        label="Window days"
+        labelPlacement="stacked"
+        [(ngModel)]="escalationWindowDays"
+      ></ion-input>
+    </ion-item>
+    <ion-item lines="none">
+      <ion-input
+        type="number"
+        min="1"
+        max="20"
+        label="Missed-dose threshold"
+        labelPlacement="stacked"
+        [(ngModel)]="escalationMissedThreshold"
+      ></ion-input>
+    </ion-item>
+    <div class="ion-padding">
+      <ion-button expand="block" fill="outline" color="primary" (click)="saveEscalation()">
+        Save escalation rules
+      </ion-button>
+      <ion-button expand="block" color="tertiary" class="ion-margin-top" (click)="sendWeeklyDigest()">
+        Send weekly digest now
+      </ion-button>
+    </div>
+    <ion-item lines="none" *ngIf="digest as d">
+      <ion-text class="ion-text-wrap">
+        <p>
+          {{ d.profileName }}: {{ d.from }} to {{ d.to }} · {{ d.adherencePercent == null ? 'N/A' : (d.adherencePercent + '%')
+          }} adherence · {{ d.taken }} taken · {{ d.skipped }} skipped · {{ d.missed }} missed.
+        </p>
+      </ion-text>
+    </ion-item>
+  </ion-list>
+
+  <ion-list inset="true" lines="none" class="form-card ion-margin-top" *ngIf="aiEnabled">
+    <ion-list-header>
+      <ion-label>Assistant Q&amp;A</ion-label>
+    </ion-list-header>
+    <div class="chat-list">
+      <p *ngFor="let turn of chat" [class]="turn.role === 'assistant' ? 'bubble bubble--assistant' : 'bubble bubble--user'">
+        {{ turn.text }}
+      </p>
+    </div>
+    <ion-item lines="none">
+      <ion-input
+        [(ngModel)]="chatInput"
+        placeholder="Ask about your progress, missed doses, or next dose"
+        (keyup.enter)="askAssistant()"
+      ></ion-input>
+      <ion-button slot="end" fill="clear" (click)="askAssistant()">Send</ion-button>
+    </ion-item>
+  </ion-list>
+</ion-content>
+

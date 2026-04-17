@@ -160,5 +160,16 @@ function migrateCaretakerTables(database: Database.Database) {
     );
     CREATE INDEX IF NOT EXISTS idx_caretaker_alerts_user_created ON caretaker_alerts(caretaker_user_id, created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_caretaker_alerts_user_read ON caretaker_alerts(caretaker_user_id, read_at);
+
+    CREATE TABLE IF NOT EXISTS caretaker_escalation_rules (
+      profile_id TEXT PRIMARY KEY REFERENCES profiles(id) ON DELETE CASCADE,
+      owner_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      enabled INTEGER NOT NULL DEFAULT 0,
+      window_days INTEGER NOT NULL DEFAULT 3,
+      missed_threshold INTEGER NOT NULL DEFAULT 2,
+      last_trigger_date TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
   `);
 }

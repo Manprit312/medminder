@@ -12,6 +12,8 @@ export interface VitalReading {
   systolic?: number;
   diastolic?: number;
   heartRateBpm?: number;
+  glucoseMgDl?: number;
+  spo2Pct?: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -49,6 +51,8 @@ export class VitalsStorageService {
       systolic: reading.systolic,
       diastolic: reading.diastolic,
       heartRateBpm: reading.heartRateBpm,
+      glucoseMgDl: reading.glucoseMgDl,
+      spo2Pct: reading.spo2Pct,
     };
     const next = [row, ...all.filter((x) => x.id !== id)];
     const trimmed = next.slice(0, MAX_READINGS);

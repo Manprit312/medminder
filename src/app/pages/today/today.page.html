@@ -4,15 +4,19 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="mm-today-medico">
+<ion-content
+  [fullscreen]="true"
+  class="mm-today-medico"
+  [class.mm-today--cta-pad]="!loading && doses.length > 0"
+>
   <div *ngIf="loading" class="ion-padding ion-text-center mm-today-loading">
     <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
     <p role="status">Loading today…</p>
   </div>
   <ng-container *ngIf="!loading">
   <div class="ion-padding mm-today-empty" *ngIf="doses.length === 0">
-    <div class="mm-today-hero mm-today-hero--text">
-      <div class="mm-today-hero-icon">
+    <div class="mm-today-hero mm-today-hero--text mm-hero-compact">
+      <div class="mm-today-hero-icon mm-hero-compact__visual">
         <img
           class="mm-today-hero-alarm"
           src="assets/alarm.png"
@@ -21,8 +25,9 @@
           alt=""
         />
       </div>
-      <p class="mm-today-kicker">Medicine reminder</p>
-      <h2 class="mm-today-title">Medicine reminder app</h2>
+      <p class="mm-today-kicker">Today</p>
+      <h2 class="mm-today-greeting">{{ timeGreeting }}</h2>
+      <p class="mm-today-date">{{ selectedDate | date : 'EEEE, MMM d' }}</p>
       <p class="mm-today-empty-copy">
         Start by adding a medicine. If this is your first time, we’ll ask who it belongs to first.
       </p>
@@ -37,8 +42,8 @@
   </div>
 
   <ng-container *ngIf="doses.length > 0">
-    <section class="mm-today-hero mm-today-hero--text ion-padding">
-      <div class="mm-today-hero-icon">
+    <section class="mm-today-hero mm-today-hero--text ion-padding mm-hero-compact">
+      <div class="mm-today-hero-icon mm-hero-compact__visual">
         <img
           class="mm-today-hero-alarm"
           src="assets/alarm.png"
@@ -47,115 +52,68 @@
           alt=""
         />
       </div>
-      <p class="mm-today-kicker">Medicine reminder</p>
-      <h1 class="mm-today-title">Medicine reminder app</h1>
+      <p class="mm-today-kicker">Today</p>
+      <h1 class="mm-today-greeting">{{ timeGreeting }}</h1>
       <p class="mm-today-date">{{ selectedDate | date : 'EEEE, MMM d' }}</p>
-      <ion-button expand="block" shape="round" color="tertiary" class="mm-today-primary-cta" (click)="addMedicationNow()">
-        <span class="material-symbols-outlined btn-lead">add_circle</span>
-        Add medication
-      </ion-button>
     </section>
 
     <div class="mm-today-panels ion-padding-horizontal">
-      <div class="mm-progress-compact mm-surface-cream">
-        <div class="progress-title">
-          <span class="material-symbols-outlined">donut_large</span>
-          <span>How today is going</span>
-        </div>
-        <ion-progress-bar class="progress-bar" [value]="progressFraction" color="success"></ion-progress-bar>
-        <p class="adherence-today" *ngIf="todaySummary && todaySummary.totalScheduled > 0">
-          <span class="adherence-pct">{{ todaySummary.adherencePercent }}%</span>
-          <span class="adherence-label">adherence today</span>
-        </p>
-        <div class="progress-stats">
-          <span class="stat taken-stat">
-            <span class="material-symbols-outlined sm">check_circle</span>
-            {{ takenCount }} done
-          </span>
-          <span class="stat pending-stat" *ngIf="pendingCount > 0">
-            <span class="material-symbols-outlined sm">schedule</span>
-            {{ pendingCount }} to log
-          </span>
-        </div>
+      <div class="mm-surface-cream mm-assistant-card" aria-label="Health assistant briefing">
+        <h3 class="mm-assistant-card__title">
+          <span class="material-symbols-outlined" aria-hidden="true">smart_toy</span>
+          Health assistant
+        </h3>
+        <ul class="mm-assistant-card__list">
+          <li *ngFor="let b of assistantBullets">{{ b }}</li>
+        </ul>
+        <p class="mm-assistant-card__foot">{{ assistantFooter }}</p>
       </div>
 
-      <div class="mm-weekly-compact mm-surface-cream" *ngIf="weeklySummary">
+      <div class="mm-progress-compact mm-surface-cream mm-progress-premium">
+        <div class="mm-progress-premium__head">
+          <span class="mm-progress-premium__eyebrow">Today's progress</span>
+          <span class="mm-progress-premium__pct" aria-live="polite">{{ todayAdherenceDisplayPercent }}%</span>
+        </div>
+        <ion-progress-bar
+          class="mm-progress-premium__bar"
+          [value]="progressFraction"
+          [color]="adherenceProgressIonColor"
+        ></ion-progress-bar>
+        <p class="mm-progress-premium__doses">{{ doseCountLine }}</p>
+        <p class="mm-progress-premium__micro" *ngIf="adherenceMicroFeedback">{{ adherenceMicroFeedback }}</p>
+      </div>
+
+      <div class="mm-weekly-compact mm-surface-cream mm-weekly-premium" *ngIf="weeklySummary">
         <h3 class="weekly-title">
           <span class="material-symbols-outlined weekly-ic">calendar_view_week</span>
           This week
         </h3>
         <p class="weekly-range">
           {{ weeklySummary.dateFrom + 'T12:00:00' | date : 'EEE MMM d' }} –
-          {{ weeklySummary.dateTo + 'T12:00:00' | date : 'MMM d' }}
+          {{ weeklySummary.dateTo + 'T12:00:00' | date : 'MMM d, y' }}
         </p>
-        <p class="weekly-adh" *ngIf="weeklySummary.totalScheduled > 0">
-          <strong>{{ weeklySummary.adherencePercent }}%</strong> adherence
+        <p class="weekly-adh weekly-adh--large" *ngIf="weeklySummary.totalScheduled > 0">
+          <span class="weekly-adh__value">{{ weeklySummary.adherencePercent }}%</span>
+          <span class="weekly-adh__label">adherence</span>
         </p>
+        <div
+          class="mm-week-strip"
+          *ngIf="weekStrip.length > 0"
+          role="img"
+          [attr.aria-label]="'Daily adherence: ' + weekStrip.length + ' days'"
+        >
+          <div *ngFor="let d of weekStrip" class="mm-week-strip__cell">
+            <span class="mm-week-strip__day">{{ d.label }}</span>
+            <span class="mm-week-strip__bar" [class]="'mm-week-strip__bar--' + d.tone"></span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="mm-meals-wrap ion-padding-horizontal ion-margin-bottom" *ngIf="mealLogDateKey">
-      <div class="mm-meals-card mm-surface-cream">
-        <h3 class="mm-meals-title">
-          <span class="material-symbols-outlined mm-meals-title-ic" aria-hidden="true">restaurant</span>
-          {{ isViewingToday ? 'Today’s meals' : 'Meals journal' }}
-          <span class="mm-meals-optional">(optional)</span>
-        </h3>
-        <p class="mm-meals-intro">
-          Quick notes if you like to remember what you ate around your doses. Saved on this device only — not nutrition
-          or medical advice.
-        </p>
-        <ion-item lines="none" class="mm-meals-field">
-          <ion-textarea
-            label="Breakfast"
-            labelPlacement="stacked"
-            [autoGrow]="true"
-            rows="2"
-            maxlength="280"
-            [(ngModel)]="mealDraft.breakfast"
-            (ionBlur)="saveMealsJournal()"
-            placeholder="e.g. Oatmeal, skipped…"
-            inputmode="text"
-            aria-label="Breakfast"
-          ></ion-textarea>
-        </ion-item>
-        <ion-item lines="none" class="mm-meals-field">
-          <ion-textarea
-            label="Lunch"
-            labelPlacement="stacked"
-            [autoGrow]="true"
-            rows="2"
-            maxlength="280"
-            [(ngModel)]="mealDraft.lunch"
-            (ionBlur)="saveMealsJournal()"
-            placeholder="e.g. Salad, sandwich…"
-            inputmode="text"
-            aria-label="Lunch"
-          ></ion-textarea>
-        </ion-item>
-        <ion-item lines="none" class="mm-meals-field">
-          <ion-textarea
-            label="Dinner"
-            labelPlacement="stacked"
-            [autoGrow]="true"
-            rows="2"
-            maxlength="280"
-            [(ngModel)]="mealDraft.dinner"
-            (ionBlur)="saveMealsJournal()"
-            placeholder="e.g. Soup, takeout…"
-            inputmode="text"
-            aria-label="Dinner"
-          ></ion-textarea>
-        </ion-item>
-      </div>
-    </div>
-
-    <div class="mm-reminder-stack ion-padding">
+    <div class="mm-reminder-stack ion-padding mm-reminder-stack--spaced">
       <article
         *ngFor="let dose of dosesForDeck; let i = index"
-        [class]="reminderCardClass(dose, i)"
-        [class.mm-track-overlap]="i > 0"
-        [style.z-index]="deckZIndex(i)"
+        [class]="reminderCardClass(dose, i) + ' ' + doseCardStatusClass(dose)"
         (click)="openDose(dose)"
       >
         <div class="mm-track-row">
@@ -178,7 +136,7 @@
           </div>
         </div>
         <div class="mm-rc-actions" *ngIf="dose.status === 'pending'" (click)="$event.stopPropagation()">
-          <ion-button size="small" fill="solid" color="success" (click)="mark(dose, 'taken')">
+          <ion-button class="mm-rc-taken-primary" size="small" fill="solid" color="success" (click)="mark(dose, 'taken')">
             <span class="material-symbols-outlined btn-icon">check</span>
             Taken
           </ion-button>
@@ -197,6 +155,64 @@
           </span>
         </div>
       </article>
+    </div>
+    <div class="mm-meals-wrap ion-padding-horizontal ion-margin-bottom" *ngIf="mealLogDateKey">
+      <div class="mm-meals-card mm-surface-cream mm-meals-compact">
+        <h3 class="mm-meals-title">
+          <span class="material-symbols-outlined mm-meals-title-ic" aria-hidden="true">restaurant</span>
+          {{ isViewingToday ? 'Today’s meals' : 'Meals journal' }}
+          <span class="mm-meals-optional">(optional)</span>
+        </h3>
+        <p class="mm-meals-intro">Quick notes on this device only.</p>
+        <ion-item lines="none" class="mm-meals-field">
+          <ion-textarea
+            label="Breakfast"
+            labelPlacement="stacked"
+            [autoGrow]="true"
+            rows="1"
+            maxlength="280"
+            [(ngModel)]="mealDraft.breakfast"
+            (ionBlur)="saveMealsJournal()"
+            placeholder="e.g. Oatmeal, skipped…"
+            inputmode="text"
+            aria-label="Breakfast"
+          ></ion-textarea>
+        </ion-item>
+        <ion-item lines="none" class="mm-meals-field">
+          <ion-textarea
+            label="Lunch"
+            labelPlacement="stacked"
+            [autoGrow]="true"
+            rows="1"
+            maxlength="280"
+            [(ngModel)]="mealDraft.lunch"
+            (ionBlur)="saveMealsJournal()"
+            placeholder="e.g. Salad, sandwich…"
+            inputmode="text"
+            aria-label="Lunch"
+          ></ion-textarea>
+        </ion-item>
+        <ion-item lines="none" class="mm-meals-field">
+          <ion-textarea
+            label="Dinner"
+            labelPlacement="stacked"
+            [autoGrow]="true"
+            rows="1"
+            maxlength="280"
+            [(ngModel)]="mealDraft.dinner"
+            (ionBlur)="saveMealsJournal()"
+            placeholder="e.g. Soup, takeout…"
+            inputmode="text"
+            aria-label="Dinner"
+          ></ion-textarea>
+        </ion-item>
+      </div>
+    </div>
+    <div class="mm-today-sticky-cta">
+      <ion-button expand="block" shape="round" color="tertiary" class="mm-sticky-cta-btn" (click)="addMedicationNow()">
+        <span class="material-symbols-outlined btn-lead" aria-hidden="true">add_circle</span>
+        Add medication
+      </ion-button>
     </div>
   </ng-container>
   </ng-container>
@@ -362,7 +378,49 @@
           <ion-button expand="block" fill="clear" color="success" (click)="markExpanded('taken')">Mark as taken</ion-button>
           <ion-button expand="block" fill="clear" color="light" (click)="markExpanded('skipped')">Change to skipped</ion-button>
         </div>
+        <div class="mm-missed-playbook">
+          <h4>What to do next</h4>
+          <ul>
+            <li>Confirm whether the dose was truly missed.</li>
+            <li>If taken later, update status to taken.</li>
+            <li>If repeated misses happen, notify your caretaker/clinician.</li>
+          </ul>
+        </div>
       </div>
+
+      <section class="mm-dose-checkin" aria-label="How are you feeling after this dose">
+        <h3 class="mm-dose-checkin__title">Quick check-in (optional)</h3>
+        <p class="mm-dose-checkin__hint">Educational only. Use this to track how you felt after this dose.</p>
+        <div class="mm-dose-checkin__actions">
+          <ion-button
+            size="small"
+            fill="outline"
+            color="success"
+            [strong]="doseCheckinStatus(dose) === 'none'"
+            (click)="setDoseCheckin(dose, 'none')"
+          >
+            No symptoms
+          </ion-button>
+          <ion-button
+            size="small"
+            fill="outline"
+            color="warning"
+            [strong]="doseCheckinStatus(dose) === 'mild'"
+            (click)="setDoseCheckin(dose, 'mild')"
+          >
+            Mild symptoms
+          </ion-button>
+          <ion-button
+            size="small"
+            fill="outline"
+            color="danger"
+            [strong]="doseCheckinStatus(dose) === 'concerning'"
+            (click)="setDoseCheckin(dose, 'concerning')"
+          >
+            Concerning
+          </ion-button>
+        </div>
+      </section>
 
       <p class="mm-expanded-footnote">
         <span class="material-symbols-outlined" aria-hidden="true">info</span>
