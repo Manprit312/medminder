@@ -18,6 +18,10 @@ async function medicationOwnedByUser(medicationId: string, userId: string): Prom
   return Boolean(row);
 }
 
+function isValidMedicationTime(v: string): boolean {
+  return /^([01]\d|2[0-3]):([0-5]\d)$/.test(v);
+}
+
 medicationsRouter.get(
   '/:id',
   asyncRoute(async (req, res) => {
@@ -66,7 +70,16 @@ medicationsRouter.patch(
         res.status(400).json({ error: 'times must be a non-empty array' });
         return;
       }
-      timesJson = JSON.stringify(times.map((t) => String(t).trim()).filter(Boolean));
+      const timeStrs = times.map((t) => String(t).trim()).filter(Boolean);
+      if (timeStrs.length === 0) {
+        res.status(400).json({ error: 'times must contain at least one value' });
+        return;
+      }
+      if (!timeStrs.every(isValidMedicationTime)) {
+        res.status(400).json({ error: 'times must be HH:mm (24-hour) values' });
+        return;
+      }
+      timesJson = JSON.stringify(timeStrs);
     }
     const enabled =
       req.body?.enabled !== undefined ? (req.body.enabled ? 1 : 0) : existing.enabled;

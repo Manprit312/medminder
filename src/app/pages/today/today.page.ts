@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { LoadingController, ViewWillEnter } from '@ionic/angular';
+import { AlertController, LoadingController, ViewWillEnter } from '@ionic/angular';
 import { DoseLogEntry, Medication, TodayDose } from '../../models/med.models';
 
 function timeToMinutes(time: string): number {
@@ -59,7 +59,8 @@ export class TodayPage implements ViewWillEnter {
     private readonly router: Router,
     private readonly mealLog: MealLogService,
     private readonly loadingCtrl: LoadingController,
-    private readonly assistant: HealthAssistantService
+    private readonly assistant: HealthAssistantService,
+    private readonly alertCtrl: AlertController
   ) {}
 
   async ionViewWillEnter(): Promise<void> {
@@ -215,8 +216,41 @@ export class TodayPage implements ViewWillEnter {
       void this.router.navigateByUrl('/tabs/profiles/add');
       return;
     }
+    if (profiles.length > 1) {
+      void this.chooseProfileForMedication(profiles);
+      return;
+    }
     const profileId = profiles[0].id;
     void this.router.navigateByUrl(`/tabs/profiles/${profileId}/medications/add`);
+  }
+
+  private async chooseProfileForMedication(
+    profiles: { id: string; name: string }[]
+  ): Promise<void> {
+    const alert = await this.alertCtrl.create({
+      header: 'Choose profile',
+      message: 'Select who this medication is for.',
+      inputs: profiles.map((p, idx) => ({
+        type: 'radio',
+        label: p.name,
+        value: p.id,
+        checked: idx === 0,
+      })),
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Continue',
+          handler: (profileId: string | undefined) => {
+            if (!profileId) {
+              return false;
+            }
+            void this.router.navigateByUrl(`/tabs/profiles/${profileId}/medications/add`);
+            return true;
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 
   private async updateSelectedDayAdherence(): Promise<void> {

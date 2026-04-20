@@ -22,6 +22,12 @@ export interface MedNotificationExtra {
   profileName: string;
 }
 
+export interface ReminderScheduleResult {
+  nativeSupported: boolean;
+  permissionGranted: boolean;
+  scheduledCount: number;
+}
+
 /** Deterministic 32-bit id for (medicationId, time) — fits Android notification id range. */
 export function stableNotificationId(medicationId: string, time: string): number {
   const s = `${medicationId}|${time}`;
@@ -230,9 +236,9 @@ export class MedicationReminderNotificationsService {
   }
 
   /** Cancel all pending local notifications we manage, then reschedule from current meds. */
-  async rescheduleAll(): Promise<void> {
+  async rescheduleAll(): Promise<ReminderScheduleResult> {
     if (!Capacitor.isNativePlatform()) {
-      return;
+      return { nativeSupported: false, permissionGranted: false, scheduledCount: 0 };
     }
     await this.ensureAndroidChannel();
 
@@ -241,7 +247,7 @@ export class MedicationReminderNotificationsService {
       perm = await LocalNotifications.requestPermissions();
     }
     if (perm.display !== 'granted') {
-      return;
+      return { nativeSupported: true, permissionGranted: false, scheduledCount: 0 };
     }
 
     const pending = await LocalNotifications.getPending();
@@ -296,14 +302,16 @@ export class MedicationReminderNotificationsService {
     }
 
     if (notifications.length === 0) {
-      return;
+      return { nativeSupported: true, permissionGranted: true, scheduledCount: 0 };
     }
 
     try {
       await LocalNotifications.schedule({ notifications });
     } catch (e) {
       console.error('[MedMinder] LocalNotifications.schedule failed', e);
+      return { nativeSupported: true, permissionGranted: true, scheduledCount: 0 };
     }
+    return { nativeSupported: true, permissionGranted: true, scheduledCount: notifications.length };
   }
 
   async requestPermissionAndSchedule(): Promise<boolean> {

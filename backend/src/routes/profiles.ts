@@ -62,6 +62,10 @@ function caregiverField(v: unknown): string | null {
   return s.length ? s : null;
 }
 
+function isValidMedicationTime(v: string): boolean {
+  return /^([01]\d|2[0-3]):([0-5]\d)$/.test(v);
+}
+
 profilesRouter.post(
   '/',
   asyncRoute(async (req, res) => {
@@ -140,6 +144,10 @@ profilesRouter.post(
     const timeStrs = times.map((t) => String(t).trim()).filter(Boolean);
     if (timeStrs.length === 0) {
       res.status(400).json({ error: 'times must contain at least one value' });
+      return;
+    }
+    if (!timeStrs.every(isValidMedicationTime)) {
+      res.status(400).json({ error: 'times must be HH:mm (24-hour) values' });
       return;
     }
     const dosageNote = req.body?.dosageNote != null ? String(req.body.dosageNote).trim() : '';

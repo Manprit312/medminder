@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController, LoadingController, ViewWillEnter } from '@ionic/angular';
+import { AlertController, LoadingController, ToastController, ViewWillEnter } from '@ionic/angular';
 import { Medication, MedicationKind, Profile } from '../../models/med.models';
 import { formatApiError } from '../../shared/format-api-error';
 import { MedDataService } from '../../services/med-data.service';
 import { MedExternalLinksService } from '../../services/med-external-links.service';
 import { MedNotificationService } from '../../services/med-notification.service';
+import { ReminderScheduleResult } from '../../services/medication-reminder-notifications.service';
 
 @Component({
   selector: 'app-medication-form',
@@ -47,7 +48,8 @@ export class MedicationFormPage implements OnInit, ViewWillEnter {
     private readonly medNotif: MedNotificationService,
     private readonly medLinks: MedExternalLinksService,
     private readonly alertCtrl: AlertController,
-    private readonly loadingCtrl: LoadingController
+    private readonly loadingCtrl: LoadingController,
+    private readonly toastCtrl: ToastController
   ) {}
 
   /** Lazy-loaded `profiles/:id/medications/...` often keeps `:id` on a parent route — walk the tree. */
@@ -207,6 +209,10 @@ export class MedicationFormPage implements OnInit, ViewWillEnter {
     return `${h}:${m}`;
   }
 
+  private isStrictTime(value: string): boolean {
+    return /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
+  }
+
   /**
    * ion-input type="time" may not update ngModel until blur; header Save can read stale values.
    * Sync from the control whenever the user picks a time (also handles HH:mm:ss from WebKit).
@@ -241,6 +247,16 @@ export class MedicationFormPage implements OnInit, ViewWillEnter {
       return;
     }
     const times = [...this.formTimes];
+    const invalidTimes = times.filter((t) => !this.isStrictTime(t));
+    if (invalidTimes.length > 0) {
+      const a = await this.alertCtrl.create({
+        header: 'Invalid reminder time',
+        message: 'Use 24-hour HH:mm format for every reminder (example: 09:00, 18:30).',
+        buttons: ['OK'],
+      });
+      await a.present();
+      return;
+    }
     const unique = [...new Set(times)].sort();
     if (unique.length === 0) {
       return;
@@ -292,13 +308,40 @@ export class MedicationFormPage implements OnInit, ViewWillEnter {
           kind: this.formKind ?? undefined,
         });
       }
-      await this.medNotif.rescheduleAll();
+      const schedule = await this.medNotif.rescheduleAll();
       await this.router.navigate([this.backHref()]);
+      await this.presentReminderStatus(schedule);
     } catch (e: unknown) {
       await this.showHttpError(this.isAdd ? 'Could not add medication' : 'Could not save medication', e);
     } finally {
       await loading.dismiss();
     }
+  }
+
+  private async presentReminderStatus(result: ReminderScheduleResult): Promise<void> {
+    if (!result.nativeSupported) {
+      return;
+    }
+    if (!result.permissionGranted) {
+      const a = await this.alertCtrl.create({
+        header: 'Reminders not active yet',
+        message:
+          'Medication saved, but notification permission is off. Enable reminders in Settings so dose alerts can fire.',
+        buttons: ['OK'],
+      });
+      await a.present();
+      return;
+    }
+    const t = await this.toastCtrl.create({
+      message:
+        result.scheduledCount > 0
+          ? `Reminders active (${result.scheduledCount} scheduled).`
+          : 'Medication saved. No active reminder slots were scheduled.',
+      duration: 2600,
+      position: 'bottom',
+      color: result.scheduledCount > 0 ? 'success' : 'medium',
+    });
+    await t.present();
   }
 
   async deleteMedication(): Promise<void> {

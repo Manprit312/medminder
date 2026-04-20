@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
-import { MedicationReminderNotificationsService } from './medication-reminder-notifications.service';
+import {
+  MedicationReminderNotificationsService,
+  ReminderScheduleResult,
+} from './medication-reminder-notifications.service';
 
 /**
  * Facade for medication reminders — delegates to {@link MedicationReminderNotificationsService}.
@@ -34,7 +37,7 @@ export class MedNotificationService {
     return this.reminders.requestPermissionAndSchedule();
   }
 
-  async rescheduleAll(): Promise<void> {
+  async rescheduleAll(): Promise<ReminderScheduleResult> {
     return this.reminders.rescheduleAll();
   }
 
