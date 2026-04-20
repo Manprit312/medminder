@@ -31,6 +31,7 @@ if (!jwtSecret || jwtSecret.length < 16) {
   process.exit(1);
 }
 import { authRouter } from './routes/auth.js';
+import { agentsRouter } from './routes/agents.js';
 import { billingRouter } from './routes/billing.js';
 import { caretakerRouter } from './routes/caretaker.js';
 import { profilesRouter } from './routes/profiles.js';
@@ -84,6 +85,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRouter);
+app.use('/api/agents', agentsRouter);
 app.use('/api/billing', billingRouter);
 app.use('/api/caretaker', caretakerRouter);
 app.use('/api/profiles', profilesRouter);

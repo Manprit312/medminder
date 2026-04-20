@@ -1,6 +1,11 @@
 import { Component } from '@angular/core';
 import { LoadingController, ToastController, ViewWillEnter } from '@ionic/angular';
 import { Profile } from '../../models/med.models';
+import {
+  AgentDefinition,
+  AgentRecommendation,
+  AiAgentsService,
+} from '../../services/ai-agents.service';
 import { CaretakerApiService, EscalationRules, WeeklyDigest } from '../../services/caretaker-api.service';
 import { HealthAssistantService } from '../../services/health-assistant.service';
 import { MedDataService } from '../../services/med-data.service';
@@ -34,10 +39,13 @@ export class HealthAssistantPage implements ViewWillEnter {
       text: 'I can summarize adherence and suggest next actions. I do not diagnose or replace clinician advice.',
     },
   ];
+  agentCatalog: AgentDefinition[] = [];
+  recommendedAgents: AgentRecommendation[] = [];
 
   constructor(
     private readonly medData: MedDataService,
     private readonly assistant: HealthAssistantService,
+    private readonly aiAgents: AiAgentsService,
     private readonly caretakerApi: CaretakerApiService,
     private readonly loadingCtrl: LoadingController,
     private readonly toastCtrl: ToastController
@@ -50,6 +58,7 @@ export class HealthAssistantPage implements ViewWillEnter {
       this.selectedProfileId = this.profiles[0].id;
     }
     this.todayDoses = await this.medData.getDosesForDate(new Date().toISOString().slice(0, 10));
+    this.agentCatalog = await this.aiAgents.getCatalog();
     const prefs = await this.assistant.getPrefs();
     this.aiEnabled = prefs.aiEnabled;
     this.strictGuardrails = prefs.strictMedicalGuardrails;
@@ -58,6 +67,24 @@ export class HealthAssistantPage implements ViewWillEnter {
 
   async onProfileChanged(): Promise<void> {
     await this.loadProfileSettings();
+  }
+
+  recommendationTitle(row: AgentRecommendation): string {
+    return this.agentCatalog.find((a) => a.id === row.agentId)?.title ?? row.agentId;
+  }
+
+  recommendationPurpose(row: AgentRecommendation): string {
+    return this.agentCatalog.find((a) => a.id === row.agentId)?.purpose ?? '';
+  }
+
+  recommendationPriorityColor(priority: 'low' | 'medium' | 'high'): 'medium' | 'warning' | 'danger' {
+    if (priority === 'high') {
+      return 'danger';
+    }
+    if (priority === 'medium') {
+      return 'warning';
+    }
+    return 'medium';
   }
 
   async saveAssistantPrefs(): Promise<void> {
@@ -144,6 +171,7 @@ export class HealthAssistantPage implements ViewWillEnter {
     if (!this.selectedProfileId) {
       this.digest = null;
       this.escalation = null;
+      this.recommendedAgents = [];
       return;
     }
     try {
@@ -161,6 +189,12 @@ export class HealthAssistantPage implements ViewWillEnter {
       this.escalationEnabled = false;
       this.escalationWindowDays = 3;
       this.escalationMissedThreshold = 2;
+    }
+    try {
+      const res = await this.aiAgents.getRecommendations(this.selectedProfileId);
+      this.recommendedAgents = res.recommendations;
+    } catch {
+      this.recommendedAgents = [];
     }
   }
 

@@ -93,6 +93,29 @@
     </ion-item>
   </ion-list>
 
+  <ion-list inset="true" lines="none" class="form-card ion-margin-top">
+    <ion-list-header>
+      <ion-label>Recommended agents</ion-label>
+    </ion-list-header>
+    <ion-item lines="none" *ngIf="recommendedAgents.length === 0">
+      <ion-text color="medium" class="ion-text-wrap">
+        <p>Select a profile to see agent recommendations.</p>
+      </ion-text>
+    </ion-item>
+    <ion-item lines="none" *ngFor="let rec of recommendedAgents">
+      <ion-label class="ion-text-wrap">
+        <h3>
+          {{ recommendationTitle(rec) }}
+          <ion-badge [color]="recommendationPriorityColor(rec.priority)" class="ion-margin-start">
+            {{ rec.priority }}
+          </ion-badge>
+        </h3>
+        <p>{{ recommendationPurpose(rec) }}</p>
+        <p>{{ rec.reason }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
   <ion-list inset="true" lines="none" class="form-card ion-margin-top" *ngIf="aiEnabled">
     <ion-list-header>
       <ion-label>Assistant Q&amp;A</ion-label>
