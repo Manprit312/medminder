@@ -6,6 +6,7 @@ import { queryAll, queryOne, runExec } from '../db.js';
 import { mapMedicationRow, type MedicationRow } from '../medication-map.js';
 import { authMiddleware } from '../middleware/auth.js';
 import {
+  isSmtpConfigured,
   publicAppUrl,
   sendCaretakerWeeklyDigestEmail,
 } from '../email.js';
