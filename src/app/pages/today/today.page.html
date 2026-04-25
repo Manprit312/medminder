@@ -67,6 +67,16 @@
           <li *ngFor="let b of assistantBullets">{{ b }}</li>
         </ul>
         <p class="mm-assistant-card__foot">{{ assistantFooter }}</p>
+        <div *ngIf="topAgentRecommendations.length > 0" class="ion-margin-top">
+          <p class="mm-assistant-card__foot">Recommended agents</p>
+          <p *ngFor="let rec of topAgentRecommendations" class="ion-no-margin ion-margin-top">
+            <ion-badge [color]="agentPriorityColor(rec.priority)">{{ agentPriorityLabel(rec.priority) }}</ion-badge>
+            {{ rec.reason }}
+          </p>
+          <ion-button fill="clear" size="small" class="ion-no-padding ion-margin-top" routerLink="/tabs/settings/assistant">
+            Open assistant center
+          </ion-button>
+        </div>
       </div>
 
       <div class="mm-progress-compact mm-surface-cream mm-progress-premium">

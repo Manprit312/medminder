@@ -107,7 +107,7 @@
         <h3>
           {{ recommendationTitle(rec) }}
           <ion-badge [color]="recommendationPriorityColor(rec.priority)" class="ion-margin-start">
-            {{ rec.priority }}
+            {{ recommendationPriorityLabel(rec.priority) }}
           </ion-badge>
         </h3>
         <p>{{ recommendationPurpose(rec) }}</p>

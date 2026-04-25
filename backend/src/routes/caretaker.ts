@@ -6,9 +6,7 @@ import { queryAll, queryOne, runExec } from '../db.js';
 import { mapMedicationRow, type MedicationRow } from '../medication-map.js';
 import { authMiddleware } from '../middleware/auth.js';
 import {
-  isSmtpConfigured,
   publicAppUrl,
-  sendCaretakerInviteEmail,
   sendCaretakerWeeklyDigestEmail,
 } from '../email.js';
 
@@ -125,41 +123,12 @@ caretakerRouter.post(
       [id, profileId, inviterId, inviteeEmail, tokenHash, expiresAt, now]
     );
 
-    const prof = await queryOne<{ name: string }>('SELECT name FROM profiles WHERE id = ?', [profileId]);
     const acceptUrl = `${publicAppUrl()}/accept-caretaker-invite?token=${encodeURIComponent(plainToken)}`;
 
-    let emailed = false;
-    let mailHint: string | undefined;
-
-    function safeErr(e: unknown): string {
-      const m = e instanceof Error ? e.message : String(e);
-      return m.length > 200 ? `${m.slice(0, 197)}…` : m;
-    }
-
-    if (isSmtpConfigured()) {
-      try {
-        await sendCaretakerInviteEmail(inviteeEmail, {
-          inviterHint: inviter?.email ?? 'Someone',
-          profileName: prof?.name ?? 'Family member',
-          acceptUrl,
-        });
-        emailed = true;
-      } catch (e) {
-        console.error('[caretaker] invite email failed', e);
-        mailHint = `Send failed: ${safeErr(e)}`;
-      }
-    } else {
-      mailHint =
-        'Email not configured on API: set RESEND_API_KEY (Resend) or SMTP_HOST/SMTP_USER/SMTP_PASS, plus EMAIL_FROM and APP_PUBLIC_URL. Redeploy after saving env.';
-      console.warn('[caretaker] SMTP not configured — share this invite link manually:');
-      console.warn(acceptUrl);
-    }
-
     res.status(201).json({
-      invite: { id, expiresAt, emailed },
-      /** Only returned once — for manual sharing when SMTP is off or send failed */
-      acceptUrl: emailed ? undefined : acceptUrl,
-      mailHint: emailed ? undefined : mailHint,
+      invite: { id, expiresAt, emailed: false },
+      /** Returned to inviter for manual sharing (e.g., WhatsApp). */
+      acceptUrl,
     });
   })
 );

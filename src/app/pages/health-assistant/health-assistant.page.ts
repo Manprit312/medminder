@@ -77,14 +77,24 @@ export class HealthAssistantPage implements ViewWillEnter {
     return this.agentCatalog.find((a) => a.id === row.agentId)?.purpose ?? '';
   }
 
-  recommendationPriorityColor(priority: 'low' | 'medium' | 'high'): 'medium' | 'warning' | 'danger' {
+  recommendationPriorityColor(priority: 'low' | 'medium' | 'high'): 'medium' | 'tertiary' | 'primary' {
     if (priority === 'high') {
-      return 'danger';
+      return 'primary';
     }
     if (priority === 'medium') {
-      return 'warning';
+      return 'tertiary';
     }
     return 'medium';
+  }
+
+  recommendationPriorityLabel(priority: 'low' | 'medium' | 'high'): string {
+    if (priority === 'high') {
+      return 'Focus now';
+    }
+    if (priority === 'medium') {
+      return 'Helpful next';
+    }
+    return 'Optional now';
   }
 
   async saveAssistantPrefs(): Promise<void> {

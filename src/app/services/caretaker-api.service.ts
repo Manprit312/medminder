@@ -113,7 +113,7 @@ export class CaretakerApiService {
 
   sendInvite(profileId: string, inviteeEmail: string): Promise<{
     invite: { id: string; expiresAt: string; emailed: boolean };
-    acceptUrl?: string;
+    acceptUrl: string;
     /** Why email was not sent (missing config or SMTP error). */
     mailHint?: string;
   }> {
@@ -121,7 +121,7 @@ export class CaretakerApiService {
       withApiTimeout(
         this.http.post<{
           invite: { id: string; expiresAt: string; emailed: boolean };
-          acceptUrl?: string;
+          acceptUrl: string;
           mailHint?: string;
         }>(`${this.base()}/api/caretaker/invites`, { profileId, inviteeEmail })
       )

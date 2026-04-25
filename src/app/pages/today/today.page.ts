@@ -13,6 +13,7 @@ import {
   enumerateDatesInclusive,
   formatLocalDate,
 } from '../../services/adherence.service';
+import { AgentRecommendation, AiAgentsService } from '../../services/ai-agents.service';
 import { DailyMeals, MealLogService } from '../../services/meal-log.service';
 import { MedDataService } from '../../services/med-data.service';
 import { RefillService } from '../../services/refill.service';
@@ -50,6 +51,7 @@ export class TodayPage implements ViewWillEnter {
   mealDraft: DailyMeals = { breakfast: '', lunch: '', dinner: '' };
   assistantBullets: string[] = [];
   assistantFooter = '';
+  topAgentRecommendations: AgentRecommendation[] = [];
   checkinByDoseKey: Record<string, DoseCheckinLevel> = {};
 
   constructor(
@@ -60,6 +62,7 @@ export class TodayPage implements ViewWillEnter {
     private readonly mealLog: MealLogService,
     private readonly loadingCtrl: LoadingController,
     private readonly assistant: HealthAssistantService,
+    private readonly aiAgents: AiAgentsService,
     private readonly alertCtrl: AlertController
   ) {}
 
@@ -72,6 +75,7 @@ export class TodayPage implements ViewWillEnter {
     try {
       await this.medData.refresh();
       await this.refreshForSelectedDate();
+      await this.refreshAgentRecommendations();
     } finally {
       this.loading = false;
     }
@@ -144,6 +148,40 @@ export class TodayPage implements ViewWillEnter {
     await this.loadMealsForSelectedDate();
     await this.loadCheckinsForSelectedDate();
     this.updateAssistantBriefing();
+  }
+
+  private async refreshAgentRecommendations(): Promise<void> {
+    const profileId = this.doses[0]?.profileId ?? this.medData.getProfilesSnapshot()[0]?.id ?? '';
+    if (!profileId) {
+      this.topAgentRecommendations = [];
+      return;
+    }
+    try {
+      const res = await this.aiAgents.getRecommendations(profileId);
+      this.topAgentRecommendations = res.recommendations.slice(0, 2);
+    } catch {
+      this.topAgentRecommendations = [];
+    }
+  }
+
+  agentPriorityColor(priority: 'low' | 'medium' | 'high'): 'medium' | 'tertiary' | 'primary' {
+    if (priority === 'high') {
+      return 'primary';
+    }
+    if (priority === 'medium') {
+      return 'tertiary';
+    }
+    return 'medium';
+  }
+
+  agentPriorityLabel(priority: 'low' | 'medium' | 'high'): string {
+    if (priority === 'high') {
+      return 'Focus now';
+    }
+    if (priority === 'medium') {
+      return 'Helpful next';
+    }
+    return 'Optional now';
   }
 
   private updateAssistantBriefing(): void {
