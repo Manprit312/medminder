@@ -69,6 +69,13 @@ export class LoginPage {
       } else {
         msg = body?.error ?? e.message;
       }
+    } else if (e instanceof Error && e.message.trim()) {
+      msg = e.message;
+    } else if (typeof e === 'object' && e && 'code' in e) {
+      const code = String((e as { code: unknown }).code ?? '').trim();
+      const message =
+        'message' in e ? String((e as { message: unknown }).message ?? '').trim() : '';
+      msg = [code, message].filter(Boolean).join(': ') || fallback;
     }
     const alert = await this.alertCtrl.create({
       header,

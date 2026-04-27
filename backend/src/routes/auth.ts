@@ -37,6 +37,16 @@ function syntheticPasswordForSocialAccount(userId: string): string {
   return bcrypt.hashSync(`social-only|${userId}|${Date.now()}`, SALT_ROUNDS);
 }
 
+function errorMessage(err: unknown): string {
+  if (err instanceof Error && err.message.trim()) {
+    return err.message;
+  }
+  if (typeof err === 'object' && err && 'message' in err) {
+    return String((err as { message: unknown }).message ?? 'Unknown error');
+  }
+  return 'Unknown error';
+}
+
 function rejectLegacyAuth(res: { status: (n: number) => { json: (b: unknown) => void } }): void {
   res.status(410).json({ error: 'Only Google sign-in is enabled for this app.' });
 }
@@ -92,7 +102,27 @@ authRouter.post(
       res.status(400).json({ error: 'idToken required' });
       return;
     }
-    const decoded = await verifyFirebaseIdToken(idToken);
+    let decoded: Awaited<ReturnType<typeof verifyFirebaseIdToken>>;
+    try {
+      decoded = await verifyFirebaseIdToken(idToken);
+    } catch (err) {
+      const message = errorMessage(err);
+      if (message.toLowerCase().includes('credentials missing')) {
+        res.status(503).json({ error: 'Google sign-in is not configured on the server yet.' });
+        return;
+      }
+      if (
+        message.toLowerCase().includes('id token') ||
+        message.toLowerCase().includes('jwt') ||
+        message.toLowerCase().includes('certificate')
+      ) {
+        res.status(401).json({ error: 'Google token verification failed. Sign in again and retry.' });
+        return;
+      }
+      console.error('[auth/google] verifyFirebaseIdToken failed:', err);
+      res.status(500).json({ error: 'Google verification failed on server.' });
+      return;
+    }
     const provider = decoded.firebase?.sign_in_provider;
     if (provider !== 'google.com') {
       res.status(403).json({ error: 'Google sign-in token required' });
