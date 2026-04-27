@@ -30,8 +30,8 @@ export class SettingsPage implements ViewWillEnter {
     readonly subscription: SubscriptionService
   ) {}
 
-  get email(): string | null {
-    return this.auth.getEmail();
+  get userDisplay(): string | null {
+    return this.auth.getUserDisplay();
   }
 
   ionViewWillEnter(): void {

@@ -62,6 +62,15 @@ const MIGRATIONS = [
   `ALTER TABLE medications ADD COLUMN IF NOT EXISTS kind TEXT`,
   `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS patient_group TEXT NOT NULL DEFAULT 'adult'`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_tier TEXT DEFAULT 'free'`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone_e164 ON users (phone) WHERE phone IS NOT NULL`,
+  `
+CREATE TABLE IF NOT EXISTS auth_otp (
+  phone TEXT PRIMARY KEY,
+  code_hash TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL
+)`,
   `
 CREATE TABLE IF NOT EXISTS caretaker_invites (
   id TEXT PRIMARY KEY,

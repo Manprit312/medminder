@@ -16,8 +16,13 @@ import { getApiUrl } from '../../../environments/api-url';
 })
 export class LoginPage {
   readonly apiUrl = getApiUrl();
-  email = '';
-  password = '';
+  phone = '';
+  otpCode = '';
+  codeSent = false;
+
+  get canSubmitOtp(): boolean {
+    return this.otpCode.replace(/\D/g, '').length === 6;
+  }
 
   constructor(
     private readonly auth: AuthService,
@@ -30,15 +35,48 @@ export class LoginPage {
     private readonly loadingCtrl: LoadingController
   ) {}
 
-  async submit(): Promise<void> {
-    const email = this.email.trim();
-    if (!email || !this.password) {
+  async sendCode(): Promise<void> {
+    const p = this.phone.trim();
+    if (!p) {
+      return;
+    }
+    const loading = await this.loadingCtrl.create({ message: 'Sending code…' });
+    await loading.present();
+    try {
+      const res = await this.auth.requestOtp(p);
+      this.codeSent = true;
+      await loading.dismiss();
+      if (res.devOtp) {
+        const a = await this.alertCtrl.create({
+          header: 'Development code',
+          message: `Your sign-in code is: ${res.devOtp} (only in dev or when DEV_EXPOSE_OTP is set)`,
+          buttons: ['OK'],
+        });
+        await a.present();
+      } else {
+        const t = await this.alertCtrl.create({
+          header: 'Code sent',
+          message: 'Enter the 6-digit code from your SMS.',
+          buttons: ['OK'],
+        });
+        await t.present();
+      }
+    } catch (e: unknown) {
+      await loading.dismiss();
+      await this.showErr('Could not send code', e, 'Check the number and try again.');
+    }
+  }
+
+  async verify(): Promise<void> {
+    const p = this.phone.trim();
+    const code = this.otpCode.replace(/\D/g, '');
+    if (!p || code.length !== 6) {
       return;
     }
     const loading = await this.loadingCtrl.create({ message: 'Signing in…' });
     await loading.present();
     try {
-      await this.auth.login(email, this.password);
+      await this.auth.verifyOtp(p, code);
       await this.caretakerAlerts.start();
       await this.medData.refresh();
       await this.medNotif.initialize();
@@ -54,22 +92,26 @@ export class LoginPage {
       await this.router.navigateByUrl(safe ?? '/tabs/today', { replaceUrl: true });
     } catch (e: unknown) {
       await loading.dismiss();
-      let msg = 'Sign-in failed';
-      if (e instanceof HttpErrorResponse) {
-        const body = e.error as { error?: string } | undefined;
-        if (e.status === 0) {
-          msg =
-            'Could not reach the server. Check internet, wait one minute if the host was idle, then try again. If this keeps happening, the deployed API must allow this app in CORS.';
-        } else {
-          msg = body?.error ?? e.message;
-        }
-      }
-      const alert = await this.alertCtrl.create({
-        header: 'Could not sign in',
-        message: msg || 'Check email, password, and that the API is running.',
-        buttons: ['OK'],
-      });
-      await alert.present();
+      await this.showErr('Could not sign in', e, 'Check the code and try again.');
     }
+  }
+
+  private async showErr(header: string, e: unknown, fallback: string): Promise<void> {
+    let msg = fallback;
+    if (e instanceof HttpErrorResponse) {
+      const body = e.error as { error?: string } | undefined;
+      if (e.status === 0) {
+        msg =
+          'Could not reach the server. Check internet and API URL. If the API was cold-starting, wait a minute and try again.';
+      } else {
+        msg = body?.error ?? e.message;
+      }
+    }
+    const alert = await this.alertCtrl.create({
+      header,
+      message: msg || fallback,
+      buttons: ['OK'],
+    });
+    await alert.present();
   }
 }

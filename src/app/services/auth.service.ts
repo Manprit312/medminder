@@ -6,6 +6,13 @@ import { withApiTimeout } from '../shared/http-api-timeout';
 import { SubscriptionService } from './subscription.service';
 import { TokenStorageService } from './token-storage.service';
 
+export interface AuthUser {
+  id: string;
+  email: string;
+  phone?: string | null;
+  subscriptionTier?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   constructor(
@@ -22,33 +29,66 @@ export class AuthService {
     return this.tokens.getToken();
   }
 
-  getEmail(): string | null {
-    return this.tokens.getEmail();
+  /** Display line in Settings: phone (OTP) or legacy email. */
+  getUserDisplay(): string | null {
+    return this.tokens.getUserDisplay();
   }
 
-  async login(email: string, password: string): Promise<void> {
-    const res = await firstValueFrom(
+  /** @deprecated Use getUserDisplay — kept for templates that still reference email. */
+  getEmail(): string | null {
+    return this.getUserDisplay();
+  }
+
+  async requestOtp(phone: string): Promise<{ devOtp?: string }> {
+    return firstValueFrom(
       withApiTimeout(
-        this.http.post<{ token: string; user: { email: string; subscriptionTier?: string } }>(
-          `${getApiUrl()}/api/auth/login`,
-          { email: email.trim().toLowerCase(), password }
-        )
+        this.http.post<{ ok?: boolean; devOtp?: string }>(`${getApiUrl()}/api/auth/otp/request`, {
+          phone: phone.trim(),
+        })
       )
     );
-    await this.tokens.setSession(res.token, res.user.email);
+  }
+
+  async verifyOtp(phone: string, code: string): Promise<void> {
+    const res = await firstValueFrom(
+      withApiTimeout(
+        this.http.post<{ token: string; user: AuthUser }>(`${getApiUrl()}/api/auth/otp/verify`, {
+          phone: phone.trim(),
+          code: code.trim(),
+        })
+      )
+    );
+    const label = res.user.phone?.trim() || res.user.email?.trim() || '';
+    await this.tokens.setSession(res.token, label);
+    this.subscription.applyFromAuthUser(res.user);
+  }
+
+  /** Legacy email + password (server may still accept if user has a password). */
+  async loginWithPassword(email: string, password: string): Promise<void> {
+    const res = await firstValueFrom(
+      withApiTimeout(
+        this.http.post<{ token: string; user: AuthUser }>(`${getApiUrl()}/api/auth/login`, {
+          email: email.trim().toLowerCase(),
+          password,
+        })
+      )
+    );
+    const label = res.user.phone?.trim() || res.user.email?.trim() || '';
+    await this.tokens.setSession(res.token, label);
     this.subscription.applyFromAuthUser(res.user);
   }
 
   async register(email: string, password: string): Promise<void> {
     const res = await firstValueFrom(
       withApiTimeout(
-        this.http.post<{ token: string; user: { email: string; subscriptionTier?: string } }>(
-          `${getApiUrl()}/api/auth/register`,
-          { email: email.trim().toLowerCase(), password }
-        )
+        this.http.post<{ token: string; user: AuthUser }>(`${getApiUrl()}/api/auth/register`, {
+          email: email.trim().toLowerCase(),
+          password,
+        })
       )
     );
-    await this.tokens.setSession(res.token, res.user.email);
+    const label = res.user.phone?.trim() || res.user.email?.trim() || '';
+    await this.tokens.setSession(res.token, label);
     this.subscription.applyFromAuthUser(res.user);
   }
 
@@ -57,7 +97,6 @@ export class AuthService {
     this.subscription.resetToEnvironmentDefault();
   }
 
-  /** Request a password-reset email (backend sends mail when SMTP is configured). */
   async requestPasswordReset(email: string): Promise<{ devResetUrl?: string }> {
     return firstValueFrom(
       withApiTimeout(
@@ -69,14 +108,13 @@ export class AuthService {
     );
   }
 
-  /** Complete reset using the token from the email link. */
   async resetPassword(token: string, password: string): Promise<void> {
     await firstValueFrom(
       withApiTimeout(
-        this.http.post<{ ok?: boolean; message?: string }>(
-          `${getApiUrl()}/api/auth/reset-password`,
-          { token: token.trim(), password }
-        )
+        this.http.post<{ ok?: boolean; message?: string }>(`${getApiUrl()}/api/auth/reset-password`, {
+          token: token.trim(),
+          password,
+        })
       )
     );
   }

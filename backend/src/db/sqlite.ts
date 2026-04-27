@@ -58,6 +58,8 @@ export function openSqlite(): Database.Database {
   migrateProfilesPatientGroupColumn(db);
   migratePasswordResetTokens(db);
   migrateUserSubscriptionTier(db);
+  migrateUserPhoneColumn(db);
+  migrateAuthOtpTable(db);
   migrateCaretakerTables(db);
   return db;
 }
@@ -119,6 +121,28 @@ function migrateUserSubscriptionTier(database: Database.Database) {
   if (!names.has('subscription_tier')) {
     database.exec(`ALTER TABLE users ADD COLUMN subscription_tier TEXT NOT NULL DEFAULT 'free'`);
   }
+}
+
+function migrateUserPhoneColumn(database: Database.Database) {
+  const cols = database.prepare('PRAGMA table_info(users)').all() as { name: string }[];
+  const names = new Set(cols.map((c) => c.name));
+  if (!names.has('phone')) {
+    database.exec('ALTER TABLE users ADD COLUMN phone TEXT');
+    database.exec(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone_e164 ON users(phone) WHERE phone IS NOT NULL'
+    );
+  }
+}
+
+function migrateAuthOtpTable(database: Database.Database) {
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS auth_otp (
+      phone TEXT PRIMARY KEY,
+      code_hash TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+  `);
 }
 
 function migrateCaretakerTables(database: Database.Database) {

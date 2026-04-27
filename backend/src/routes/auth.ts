@@ -8,6 +8,9 @@ import { forgotPasswordLimiter, resetPasswordLimiter } from '../auth-rate-limit.
 import { queryOne, runExec } from '../db.js';
 import { isSmtpConfigured, publicAppUrl, sendPasswordResetEmail } from '../email.js';
 import type { AuthPayload } from '../middleware/auth.js';
+import { hashOtp, randomOtpCode, verifyOtp } from '../otp-crypto.js';
+import { sendOtpSms } from '../otp-sms.js';
+import { normalizePhoneE164 } from '../phone.js';
 
 export const authRouter = Router();
 
@@ -53,8 +56,15 @@ authRouter.post(
       'INSERT INTO users (id, email, password_hash, created_at, subscription_tier) VALUES (?, ?, ?, ?, ?)',
       [id, email, hash, now, 'free']
     );
-    const token = jwt.sign({ sub: id, email } satisfies AuthPayload, jwtSecret(), { expiresIn: '30d' });
-    res.status(201).json({ token, user: { id, email, subscriptionTier: 'free' } });
+    const token = jwt.sign(
+      { sub: id, email, phone: undefined } satisfies AuthPayload,
+      jwtSecret(),
+      { expiresIn: '30d' }
+    );
+    res.status(201).json({
+      token,
+      user: { id, email, phone: null, subscriptionTier: 'free' },
+    });
   })
 );
 
@@ -77,15 +87,162 @@ authRouter.post(
       res.status(401).json({ error: 'Invalid email or password' });
       return;
     }
-    const token = jwt.sign({ sub: row.id, email: row.email } satisfies AuthPayload, jwtSecret(), {
-      expiresIn: '30d',
-    });
+    const full = await queryOne<{ id: string; email: string; phone: string | null }>(
+      'SELECT id, email, phone FROM users WHERE id = ?',
+      [row.id]
+    );
+    const phone = full?.phone?.trim() || undefined;
+    const token = jwt.sign(
+      { sub: row.id, email: row.email, phone } satisfies AuthPayload,
+      jwtSecret(),
+      {
+        expiresIn: '30d',
+      }
+    );
     const tierRow = await queryOne<{ subscription_tier: string }>(
       'SELECT subscription_tier FROM users WHERE id = ?',
       [row.id]
     );
     const subscriptionTier = tierRow?.subscription_tier === 'premium' ? 'premium' : 'free';
-    res.json({ token, user: { id: row.id, email: row.email, subscriptionTier } });
+    res.json({ token, user: { id: row.id, email: row.email, phone: phone ?? null, subscriptionTier } });
+  })
+);
+
+const OTP_RESEND_COOLDOWN_MS = 45_000;
+const OTP_TTL_MS = 10 * 60 * 1000;
+
+function syntheticEmailForPhone(phone: string): string {
+  return `phone-${phone.replace(/\+/g, '')}@otp.medminder.internal`;
+}
+
+function issueTokenForUser(u: { id: string; email: string; phone: string | null; subscription_tier: string | null }): {
+  token: string;
+  subscriptionTier: 'free' | 'premium';
+} {
+  const subscriptionTier = u.subscription_tier === 'premium' ? 'premium' : 'free';
+  const phone = u.phone?.trim() || undefined;
+  const token = jwt.sign(
+    { sub: u.id, email: u.email, phone } satisfies AuthPayload,
+    jwtSecret(),
+    { expiresIn: '30d' }
+  );
+  return { token, subscriptionTier };
+}
+
+/** Request SMS OTP; pair with POST /otp/verify */
+authRouter.post(
+  '/otp/request',
+  asyncRoute(async (req, res) => {
+    const phone = normalizePhoneE164(String(req.body?.phone ?? ''));
+    if (!phone) {
+      res.status(400).json({ error: 'Valid phone number required' });
+      return;
+    }
+    const existing = await queryOne<{ created_at: string }>(
+      'SELECT created_at FROM auth_otp WHERE phone = ?',
+      [phone]
+    );
+    if (existing) {
+      const age = Date.now() - new Date(existing.created_at).getTime();
+      if (age < OTP_RESEND_COOLDOWN_MS) {
+        res.status(429).json({ error: 'Please wait a moment before requesting a new code.' });
+        return;
+      }
+    }
+    const code = randomOtpCode();
+    const codeHash = hashOtp(phone, code);
+    const now = new Date().toISOString();
+    const expiresAt = new Date(Date.now() + OTP_TTL_MS).toISOString();
+    await runExec('DELETE FROM auth_otp WHERE phone = ?', [phone]);
+    await runExec(
+      'INSERT INTO auth_otp (phone, code_hash, expires_at, created_at) VALUES (?, ?, ?, ?)',
+      [phone, codeHash, expiresAt, now]
+    );
+    await sendOtpSms(phone, code);
+    const exposeOtp = process.env.DEV_EXPOSE_OTP === '1' || process.env.NODE_ENV !== 'production';
+    res.json({
+      ok: true,
+      message: 'We sent a sign-in code to this number (when SMS is configured).',
+      ...(exposeOtp ? { devOtp: code } : {}),
+    });
+  })
+);
+
+/** Verify OTP: creates account on first success */
+authRouter.post(
+  '/otp/verify',
+  asyncRoute(async (req, res) => {
+    const phone = normalizePhoneE164(String(req.body?.phone ?? ''));
+    const code = String(req.body?.code ?? '').replace(/\D/g, '');
+    if (!phone || code.length !== 6) {
+      res.status(400).json({ error: 'Valid phone and 6-digit code required' });
+      return;
+    }
+    const row = await queryOne<{ code_hash: string; expires_at: string }>(
+      'SELECT code_hash, expires_at FROM auth_otp WHERE phone = ?',
+      [phone]
+    );
+    if (!row) {
+      res.status(401).json({ error: 'No code pending for this number. Request a new code.' });
+      return;
+    }
+    if (new Date(row.expires_at) <= new Date()) {
+      await runExec('DELETE FROM auth_otp WHERE phone = ?', [phone]);
+      res.status(401).json({ error: 'Code expired. Request a new one.' });
+      return;
+    }
+    if (!verifyOtp(phone, code, row.code_hash)) {
+      res.status(401).json({ error: 'Invalid code' });
+      return;
+    }
+    await runExec('DELETE FROM auth_otp WHERE phone = ?', [phone]);
+
+    let user = await queryOne<{
+      id: string;
+      email: string;
+      phone: string | null;
+      password_hash: string;
+      subscription_tier: string | null;
+    }>('SELECT id, email, phone, password_hash, subscription_tier FROM users WHERE phone = ?', [phone]);
+
+    if (!user) {
+      const id = uuid();
+      const now = new Date().toISOString();
+      const synthetic = syntheticEmailForPhone(phone);
+      const used = await queryOne<{ id: string }>('SELECT id FROM users WHERE email = ?', [synthetic]);
+      if (used) {
+        res.status(409).json({ error: 'Account conflict. Contact support.' });
+        return;
+      }
+      const password_hash = bcrypt.hashSync(`otp-only|${id}|${now}`, SALT_ROUNDS);
+      await runExec(
+        'INSERT INTO users (id, email, password_hash, created_at, subscription_tier, phone) VALUES (?, ?, ?, ?, ?, ?)',
+        [id, synthetic, password_hash, now, 'free', phone]
+      );
+      user = {
+        id,
+        email: synthetic,
+        phone,
+        password_hash,
+        subscription_tier: 'free',
+      };
+    }
+
+    const { token, subscriptionTier } = issueTokenForUser({
+      id: user.id,
+      email: user.email,
+      phone: user.phone,
+      subscription_tier: user.subscription_tier,
+    });
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        phone: user.phone,
+        subscriptionTier,
+      },
+    });
   })
 );
 
@@ -185,9 +342,10 @@ authRouter.get(
       const u = await queryOne<{
         id: string;
         email: string;
+        phone: string | null;
         created_at: string;
         subscription_tier: string | null;
-      }>('SELECT id, email, created_at, subscription_tier FROM users WHERE id = ?', [decoded.sub]);
+      }>('SELECT id, email, phone, created_at, subscription_tier FROM users WHERE id = ?', [decoded.sub]);
       if (!u) {
         res.status(404).json({ error: 'User not found' });
         return;
@@ -197,6 +355,7 @@ authRouter.get(
         user: {
           id: u.id,
           email: u.email,
+          phone: u.phone,
           created_at: u.created_at,
           subscriptionTier,
         },

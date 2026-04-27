@@ -2,47 +2,72 @@
   <div class="auth-card mm-auth-card">
     <span class="material-symbols-outlined logo">medication</span>
     <h1>MedMinder</h1>
-    <p class="sub">Sign in to sync your family profiles and medications.</p>
+    <p class="sub">Sign in with your phone number. We’ll text you a one-time code.</p>
 
-    <form (ngSubmit)="submit()">
+    <form (ngSubmit)="codeSent ? verify() : sendCode()">
       <ion-list lines="none" class="form-list">
         <ion-item>
-          <span class="material-symbols-outlined input-ic" slot="start">mail</span>
+          <span class="material-symbols-outlined input-ic" slot="start">call</span>
           <ion-input
-            type="email"
-            name="email"
-            [(ngModel)]="email"
-            label="Email"
+            type="tel"
+            name="phone"
+            [(ngModel)]="phone"
+            label="Phone"
             labelPlacement="stacked"
-            autocomplete="email"
+            autocomplete="tel"
+            inputmode="tel"
+            placeholder="e.g. 9876543210 or +919876543210"
+            [disabled]="codeSent"
             required
           ></ion-input>
         </ion-item>
-        <ion-item>
-          <span class="material-symbols-outlined input-ic" slot="start">lock</span>
+        <ion-item *ngIf="codeSent">
+          <span class="material-symbols-outlined input-ic" slot="start">pin</span>
           <ion-input
-            type="password"
-            name="password"
-            [(ngModel)]="password"
-            label="Password"
+            type="text"
+            name="otp"
+            [(ngModel)]="otpCode"
+            label="6-digit code"
             labelPlacement="stacked"
-            autocomplete="current-password"
+            inputmode="numeric"
+            maxlength="6"
+            autocomplete="one-time-code"
             required
           ></ion-input>
         </ion-item>
       </ion-list>
-      <ion-button expand="block" size="large" type="submit" [disabled]="!email.trim() || !password">
+      <ion-button
+        *ngIf="!codeSent"
+        expand="block"
+        size="large"
+        type="submit"
+        [disabled]="!phone.trim()"
+      >
+        Send code
+      </ion-button>
+      <ion-button
+        *ngIf="codeSent"
+        expand="block"
+        size="large"
+        type="submit"
+        [disabled]="!canSubmitOtp"
+      >
         Sign in
+      </ion-button>
+      <ion-button
+        *ngIf="codeSent"
+        expand="block"
+        fill="clear"
+        type="button"
+        (click)="codeSent = false; otpCode = ''"
+      >
+        Use a different number
       </ion-button>
     </form>
 
-    <p class="hint hint-row">
-      <a routerLink="/forgot-password">Forgot password?</a>
-    </p>
-
     <p class="hint">
-      No account?
-      <a routerLink="/register">Create one</a>
+      <a routerLink="/register">Register with email</a>
+      if you need a caretaker invite (invites are matched by email).
     </p>
     <p class="api-hint">API: <code>{{ apiUrl }}</code></p>
   </div>
