@@ -10,6 +10,7 @@ import {
   publicAppUrl,
   sendCaretakerWeeklyDigestEmail,
 } from '../email.js';
+import { normalizePhoneE164 } from '../phone.js';
 
 export const caretakerRouter = Router();
 
@@ -37,6 +38,12 @@ async function profileOwnedByUser(profileId: string, userId: string): Promise<bo
 
 function isoDate(d: Date): string {
   return d.toISOString().slice(0, 10);
+}
+
+/** Synthetic email for NOT NULL column; matching is by invitee_phone only. */
+function inviteeEmailPlaceholderForPhone(e164: string): string {
+  const digits = e164.replace(/\D/g, '');
+  return `phone-${digits}@invite.medminder.internal`;
 }
 
 async function weeklyDigestForProfile(profileId: string): Promise<{
@@ -71,7 +78,7 @@ async function weeklyDigestForProfile(profileId: string): Promise<{
   return { from, to, taken, skipped, missed, adherencePercent };
 }
 
-/** POST { profileId, inviteeEmail } — inviter must own profile + MedMinder Plus */
+/** POST { profileId, inviteePhone } — inviter must own profile + MedMinder Plus */
 caretakerRouter.post(
   '/invites',
   authMiddleware,
@@ -82,26 +89,26 @@ caretakerRouter.post(
       return;
     }
     const profileId = String(req.body?.profileId ?? '').trim();
-    const inviteeEmail = String(req.body?.inviteeEmail ?? '')
-      .trim()
-      .toLowerCase();
-    if (!profileId || !inviteeEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inviteeEmail)) {
-      res.status(400).json({ error: 'profileId and valid inviteeEmail required' });
+    const inviteePhone = normalizePhoneE164(String(req.body?.inviteePhone ?? '').trim());
+    if (!profileId || !inviteePhone) {
+      res.status(400).json({ error: 'profileId and valid inviteePhone required' });
       return;
     }
     if (!(await profileOwnedByUser(profileId, inviterId))) {
       res.status(404).json({ error: 'Profile not found' });
       return;
     }
-    const inviter = await queryOne<{ email: string }>('SELECT email FROM users WHERE id = ?', [inviterId]);
-    if (inviteeEmail === inviter?.email?.trim().toLowerCase()) {
+    const inviter = await queryOne<{ email: string; phone: string | null }>(
+      'SELECT email, phone FROM users WHERE id = ?',
+      [inviterId]
+    );
+    const inviterPhoneNorm = inviter?.phone ? normalizePhoneE164(inviter.phone) : null;
+    if (inviterPhoneNorm && inviterPhoneNorm === inviteePhone) {
       res.status(400).json({ error: 'Invite a different person than yourself' });
       return;
     }
 
-    const existingUser = await queryOne<{ id: string }>('SELECT id FROM users WHERE email = ?', [
-      inviteeEmail,
-    ]);
+    const existingUser = await queryOne<{ id: string }>('SELECT id FROM users WHERE phone = ?', [inviteePhone]);
     if (existingUser) {
       const already = await queryOne<{ x: number }>(
         'SELECT 1 AS x FROM caretaker_links WHERE profile_id = ? AND caretaker_user_id = ?',
@@ -113,15 +120,16 @@ caretakerRouter.post(
       }
     }
 
+    const inviteeEmail = inviteeEmailPlaceholderForPhone(inviteePhone);
     const plainToken = randomBytes(24).toString('hex');
     const tokenHash = hashToken(plainToken);
     const id = uuid();
     const now = new Date().toISOString();
     const expiresAt = new Date(Date.now() + INVITE_VALID_MS).toISOString();
     await runExec(
-      `INSERT INTO caretaker_invites (id, profile_id, inviter_user_id, invitee_email, token_hash, expires_at, status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)`,
-      [id, profileId, inviterId, inviteeEmail, tokenHash, expiresAt, now]
+      `INSERT INTO caretaker_invites (id, profile_id, inviter_user_id, invitee_email, invitee_phone, token_hash, expires_at, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
+      [id, profileId, inviterId, inviteeEmail, inviteePhone, tokenHash, expiresAt, now]
     );
 
     const acceptUrl = `${publicAppUrl()}/accept-caretaker-invite?token=${encodeURIComponent(plainToken)}`;
@@ -146,11 +154,12 @@ caretakerRouter.get(
     const tokenHash = hashToken(token);
     const row = await queryOne<{
       invitee_email: string;
+      invitee_phone: string | null;
       expires_at: string;
       status: string;
       profile_name: string;
     }>(
-      `SELECT i.invitee_email, i.expires_at, i.status, p.name AS profile_name
+      `SELECT i.invitee_email, i.invitee_phone, i.expires_at, i.status, p.name AS profile_name
        FROM caretaker_invites i
        INNER JOIN profiles p ON p.id = i.profile_id
        WHERE i.token_hash = ?`,
@@ -164,14 +173,17 @@ caretakerRouter.get(
       res.status(410).json({ error: 'Invite expired' });
       return;
     }
+    const isPhoneInvite = Boolean(row.invitee_phone);
     res.json({
-      inviteeEmail: row.invitee_email,
       profileName: row.profile_name,
+      inviteePhone: isPhoneInvite ? row.invitee_phone : null,
+      /** Only for legacy email-based invites (no invitee_phone). */
+      inviteeEmail: isPhoneInvite ? null : row.invitee_email,
     });
   })
 );
 
-/** POST { token } — authenticated user must match invitee email */
+/** POST { token } — authenticated user must match invitee phone (or legacy invitee email) */
 caretakerRouter.post(
   '/invites/accept',
   authMiddleware,
@@ -182,24 +194,28 @@ caretakerRouter.post(
       return;
     }
     const caretakerId = req.userId!;
-    const caretaker = await queryOne<{ email: string }>('SELECT email FROM users WHERE id = ?', [
-      caretakerId,
-    ]);
+    const caretaker = await queryOne<{ email: string; phone: string | null }>(
+      'SELECT email, phone FROM users WHERE id = ?',
+      [caretakerId]
+    );
     if (!caretaker) {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
     const caretakerEmail = caretaker.email.trim().toLowerCase();
+    const caretakerPhoneNorm = caretaker.phone ? normalizePhoneE164(caretaker.phone) : null;
     const tokenHash = hashToken(token);
     const inv = await queryOne<{
       id: string;
       profile_id: string;
       invitee_email: string;
+      invitee_phone: string | null;
       expires_at: string;
       status: string;
-    }>('SELECT id, profile_id, invitee_email, expires_at, status FROM caretaker_invites WHERE token_hash = ?', [
-      tokenHash,
-    ]);
+    }>(
+      'SELECT id, profile_id, invitee_email, invitee_phone, expires_at, status FROM caretaker_invites WHERE token_hash = ?',
+      [tokenHash]
+    );
     if (!inv || inv.status !== 'pending') {
       res.status(404).json({ error: 'Invite not found or already used' });
       return;
@@ -208,7 +224,12 @@ caretakerRouter.post(
       res.status(410).json({ error: 'Invite expired' });
       return;
     }
-    if (inv.invitee_email.trim().toLowerCase() !== caretakerEmail) {
+    if (inv.invitee_phone) {
+      if (!caretakerPhoneNorm || caretakerPhoneNorm !== inv.invitee_phone) {
+        res.status(403).json({ error: 'Sign in with the invited phone number to accept' });
+        return;
+      }
+    } else if (inv.invitee_email.trim().toLowerCase() !== caretakerEmail) {
       res.status(403).json({ error: 'Sign in with the invited email address to accept' });
       return;
     }

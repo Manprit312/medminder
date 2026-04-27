@@ -65,7 +65,8 @@
         <ion-label class="ion-text-wrap">
           <h2 class="mm-caretaker-teaser-title">Invite a caretaker</h2>
           <p class="hint">
-            Send an email invite so someone can follow this person’s medication track in their own account (read-only).
+            Send an invite so someone can follow this person’s medication track in their own account (read-only). They
+            accept using the same phone number you invite.
             <strong>MedMinder Plus</strong> — turn on a Plus plan in Settings, then return here to send invites.
           </p>
         </ion-label>
@@ -87,15 +88,15 @@
         <ion-label>Invite caretaker (app)</ion-label>
       </ion-list-header>
       <ion-item>
-        <span class="material-symbols-outlined input-lead" slot="start" aria-hidden="true">outgoing_mail</span>
+        <span class="material-symbols-outlined input-lead" slot="start" aria-hidden="true">call</span>
         <ion-input
-          type="email"
-          label="Caretaker email"
+          type="tel"
+          label="Caretaker phone"
           labelPlacement="stacked"
-          [(ngModel)]="inviteEmail"
-          placeholder="friend@example.com"
-          autocomplete="email"
-          inputmode="email"
+          [(ngModel)]="invitePhone"
+          placeholder="+91 98765 43210"
+          autocomplete="tel"
+          inputmode="tel"
         ></ion-input>
       </ion-item>
       <div class="ion-padding">
@@ -104,7 +105,7 @@
           fill="outline"
           color="success"
           class="ion-margin-top"
-          [disabled]="!inviteEmail.trim() || sendingInvite"
+          [disabled]="!invitePhone.trim() || sendingInvite"
           (click)="shareInviteOnWhatsApp()"
         >
           Share on WhatsApp
@@ -113,13 +114,13 @@
           expand="block"
           fill="clear"
           class="ion-margin-top"
-          [disabled]="!inviteEmail.trim() || sendingInvite"
+          [disabled]="!invitePhone.trim() || sendingInvite"
           (click)="copyInviteLink()"
         >
           Copy invite link
         </ion-button>
         <p class="hint ion-no-margin ion-margin-top">
-          Share via WhatsApp or copy link. The caretaker must sign in with this invited email to accept.
+          Share via WhatsApp or copy link. The caretaker must sign in with this exact phone number (SMS code) to accept.
         </p>
       </div>
     </ion-list>

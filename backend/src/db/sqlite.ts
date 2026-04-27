@@ -61,6 +61,7 @@ export function openSqlite(): Database.Database {
   migrateUserPhoneColumn(db);
   migrateAuthOtpTable(db);
   migrateCaretakerTables(db);
+  migrateCaretakerInvitesPhoneColumn(db);
   return db;
 }
 
@@ -196,4 +197,15 @@ function migrateCaretakerTables(database: Database.Database) {
       updated_at TEXT NOT NULL
     );
   `);
+}
+
+function migrateCaretakerInvitesPhoneColumn(database: Database.Database) {
+  const cols = database.prepare('PRAGMA table_info(caretaker_invites)').all() as { name: string }[];
+  const names = new Set(cols.map((c) => c.name));
+  if (!names.has('invitee_phone')) {
+    database.exec('ALTER TABLE caretaker_invites ADD COLUMN invitee_phone TEXT');
+    database.exec(
+      'CREATE INDEX IF NOT EXISTS idx_caretaker_invites_phone ON caretaker_invites(invitee_phone) WHERE invitee_phone IS NOT NULL'
+    );
+  }
 }

@@ -23,7 +23,7 @@ export class ProfileDetailPage implements ViewWillEnter {
   medications: Medication[] = [];
   /** False until the first `refresh()` for this visit finishes — avoids a false “Profile not found” while the API is slow. */
   pageReady = false;
-  inviteEmail = '';
+  invitePhone = '';
   sendingInvite = false;
   lastInviteLink = '';
   recommendedAgents: AgentRecommendation[] = [];
@@ -144,9 +144,9 @@ export class ProfileDetailPage implements ViewWillEnter {
   }
 
   async shareInviteOnWhatsApp(): Promise<void> {
-    const email = this.inviteEmail.trim().toLowerCase();
-    if (!email || !this.profileId) {
-      await this.simpleToast('Enter caretaker email first.', 'warning');
+    const phone = this.invitePhone.trim();
+    if (!phone || !this.profileId) {
+      await this.simpleToast('Enter caretaker phone first.', 'warning');
       return;
     }
     if (!this.subscription.isPremium) {
@@ -156,7 +156,7 @@ export class ProfileDetailPage implements ViewWillEnter {
     const loading = await this.loadingCtrl.create({ message: 'Preparing WhatsApp invite…' });
     await loading.present();
     try {
-      const res = await this.caretakerApi.sendInvite(this.profileId, email);
+      const res = await this.caretakerApi.sendInvite(this.profileId, phone);
       this.lastInviteLink = res.acceptUrl;
       const name = this.profile?.name ?? 'family member';
       const msg = `Hi, I invited you to follow ${name} on MedMinder. Open this secure invite link: ${res.acceptUrl}`;
@@ -171,9 +171,9 @@ export class ProfileDetailPage implements ViewWillEnter {
   }
 
   async copyInviteLink(): Promise<void> {
-    const email = this.inviteEmail.trim().toLowerCase();
-    if (!email || !this.profileId) {
-      await this.simpleToast('Enter caretaker email first.', 'warning');
+    const phone = this.invitePhone.trim();
+    if (!phone || !this.profileId) {
+      await this.simpleToast('Enter caretaker phone first.', 'warning');
       return;
     }
     if (!this.subscription.isPremium) {
@@ -183,7 +183,7 @@ export class ProfileDetailPage implements ViewWillEnter {
     const loading = await this.loadingCtrl.create({ message: 'Preparing invite link…' });
     await loading.present();
     try {
-      const res = await this.caretakerApi.sendInvite(this.profileId, email);
+      const res = await this.caretakerApi.sendInvite(this.profileId, phone);
       this.lastInviteLink = res.acceptUrl;
       await this.copyText(res.acceptUrl);
       await this.simpleToast('Invite link copied.', 'success');

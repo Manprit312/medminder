@@ -9,4 +9,10 @@ export const environment = {
    */
   /** Fallback before `/api/auth/me` loads; real tier comes from the server when signed in. */
   subscriptionTier: 'free' as 'free' | 'premium',
+  firebase: {
+    apiKey: '',
+    authDomain: '',
+    projectId: '',
+    appId: '',
+  },
 };

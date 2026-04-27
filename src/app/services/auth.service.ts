@@ -39,10 +39,10 @@ export class AuthService {
     return this.getUserDisplay();
   }
 
-  async requestOtp(phone: string): Promise<{ devOtp?: string }> {
+  async requestOtp(phone: string): Promise<{ devOtp?: string; smsSent?: boolean }> {
     return firstValueFrom(
       withApiTimeout(
-        this.http.post<{ ok?: boolean; devOtp?: string }>(`${getApiUrl()}/api/auth/otp/request`, {
+        this.http.post<{ ok?: boolean; devOtp?: string; smsSent?: boolean }>(`${getApiUrl()}/api/auth/otp/request`, {
           phone: phone.trim(),
         })
       )
@@ -55,6 +55,19 @@ export class AuthService {
         this.http.post<{ token: string; user: AuthUser }>(`${getApiUrl()}/api/auth/otp/verify`, {
           phone: phone.trim(),
           code: code.trim(),
+        })
+      )
+    );
+    const label = res.user.phone?.trim() || res.user.email?.trim() || '';
+    await this.tokens.setSession(res.token, label);
+    this.subscription.applyFromAuthUser(res.user);
+  }
+
+  async loginWithGoogleIdToken(idToken: string): Promise<void> {
+    const res = await firstValueFrom(
+      withApiTimeout(
+        this.http.post<{ token: string; user: AuthUser }>(`${getApiUrl()}/api/auth/google`, {
+          idToken,
         })
       )
     );

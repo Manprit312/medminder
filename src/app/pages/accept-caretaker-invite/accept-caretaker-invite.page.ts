@@ -14,7 +14,11 @@ import { MedDataService } from '../../services/med-data.service';
 })
 export class AcceptCaretakerInvitePage implements OnInit {
   token = '';
-  preview: { inviteeEmail: string; profileName: string } | null = null;
+  preview: {
+    profileName: string;
+    inviteePhone: string | null;
+    inviteeEmail: string | null;
+  } | null = null;
   previewError: string | null = null;
   loadingPreview = true;
   accepting = false;
@@ -37,7 +41,7 @@ export class AcceptCaretakerInvitePage implements OnInit {
     this.loadingPreview = true;
     this.previewError = null;
     if (!this.token) {
-      this.previewError = 'Missing invite link. Open the link from your email.';
+      this.previewError = 'Missing invite link. Open the link you were sent (for example in WhatsApp).';
       this.loadingPreview = false;
       return;
     }
@@ -68,11 +72,15 @@ export class AcceptCaretakerInvitePage implements OnInit {
       await this.medData.refresh();
       await this.router.navigateByUrl('/tabs/caring', { replaceUrl: true });
     } catch (err: unknown) {
-      const invited = this.preview?.inviteeEmail ?? 'the address this invite was sent to';
+      const phone = this.preview?.inviteePhone;
+      const email = this.preview?.inviteeEmail;
+      const invited = phone ?? email ?? 'the contact on this invite';
       let message = 'Something went wrong. Try again in a moment.';
       if (err instanceof HttpErrorResponse) {
         if (err.status === 403) {
-          message = `You’re signed in with a different email than this invite. Sign out, then sign in or create an account using ${invited}.`;
+          message = phone
+            ? `You’re signed in with a different phone than this invite. Sign out, then sign in with ${phone} using the SMS code.`
+            : `You’re signed in with a different email than this invite. Sign out, then sign in or create an account using ${email ?? invited}.`;
         } else if (err.status === 404) {
           message = 'This invite is invalid or was already used.';
         } else if (err.status === 410) {

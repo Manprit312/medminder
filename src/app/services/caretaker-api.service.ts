@@ -95,12 +95,18 @@ export class CaretakerApiService {
     );
   }
 
-  previewInvite(token: string): Promise<{ inviteeEmail: string; profileName: string }> {
+  previewInvite(token: string): Promise<{
+    profileName: string;
+    inviteePhone: string | null;
+    inviteeEmail: string | null;
+  }> {
     return firstValueFrom(
       withApiTimeout(
-        this.http.get<{ inviteeEmail: string; profileName: string }>(
-          `${this.base()}/api/caretaker/invites/preview?token=${encodeURIComponent(token)}`
-        )
+        this.http.get<{
+          profileName: string;
+          inviteePhone: string | null;
+          inviteeEmail: string | null;
+        }>(`${this.base()}/api/caretaker/invites/preview?token=${encodeURIComponent(token)}`)
       )
     );
   }
@@ -111,7 +117,7 @@ export class CaretakerApiService {
     );
   }
 
-  sendInvite(profileId: string, inviteeEmail: string): Promise<{
+  sendInvite(profileId: string, inviteePhone: string): Promise<{
     invite: { id: string; expiresAt: string; emailed: boolean };
     acceptUrl: string;
     /** Why email was not sent (missing config or SMTP error). */
@@ -123,7 +129,7 @@ export class CaretakerApiService {
           invite: { id: string; expiresAt: string; emailed: boolean };
           acceptUrl: string;
           mailHint?: string;
-        }>(`${this.base()}/api/caretaker/invites`, { profileId, inviteeEmail })
+        }>(`${this.base()}/api/caretaker/invites`, { profileId, inviteePhone })
       )
     );
   }

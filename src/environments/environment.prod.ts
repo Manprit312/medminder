@@ -3,4 +3,10 @@ export const environment = {
   apiUrl: 'https://medminder-zhjh.onrender.com',
   /** Production default until billing / API assigns tiers. */
   subscriptionTier: 'free' as 'free' | 'premium',
+  firebase: {
+    apiKey: '',
+    authDomain: '',
+    projectId: '',
+    appId: '',
+  },
 };

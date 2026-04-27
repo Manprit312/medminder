@@ -120,6 +120,8 @@ CREATE TABLE IF NOT EXISTS caretaker_escalation_rules (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 )`,
+  `ALTER TABLE caretaker_invites ADD COLUMN IF NOT EXISTS invitee_phone TEXT`,
+  `CREATE INDEX IF NOT EXISTS idx_caretaker_invites_phone ON caretaker_invites(invitee_phone) WHERE invitee_phone IS NOT NULL`,
 ];
 
 export async function createPgPool(connectionString: string): Promise<pg.Pool> {

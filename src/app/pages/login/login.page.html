@@ -2,73 +2,12 @@
   <div class="auth-card mm-auth-card">
     <span class="material-symbols-outlined logo">medication</span>
     <h1>MedMinder</h1>
-    <p class="sub">Sign in with your phone number. We’ll text you a one-time code.</p>
+    <p class="sub">Sign in with Google to continue.</p>
 
-    <form (ngSubmit)="codeSent ? verify() : sendCode()">
-      <ion-list lines="none" class="form-list">
-        <ion-item>
-          <span class="material-symbols-outlined input-ic" slot="start">call</span>
-          <ion-input
-            type="tel"
-            name="phone"
-            [(ngModel)]="phone"
-            label="Phone"
-            labelPlacement="stacked"
-            autocomplete="tel"
-            inputmode="tel"
-            placeholder="e.g. 9876543210 or +919876543210"
-            [disabled]="codeSent"
-            required
-          ></ion-input>
-        </ion-item>
-        <ion-item *ngIf="codeSent">
-          <span class="material-symbols-outlined input-ic" slot="start">pin</span>
-          <ion-input
-            type="text"
-            name="otp"
-            [(ngModel)]="otpCode"
-            label="6-digit code"
-            labelPlacement="stacked"
-            inputmode="numeric"
-            maxlength="6"
-            autocomplete="one-time-code"
-            required
-          ></ion-input>
-        </ion-item>
-      </ion-list>
-      <ion-button
-        *ngIf="!codeSent"
-        expand="block"
-        size="large"
-        type="submit"
-        [disabled]="!phone.trim()"
-      >
-        Send code
-      </ion-button>
-      <ion-button
-        *ngIf="codeSent"
-        expand="block"
-        size="large"
-        type="submit"
-        [disabled]="!canSubmitOtp"
-      >
-        Sign in
-      </ion-button>
-      <ion-button
-        *ngIf="codeSent"
-        expand="block"
-        fill="clear"
-        type="button"
-        (click)="codeSent = false; otpCode = ''"
-      >
-        Use a different number
-      </ion-button>
-    </form>
-
-    <p class="hint">
-      <a routerLink="/register">Register with email</a>
-      if you need a caretaker invite (invites are matched by email).
-    </p>
-    <p class="api-hint">API: <code>{{ apiUrl }}</code></p>
+    <ion-button expand="block" size="large" fill="solid" color="dark" type="button" (click)="signInWithGoogle()">
+      Continue with Google
+    </ion-button>
+    
+ 
   </div>
 </ion-content>
