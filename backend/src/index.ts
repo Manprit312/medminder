@@ -1,6 +1,5 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import express, { type NextFunction } from 'express';
@@ -87,7 +86,7 @@ app.get('/health', (_req, res) => {
 });
 
 // Public static pages (no auth required)
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// __dirname is native in CJS output (no import.meta needed)
 const publicDir = path.join(__dirname, '..', 'public');
 app.use(express.static(publicDir));
 app.get('/privacy', (_req, res) => {
