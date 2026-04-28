@@ -1,4 +1,4 @@
-<ion-header class="mm-today-header" [translucent]="true">
+<ion-header class="mm-today-header">
   <ion-toolbar>
     <ion-title>Today</ion-title>
   </ion-toolbar>
@@ -16,13 +16,14 @@
   <ng-container *ngIf="!loading">
   <div class="ion-padding mm-today-empty" *ngIf="doses.length === 0">
     <div class="mm-today-hero mm-today-hero--text mm-hero-compact">
-      <div class="mm-today-hero-icon mm-hero-compact__visual">
+      <div class="mm-today-hero-icon">
         <img
-          class="mm-today-hero-alarm"
-          src="assets/alarm.png"
-          width="280"
-          height="200"
+          class="mm-today-hero-illus"
+          [src]="heroImg"
           alt=""
+          aria-hidden="true"
+          width="260"
+          height="174"
         />
       </div>
       <p class="mm-today-kicker">Today</p>
@@ -43,13 +44,14 @@
 
   <ng-container *ngIf="doses.length > 0">
     <section class="mm-today-hero mm-today-hero--text ion-padding mm-hero-compact">
-      <div class="mm-today-hero-icon mm-hero-compact__visual">
+      <div class="mm-today-hero-icon">
         <img
-          class="mm-today-hero-alarm"
-          src="assets/alarm.png"
-          width="280"
-          height="200"
+          class="mm-today-hero-illus"
+          [src]="heroImg"
           alt=""
+          aria-hidden="true"
+          width="260"
+          height="174"
         />
       </div>
       <p class="mm-today-kicker">Today</p>
@@ -119,6 +121,7 @@
       <article
         *ngFor="let dose of dosesForDeck; let i = index"
         [class]="reminderCardClass(dose, i) + ' ' + doseCardStatusClass(dose)"
+        [style.zIndex]="i + 1"
         (click)="openDose(dose)"
       >
         <div class="mm-track-row">
@@ -140,24 +143,16 @@
             <span [class]="timePillClass(dose, i)">{{ formatTime12h(dose.time) }}</span>
           </div>
         </div>
-        <div class="mm-rc-actions" *ngIf="dose.status === 'pending'" (click)="$event.stopPropagation()">
-          <ion-button class="mm-rc-taken-primary" size="small" fill="solid" color="success" (click)="mark(dose, 'taken')">
-            <span class="material-symbols-outlined btn-icon">check</span>
-            Taken
-          </ion-button>
-          <ion-button size="small" fill="outline" color="light" class="mm-rc-skip" (click)="mark(dose, 'skipped')">
-            Skip
-          </ion-button>
-          <ion-button size="small" fill="outline" color="warning" (click)="mark(dose, 'missed')">
-            <span class="material-symbols-outlined btn-icon">priority_high</span>
-            Missed
-          </ion-button>
-        </div>
         <div class="mm-rc-logged" *ngIf="dose.status !== 'pending'">
-          <span class="mm-rc-pill" [class.mm-rc-taken]="dose.status === 'taken'" [class.mm-rc-skip]="dose.status === 'skipped'">
-            <span class="material-symbols-outlined sm" *ngIf="dose.status === 'taken'">check</span>
+          <span class="mm-rc-pill"
+            [class.mm-rc-taken]="dose.status === 'taken'"
+            [class.mm-rc-skip]="dose.status === 'skipped'"
+            [class.mm-rc-missed]="dose.status === 'missed'">
+            <span class="material-symbols-outlined sm" *ngIf="dose.status === 'taken'" aria-hidden="true">check</span>
+            <span class="material-symbols-outlined sm" *ngIf="dose.status === 'missed'" aria-hidden="true">warning_amber</span>
             {{ dose.status === 'taken' ? 'Taken' : dose.status === 'skipped' ? 'Skipped' : 'Missed' }}
           </span>
+          <span class="mm-rc-tap-hint">Tap to change</span>
         </div>
       </article>
     </div>
@@ -223,6 +218,31 @@
   </ng-container>
 </ion-content>
 
+<!-- ── Companion mascot ─────────────────────────────────────────────────────── -->
+<div
+  class="mm-companion"
+  [class.mm-companion--bubble-open]="companionBubbleOpen"
+  (click)="toggleCompanionBubble()"
+  role="button"
+  tabindex="0"
+  aria-label="MedMinder companion — tap for a tip"
+  (keydown.enter)="toggleCompanionBubble()"
+  (keydown.space)="toggleCompanionBubble()"
+  aria-live="polite"
+>
+  <div class="mm-companion__bubble" *ngIf="companionBubbleOpen">
+    {{ mascotMessage }}
+  </div>
+  <img
+    class="mm-companion__img"
+    [src]="companionImg"
+    alt=""
+    aria-hidden="true"
+    width="96"
+    height="96"
+  />
+</div>
+
 <!-- Full-screen detail: expands from stack; background matches tapped card tone -->
 <div
   class="mm-expanded-root"
@@ -258,8 +278,20 @@
     </header>
 
     <div class="mm-expanded-body ion-padding">
-      <p class="mm-expanded-kicker">{{ cardKicker(dose) }}</p>
-      <h1 class="mm-expanded-name">{{ dose.medName }}</h1>
+      <div class="mm-expanded-hero-row">
+        <div class="mm-expanded-hero-text">
+          <p class="mm-expanded-kicker">{{ cardKicker(dose) }}</p>
+          <h1 class="mm-expanded-name">{{ dose.medName }}</h1>
+        </div>
+        <img
+          src="assets/illustrations/med-detail-pill.png"
+          alt=""
+          aria-hidden="true"
+          class="mm-expanded-pill-illus"
+          width="80"
+          height="80"
+        />
+      </div>
       <p class="mm-expanded-desc">
         {{
           dose.dosageNote ||
@@ -283,7 +315,8 @@
         </div>
         <p class="mm-history-loading" *ngIf="expandedHistoryLoading">Loading calendar…</p>
         <p class="mm-history-selected" *ngIf="!expandedHistoryLoading">
-          {{ selectedDateKey }}: <strong>{{ historyStatusLabel(expandedDateStatus) }}</strong>
+          {{ isViewingToday ? 'Today' : (selectedDateKey + 'T12:00:00' | date : 'MMM d, yyyy') }}:
+          <strong>{{ historyStatusLabel(expandedDateStatus) }}</strong>
         </p>
         <div class="mm-history-legend">
           <span class="lg lg--taken">Taken</span>
@@ -325,63 +358,70 @@
         </p>
       </div>
 
-      <ion-button
+      <button
         type="button"
-        expand="block"
-        fill="clear"
         class="mm-expanded-edit-row"
         (click)="openEditMedication(dose)"
       >
-        <span class="material-symbols-outlined btn-lead" aria-hidden="true">tune</span>
+        <span class="material-symbols-outlined" aria-hidden="true">tune</span>
         Edit times, dose &amp; stock
-      </ion-button>
+        <span class="material-symbols-outlined mm-expanded-edit-row__chevron" aria-hidden="true">chevron_right</span>
+      </button>
 
       <div class="mm-expanded-actions" *ngIf="dose.status === 'pending'">
-        <ion-button expand="block" size="large" color="dark" class="mm-act mm-act-taken" (click)="markExpanded('taken')">
-          <span class="material-symbols-outlined btn-ic" aria-hidden="true">check</span>
-          Medicine taken
-        </ion-button>
-        <ion-button expand="block" fill="outline" color="light" class="mm-act mm-act-skip mm-xp-outline" (click)="markExpanded('skipped')">
-          <span class="material-symbols-outlined btn-ic" aria-hidden="true">block</span>
-          Skip this dose
-        </ion-button>
-        <ion-button expand="block" fill="outline" color="warning" class="mm-act mm-act-missed" (click)="markExpanded('missed')">
-          <span class="material-symbols-outlined btn-ic" aria-hidden="true">priority_high</span>
-          Mark as missed
-        </ion-button>
-      </div>
-
-      <div class="mm-xp-status" *ngIf="dose.status === 'taken'">
-        <span class="material-symbols-outlined mm-xp-done-ic" aria-hidden="true">check_circle</span>
-        <div>
-          <h3 class="mm-xp-status-h">Marked as taken</h3>
-          <p class="mm-xp-status-p">You can change this below if you tapped by mistake.</p>
-        </div>
-        <div class="mm-xp-status-actions">
-          <ion-button expand="block" fill="clear" color="light" (click)="markExpanded('skipped')">Change to skipped</ion-button>
+        <button class="mm-act-btn mm-act-btn--taken" (click)="markExpanded('taken')">
+          <span class="material-symbols-outlined mm-act-btn__ic" aria-hidden="true">check_circle</span>
+          <span class="mm-act-btn__label">Medicine taken</span>
+        </button>
+        <div class="mm-act-row">
+          <button class="mm-act-btn mm-act-btn--skip" (click)="markExpanded('skipped')">
+            <span class="material-symbols-outlined mm-act-btn__ic" aria-hidden="true">redo</span>
+            <span class="mm-act-btn__label">Skip dose</span>
+          </button>
+          <button class="mm-act-btn mm-act-btn--missed" (click)="markExpanded('missed')">
+            <span class="material-symbols-outlined mm-act-btn__ic" aria-hidden="true">warning_amber</span>
+            <span class="mm-act-btn__label">Missed</span>
+          </button>
         </div>
       </div>
 
-      <div class="mm-xp-status" *ngIf="dose.status === 'skipped'">
-        <span class="material-symbols-outlined mm-xp-skip-ic" aria-hidden="true">block</span>
-        <div>
-          <h3 class="mm-xp-status-h">Skipped</h3>
-          <p class="mm-xp-status-p">You can mark as taken if that was a mistake.</p>
+      <div class="mm-xp-status mm-xp-status--taken" *ngIf="dose.status === 'taken'">
+        <div class="mm-xp-status__badge mm-xp-status__badge--taken">
+          <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+        </div>
+        <div class="mm-xp-status__text">
+          <h3 class="mm-xp-status-h">Marked as taken ✓</h3>
+          <p class="mm-xp-status-p">Tapped by mistake?</p>
         </div>
         <div class="mm-xp-status-actions">
-          <ion-button expand="block" fill="clear" color="success" (click)="markExpanded('taken')">Mark as taken</ion-button>
+          <button class="mm-undo-btn" (click)="markExpanded('skipped')">Undo — change to skipped</button>
         </div>
       </div>
 
-      <div class="mm-xp-status" *ngIf="dose.status === 'missed'">
-        <span class="material-symbols-outlined mm-xp-miss-ic" aria-hidden="true">warning</span>
-        <div>
-          <h3 class="mm-xp-status-h">Missed</h3>
-          <p class="mm-xp-status-p">You can correct the log below.</p>
+      <div class="mm-xp-status mm-xp-status--skipped" *ngIf="dose.status === 'skipped'">
+        <div class="mm-xp-status__badge mm-xp-status__badge--skipped">
+          <span class="material-symbols-outlined" aria-hidden="true">redo</span>
+        </div>
+        <div class="mm-xp-status__text">
+          <h3 class="mm-xp-status-h">Dose skipped</h3>
+          <p class="mm-xp-status-p">Taken after all?</p>
         </div>
         <div class="mm-xp-status-actions">
-          <ion-button expand="block" fill="clear" color="success" (click)="markExpanded('taken')">Mark as taken</ion-button>
-          <ion-button expand="block" fill="clear" color="light" (click)="markExpanded('skipped')">Change to skipped</ion-button>
+          <button class="mm-undo-btn" (click)="markExpanded('taken')">Mark as taken instead</button>
+        </div>
+      </div>
+
+      <div class="mm-xp-status mm-xp-status--missed" *ngIf="dose.status === 'missed'">
+        <div class="mm-xp-status__badge mm-xp-status__badge--missed">
+          <span class="material-symbols-outlined" aria-hidden="true">warning_amber</span>
+        </div>
+        <div class="mm-xp-status__text">
+          <h3 class="mm-xp-status-h">Marked as missed</h3>
+          <p class="mm-xp-status-p">You can correct the log.</p>
+        </div>
+        <div class="mm-xp-status-actions">
+          <button class="mm-undo-btn" (click)="markExpanded('taken')">Actually taken</button>
+          <button class="mm-undo-btn" (click)="markExpanded('skipped')">Change to skipped</button>
         </div>
         <div class="mm-missed-playbook">
           <h4>What to do next</h4>

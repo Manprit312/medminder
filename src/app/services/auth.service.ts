@@ -105,6 +105,27 @@ export class AuthService {
     this.subscription.applyFromAuthUser(res.user);
   }
 
+  /**
+   * Validates the stored token against the backend.
+   * Clears the session if the token is stale/invalid (e.g. user deleted, DB reset).
+   * Returns true if the session is valid.
+   */
+  async verifySession(): Promise<boolean> {
+    if (!this.tokens.hasToken()) {
+      return false;
+    }
+    try {
+      await firstValueFrom(
+        withApiTimeout(this.http.get<unknown>(`${getApiUrl()}/api/auth/me`))
+      );
+      return true;
+    } catch {
+      await this.tokens.clear();
+      this.subscription.resetToEnvironmentDefault();
+      return false;
+    }
+  }
+
   async logout(): Promise<void> {
     await this.tokens.clear();
     this.subscription.resetToEnvironmentDefault();

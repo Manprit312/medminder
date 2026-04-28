@@ -38,4 +38,9 @@ export class CaretakingListPage implements ViewWillEnter {
   openProfile(p: CaretakingProfileRef): void {
     void this.router.navigate(['/tabs', 'caring', p.id]);
   }
+
+  avatarTone(index: number): string {
+    const tones = ['sage', 'clay', 'sky', 'sand', 'rose'];
+    return tones[index % tones.length];
+  }
 }

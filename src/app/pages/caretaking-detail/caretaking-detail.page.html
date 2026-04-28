@@ -1,71 +1,100 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/caring" text="Caring"></ion-back-button>
+      <ion-back-button defaultHref="/tabs/caring"></ion-back-button>
     </ion-buttons>
     <ion-title>{{ data?.profile?.name || 'Care view' }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="mm-gradient-bg">
-  <div *ngIf="loading" class="ion-padding ion-text-center mm-page-loading">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="cd-loading">
     <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
     <p role="status">Loading medication track…</p>
   </div>
 
-  <div *ngIf="!loading && error" class="ion-padding">
+  <!-- Error -->
+  <div *ngIf="!loading && error" class="cd-error ion-padding">
+    <span class="material-symbols-outlined" aria-hidden="true">error_outline</span>
     <p>{{ error }}</p>
   </div>
 
   <ng-container *ngIf="!loading && data && !error">
-    <div class="ion-padding head-block">
-      <p class="date-line">
-        <span class="material-symbols-outlined tiny" aria-hidden="true">calendar_today</span>
-        {{ data.date }}
-      </p>
-      <p class="hint">Read-only — you can’t edit their medications here.</p>
+
+    <!-- Calendar section -->
+    <div class="cd-calendar-wrap ion-padding-horizontal">
+
+      <!-- Read-only chip -->
+      <div class="cd-readonly-chip">
+        <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+        Read-only view
+      </div>
+
+      <!-- Date heading -->
+      <h2 class="cd-date-heading">
+        <span class="material-symbols-outlined" aria-hidden="true">calendar_today</span>
+        {{ formattedSelectedDate }}
+      </h2>
+
       <ion-datetime
-        class="caretaking-calendar"
+        class="cd-calendar"
         presentation="date"
         [value]="selectedDate"
         [max]="maxDateKey"
         [highlightedDates]="highlightedDates"
         (ionChange)="onDateChanged($event)"
       ></ion-datetime>
-      <p class="pending-note">Choose any date to review taken/skipped/missed status.</p>
-      <div class="calendar-legend">
-        <span class="lg lg--taken">Taken</span>
-        <span class="lg lg--skipped">Skipped</span>
-        <span class="lg lg--missed">Missed</span>
+
+      <!-- Legend -->
+      <div class="cd-legend">
+        <span class="cd-lg cd-lg--taken">Taken</span>
+        <span class="cd-lg cd-lg--skipped">Skipped</span>
+        <span class="cd-lg cd-lg--missed">Missed</span>
       </div>
     </div>
 
-    <div *ngIf="data.medications.length === 0" class="ion-padding">
-      <p>No medications listed for this person.</p>
+    <!-- No medications -->
+    <div *ngIf="data.medications.length === 0" class="cd-empty ion-padding">
+      <span class="material-symbols-outlined cd-empty__icon" aria-hidden="true">medication</span>
+      <p>No medications listed for this person yet.</p>
     </div>
 
-    <ion-list *ngIf="data.medications.length > 0" inset="true" lines="none" class="form-card ion-margin">
-      <ion-item *ngFor="let med of data.medications" lines="none" class="med-block">
-        <ion-label>
-          <h2>
-            {{ med.name }}
-            <ion-badge *ngIf="!med.enabled" color="medium">Off</ion-badge>
-          </h2>
-          <p *ngIf="med.dosageNote" class="dosage">{{ med.dosageNote }}</p>
-          <p class="times">
-            <span class="material-symbols-outlined tiny" aria-hidden="true">schedule</span>
-            Scheduled: {{ med.times.join(', ') }}
-          </p>
-          <div class="log-lines" *ngIf="slotsForMed(med) as slots">
-            <p *ngFor="let s of slots" class="slot-row">
-              <span class="time-pill">{{ formatTime12h(s.scheduledTime) }}</span>
-              <ion-badge [color]="s.status === 'taken' ? 'success' : s.status === 'pending' ? 'medium' : 'warning'">
-                {{ s.status }}
-              </ion-badge>
-            </p>
+    <!-- Medication cards -->
+    <div *ngIf="data.medications.length > 0" class="cd-med-list ion-padding-horizontal">
+      <div class="cd-med-card" *ngFor="let med of data.medications">
+
+        <!-- Card header -->
+        <div class="cd-med-header">
+          <div class="cd-med-icon" aria-hidden="true">
+            <span class="material-symbols-outlined">medication</span>
           </div>
-        </ion-label>
-      </ion-item>
-    </ion-list>
+          <div class="cd-med-title">
+            <h3 class="cd-med-name">
+              {{ med.name }}
+              <span *ngIf="!med.enabled" class="cd-med-off-badge">Off</span>
+            </h3>
+            <p *ngIf="med.dosageNote" class="cd-med-dosage">{{ med.dosageNote }}</p>
+          </div>
+        </div>
+
+        <!-- Dose slots -->
+        <div class="cd-slots" *ngIf="slotsForMed(med) as slots">
+          <div class="cd-slot" *ngFor="let s of slots">
+            <span class="cd-slot__time">{{ formatTime12h(s.scheduledTime) }}</span>
+            <span
+              class="cd-slot__badge"
+              [class.cd-slot__badge--taken]="s.status === 'taken'"
+              [class.cd-slot__badge--skipped]="s.status === 'skipped'"
+              [class.cd-slot__badge--missed]="s.status === 'missed'"
+              [class.cd-slot__badge--pending]="s.status === 'pending'"
+            >{{ s.status }}</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </ng-container>
 </ion-content>

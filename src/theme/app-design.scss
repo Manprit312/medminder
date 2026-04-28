@@ -753,17 +753,38 @@ app-dose-log .big-actions ion-button {
   width: 100%;
 }
 
+.mm-expanded-hero-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 0.75rem;
+}
+
+.mm-expanded-hero-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.mm-expanded-pill-illus {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.22));
+  margin-top: -4px;
+}
+
 .mm-expanded-kicker {
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.35rem;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  opacity: 1;
+  opacity: 0.88;
 }
 
 .mm-expanded-name {
-  margin: 0 0 0.65rem;
+  margin: 0;
   font-family: var(--mm-font-heading);
   font-size: 1.85rem;
   font-weight: 700;
@@ -772,10 +793,10 @@ app-dose-log .big-actions ion-button {
 }
 
 .mm-expanded-desc {
-  margin: 0 0 1rem;
+  margin: 0.6rem 0 1rem;
   font-size: 1.02rem;
   line-height: 1.55;
-  opacity: 1;
+  opacity: 0.92;
 }
 
 .mm-expanded-chips {
@@ -832,17 +853,46 @@ app-dose-log .big-actions ion-button {
 }
 
 .mm-expanded-edit-row {
-  margin: 0 0 0.85rem;
-  --color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 1rem;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.1);
+  color: inherit;
+  font-family: inherit;
+  font-size: 0.93rem;
   font-weight: 600;
-  min-height: 44px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s ease, opacity 0.15s ease;
 
-  .btn-lead {
-    margin-inline-end: 8px;
-    vertical-align: -4px;
-    font-size: 1.25rem;
-    opacity: 0.9;
+  .material-symbols-outlined:first-child {
+    font-size: 1.2rem;
+    opacity: 0.85;
+    flex-shrink: 0;
   }
+
+  &:active {
+    background: rgba(255, 255, 255, 0.18);
+    opacity: 0.88;
+  }
+}
+
+.mm-rc-cream .mm-expanded-edit-row {
+  background: rgba(26, 26, 26, 0.06);
+  border-color: rgba(26, 26, 26, 0.14);
+  color: var(--ion-text-color);
+}
+
+.mm-expanded-edit-row__chevron {
+  margin-inline-start: auto;
+  font-size: 1.1rem;
+  opacity: 0.55;
+  flex-shrink: 0;
 }
 
 .mm-expanded-actions {
@@ -852,50 +902,111 @@ app-dose-log .big-actions ion-button {
   margin-top: 0.65rem;
 }
 
-.mm-expanded-actions .mm-act {
-  margin: 0;
-  min-height: 54px;
-  font-size: 1.03rem;
-  font-weight: 700;
+/* ---- Action buttons in expanded dose panel ---- */
+.mm-expanded-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 1rem;
+}
+
+.mm-act-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
   letter-spacing: 0.01em;
-  --border-radius: 16px;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.14s ease, opacity 0.14s ease;
 }
 
-.mm-expanded-actions .mm-act .btn-ic {
-  font-size: 1.18rem;
-  margin-inline-end: 8px;
+.mm-act-btn:active {
+  transform: scale(0.97);
+  opacity: 0.85;
 }
 
-.mm-act-taken {
-  --background: #2f3a2f;
-  --background-activated: #2a332a;
-  --color: #f7f9f1;
-  --box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+.mm-act-btn__ic {
+  font-size: 1.3rem;
+  flex-shrink: 0;
 }
 
-.mm-act-skip {
-  --background: rgba(255, 255, 255, 0.06);
+/* Primary: Medicine taken — cream pill stands out on every card colour */
+.mm-act-btn--taken {
+  background: #f4f9ee;
+  color: #2a3d24;
+  border-radius: 20px;
+  padding: 18px 24px;
+  min-height: 64px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+  margin-bottom: 10px;
 }
 
-.mm-act-missed {
-  --background: rgba(var(--ion-color-warning-rgb), 0.08);
+.mm-rc-cream .mm-act-btn--taken {
+  background: #2d4a28;
+  color: #f4f9ee;
+  box-shadow: 0 4px 18px rgba(30, 60, 24, 0.25);
 }
 
-.mm-xp-outline {
-  --border-color: rgba(255, 255, 255, 0.55);
-  --color: inherit;
+/* Divider row for secondary actions */
+.mm-act-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
-.mm-rc-cream .mm-xp-outline {
-  --border-color: var(--ion-color-medium);
-  --color: var(--ion-text-color);
+/* Secondary: Skip dose */
+.mm-act-btn--skip {
+  background: rgba(255, 255, 255, 0.13);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  border-radius: 14px;
+  padding: 12px 14px;
+  min-height: 50px;
+  font-size: 0.93rem;
+  font-weight: 600;
 }
 
+.mm-rc-cream .mm-act-btn--skip {
+  background: rgba(26, 26, 26, 0.06);
+  color: var(--ion-text-color);
+  border-color: rgba(26, 26, 26, 0.15);
+}
+
+/* Tertiary: Missed — warm amber tone */
+.mm-act-btn--missed {
+  background: rgba(195, 100, 50, 0.16);
+  color: #ffd0a8;
+  border: 1.5px solid rgba(195, 100, 50, 0.35);
+  border-radius: 14px;
+  padding: 12px 14px;
+  min-height: 50px;
+  font-size: 0.93rem;
+  font-weight: 600;
+}
+
+.mm-rc-cream .mm-act-btn--missed {
+  background: rgba(160, 60, 20, 0.07);
+  color: #a03010;
+  border-color: rgba(160, 60, 20, 0.25);
+}
+
+/* ---- Post-action status card ---- */
 .mm-xp-status {
-  margin-top: 0.75rem;
-  padding: 14px 14px 12px;
-  border-radius: 16px;
-  background: rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: 1rem;
+  padding: 22px 18px 18px;
+  border-radius: 22px;
+  background: rgba(0, 0, 0, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .mm-rc-cream .mm-xp-status {
@@ -904,44 +1015,106 @@ app-dose-log .big-actions ion-button {
   color: var(--ion-text-color);
 }
 
+.mm-xp-status__badge {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.mm-xp-status__badge .material-symbols-outlined {
+  font-size: 1.75rem;
+}
+
+.mm-xp-status__badge--taken {
+  background: rgba(100, 200, 80, 0.18);
+  color: #b0e89a;
+  border: 1.5px solid rgba(100, 200, 80, 0.38);
+}
+
+.mm-rc-cream .mm-xp-status__badge--taken {
+  background: rgba(74, 140, 64, 0.1);
+  color: #3a7034;
+  border-color: rgba(74, 140, 64, 0.28);
+}
+
+.mm-xp-status__badge--skipped {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.75);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+}
+
+.mm-rc-cream .mm-xp-status__badge--skipped {
+  background: rgba(26, 26, 26, 0.06);
+  color: var(--mm-text-muted);
+  border-color: rgba(26, 26, 26, 0.14);
+}
+
+.mm-xp-status__badge--missed {
+  background: rgba(210, 80, 50, 0.16);
+  color: #ffbfa0;
+  border: 1.5px solid rgba(210, 80, 50, 0.38);
+}
+
+.mm-rc-cream .mm-xp-status__badge--missed {
+  background: rgba(180, 50, 30, 0.08);
+  color: #b83020;
+  border-color: rgba(180, 50, 30, 0.22);
+}
+
+.mm-xp-status__text {
+  width: 100%;
+}
+
 .mm-xp-status-h {
-  margin: 0 0 0.35rem;
+  margin: 0 0 0.2rem;
   font-size: 1.05rem;
   font-family: var(--mm-font-heading);
+  font-weight: 700;
 }
 
 .mm-xp-status-p {
   margin: 0 0 0.75rem;
-  font-size: 0.9rem;
-  opacity: 1;
+  font-size: 0.88rem;
+  opacity: 0.72;
 }
 
 .mm-xp-status-actions {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
+  width: 100%;
 }
 
-.mm-xp-status-actions ion-button {
-  min-height: 44px;
-  --border-radius: 12px;
+.mm-undo-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  color: inherit;
+  font-family: inherit;
+  font-size: 0.85rem;
   font-weight: 600;
+  padding: 7px 18px;
+  cursor: pointer;
+  opacity: 0.82;
+  transition: opacity 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.mm-xp-done-ic {
-  font-size: 2rem;
-  color: #d9f2cc;
-  margin-bottom: 8px;
-  display: block;
-  text-shadow: 0 1px 0 rgba(18, 40, 30, 0.6);
+.mm-undo-btn:active {
+  opacity: 0.55;
 }
 
-.mm-xp-skip-ic,
-.mm-xp-miss-ic {
-  font-size: 2rem;
-  margin-bottom: 8px;
-  display: block;
-  opacity: 0.9;
+.mm-rc-cream .mm-undo-btn {
+  border-color: rgba(26, 26, 26, 0.2);
+  color: var(--mm-text-muted);
 }
+
 
 .mm-expanded-footnote {
   margin: 1.25rem 0 0;
@@ -1169,8 +1342,18 @@ app-dose-log .big-actions ion-button {
 }
 
 .mm-reminder-stack--spaced {
-  gap: 16px;
-  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  gap: 0;
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Each card after the first overlaps the one before it, creating the stack effect */
+.mm-reminder-stack--spaced .mm-track-card + .mm-track-card {
+  margin-top: -72px;
+}
+
+/* Cards must be position:relative for z-index to work between siblings */
+.mm-reminder-stack--spaced .mm-track-card {
+  position: relative;
 }
 
 .mm-track-card.mm-track-status--pending {

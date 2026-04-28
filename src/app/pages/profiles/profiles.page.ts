@@ -51,6 +51,11 @@ export class ProfilesPage implements ViewWillEnter {
     return this.avatarColors[index % this.avatarColors.length];
   }
 
+  avatarTone(index: number): string {
+    const tones = ['sage', 'teal', 'terra', 'taupe', 'moss'];
+    return tones[index % tones.length];
+  }
+
   openProfile(p: Profile): void {
     void this.router.navigate(['/tabs/profiles', p.id]);
   }

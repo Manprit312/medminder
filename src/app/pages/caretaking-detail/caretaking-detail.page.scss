@@ -1,100 +1,215 @@
-.head-block {
-  max-width: 520px;
-  margin: 0 auto;
-}
-
-.date-line {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-weight: 600;
-}
-
-.hint {
-  color: var(--ion-color-medium);
-  font-size: 0.9rem;
-}
-
-.caretaking-calendar {
-  margin-top: 0.75rem;
-  border-radius: 12px;
-  border: 1px solid rgba(96, 106, 88, 0.18);
-  --background: rgba(255, 255, 255, 0.75);
-}
-
-.calendar-legend {
-  margin-top: 0.35rem;
-  display: flex;
-  gap: 0.35rem;
-  flex-wrap: wrap;
-}
-
-.lg {
-  font-size: 0.72rem;
-  padding: 0.14rem 0.45rem;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  color: #1b221f;
-  font-weight: 600;
-}
-
-.lg--taken {
-  background: #b8e3c3;
-}
-
-.lg--skipped {
-  background: #f4ddb3;
-}
-
-.lg--missed {
-  background: #f7b8b8;
-}
-
-.mm-page-loading {
+// ── Loading ───────────────────────────────────────────────
+.cd-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.75rem;
-  min-height: 28vh;
-  padding-top: 2rem;
+  padding-top: 4rem;
   color: var(--ion-color-medium);
 }
 
-.med-block h2 {
-  font-family: var(--mm-font-heading, inherit);
-}
-
-.dosage {
+// ── Error ─────────────────────────────────────────────────
+.cd-error {
+  text-align: center;
   color: var(--ion-color-medium);
+
+  span {
+    font-size: 2.5rem;
+    opacity: 0.5;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
 }
 
-.times {
-  margin-top: 0.35rem;
+// ── Calendar wrap ─────────────────────────────────────────
+.cd-calendar-wrap {
+  padding-top: 1rem;
+  padding-bottom: 0.5rem;
 }
 
-.log-lines {
-  margin-top: 0.75rem;
+// Read-only chip
+.cd-readonly-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7c6b;
+  background: rgba(107, 140, 107, 0.12);
+  border: 1px solid rgba(107, 140, 107, 0.25);
+  border-radius: 20px;
+  padding: 0.25rem 0.65rem;
+  margin-bottom: 0.75rem;
+
+  span {
+    font-size: 0.95rem;
+  }
 }
 
-.slot-row {
+// Date heading
+.cd-date-heading {
   display: flex;
   align-items: center;
+  gap: 0.4rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--ion-color-primary-shade);
+  margin: 0 0 0.75rem;
+
+  span {
+    font-size: 1.2rem;
+  }
+}
+
+// Calendar
+.cd-calendar {
+  border-radius: 16px;
+  border: 1px solid rgba(96, 106, 88, 0.18);
+  --background: rgba(255, 255, 255, 0.85);
+  width: 100%;
+}
+
+// Legend
+.cd-legend {
+  display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
-  margin: 0.25rem 0;
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
 }
 
-.time-pill {
-  font-variant-numeric: tabular-nums;
+.cd-lg {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  color: #1b221f;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+
+  &--taken  { background: #b8e3c3; }
+  &--skipped { background: #f4ddb3; }
+  &--missed  { background: #f7b8b8; }
 }
 
-.pending-note {
+// ── Empty state ───────────────────────────────────────────
+.cd-empty {
+  text-align: center;
   color: var(--ion-color-medium);
-  font-size: 0.9rem;
+
+  &__icon {
+    font-size: 2.5rem;
+    opacity: 0.4;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
 }
 
-.tiny {
+// ── Medication cards ──────────────────────────────────────
+.cd-med-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  padding-bottom: 2rem;
+}
+
+.cd-med-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+.cd-med-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.cd-med-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(74, 104, 64, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  span {
+    font-size: 1.2rem;
+    color: var(--ion-color-primary);
+  }
+}
+
+.cd-med-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.cd-med-name {
   font-size: 1rem;
-  vertical-align: middle;
-  margin-right: 0.2rem;
+  font-weight: 700;
+  color: #2d3a2d;
+  margin: 0 0 0.15rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.cd-med-off-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: #ddd;
+  color: #555;
+  padding: 0.1rem 0.4rem;
+  border-radius: 8px;
+}
+
+.cd-med-dosage {
+  font-size: 0.82rem;
+  color: var(--ion-color-medium);
+  margin: 0;
+}
+
+// ── Dose slots ────────────────────────────────────────────
+.cd-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding-top: 0.75rem;
+}
+
+.cd-slot {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cd-slot__time {
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #2d3a2d;
+  min-width: 60px;
+}
+
+.cd-slot__badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.65rem;
+  border-radius: 20px;
+  text-transform: capitalize;
+  color: #1b221f;
+
+  &--taken   { background: #b8e3c3; }
+  &--skipped { background: #f4ddb3; }
+  &--missed  { background: #f7b8b8; }
+  &--pending {
+    background: #e8e8e8;
+    color: #888;
+  }
 }

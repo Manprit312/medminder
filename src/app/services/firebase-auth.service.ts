@@ -23,26 +23,30 @@ export class FirebaseAuthService {
     return this.app;
   }
 
-  async getGoogleIdToken(): Promise<string> {
-    try {
-      const auth = getAuth(this.getApp());
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: 'select_account' });
-      const cred = await signInWithPopup(auth, provider);
-      const idToken = await cred.user.getIdToken();
-      return idToken;
-    } catch (err) {
-      const code =
-        typeof err === 'object' && err && 'code' in err ? String((err as { code: unknown }).code ?? '') : '';
-      if (code === 'auth/popup-blocked') {
-        const auth = getAuth(this.getApp());
-        const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
-        await signInWithRedirect(auth, provider);
-        throw new Error(this.redirectInitiatedMessage);
-      }
-      throw err;
-    }
+  /**
+   * Opens the Google sign-in popup and returns a promise for the Firebase ID token.
+   *
+   * IMPORTANT: call this synchronously from the click handler — before any `await` —
+   * so the browser treats the popup as a direct user gesture and does not block it.
+   * If the popup is blocked fall back to redirect automatically.
+   */
+  startGoogleSignIn(): Promise<string> {
+    const auth = getAuth(this.getApp());
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    return signInWithPopup(auth, provider)
+      .then(cred => cred.user.getIdToken())
+      .catch(async err => {
+        const code =
+          typeof err === 'object' && err && 'code' in err
+            ? String((err as { code: unknown }).code ?? '')
+            : '';
+        if (code === 'auth/popup-blocked' || code === 'auth/popup-closed-by-user') {
+          await signInWithRedirect(auth, provider);
+          throw new Error(this.redirectInitiatedMessage);
+        }
+        throw err;
+      });
   }
 
   async consumeGoogleRedirectResult(): Promise<string | null> {
@@ -51,8 +55,7 @@ export class FirebaseAuthService {
     if (!result?.user) {
       return null;
     }
-    const idToken = await result.user.getIdToken();
-    return idToken;
+    return result.user.getIdToken();
   }
 
   isRedirectInitiatedError(err: unknown): boolean {

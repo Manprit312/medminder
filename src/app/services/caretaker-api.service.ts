@@ -95,18 +95,12 @@ export class CaretakerApiService {
     );
   }
 
-  previewInvite(token: string): Promise<{
-    profileName: string;
-    inviteePhone: string | null;
-    inviteeEmail: string | null;
-  }> {
+  previewInvite(token: string): Promise<{ profileName: string }> {
     return firstValueFrom(
       withApiTimeout(
-        this.http.get<{
-          profileName: string;
-          inviteePhone: string | null;
-          inviteeEmail: string | null;
-        }>(`${this.base()}/api/caretaker/invites/preview?token=${encodeURIComponent(token)}`)
+        this.http.get<{ profileName: string }>(
+          `${this.base()}/api/caretaker/invites/preview?token=${encodeURIComponent(token)}`
+        )
       )
     );
   }

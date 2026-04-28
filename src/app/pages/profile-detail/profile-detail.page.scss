@@ -1,178 +1,516 @@
-.mm-page-loading {
+/* ── Toolbar title ───────────────────────────────────────────────────────── */
+.pd-toolbar-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+}
+
+.pd-toolbar-title__name {
+  font-family: var(--mm-font-heading);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #f4f9ee;
+  letter-spacing: -0.01em;
+}
+
+.pd-toolbar-title__sub {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(244, 249, 238, 0.6);
+}
+
+/* ── Loading ─────────────────────────────────────────────────────────────── */
+.pd-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  min-height: 40vh;
+  gap: 0.75rem;
+  min-height: 42vh;
   padding-top: 2rem;
+  color: var(--ion-color-medium);
 }
 
-.mm-loading-caption {
-  margin: 0;
-  color: var(--mm-text-muted, var(--ion-color-medium));
-  font-size: 0.95rem;
-}
-
-.mm-profile-missing {
-  padding-top: 2rem;
-}
-
-.mm-caretaker-teaser-title {
-  margin: 0 0 0.35rem;
-  font-family: var(--mm-font-heading);
-  font-size: 1.05rem;
-  font-weight: 700;
-}
-
-.patient-tips-card {
-  padding: 1rem 1.1rem;
-  border-radius: var(--mm-radius-md, 18px);
-  border: 1px solid var(--ion-border-color);
-  background: var(--ion-card-background);
-  box-shadow: var(--mm-shadow-card);
-}
-
-.patient-tips-title {
-  margin: 0 0 0.65rem;
-  font-family: var(--mm-font-heading);
-  font-size: 1.05rem;
-  font-weight: 700;
+/* ── Hero ────────────────────────────────────────────────────────────────── */
+.pd-hero {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  line-height: 1.35;
-  color: var(--ion-text-color);
+  align-items: center;
+  gap: 16px;
+  padding: 1.5rem 1.5rem 1rem;
 }
 
-.patient-tips-ic {
+.pd-hero__avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: var(--ion-color-primary);
+  color: #f0f7ec;
+  font-family: var(--mm-font-heading);
+  font-size: 1.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  font-size: 1.35rem;
-  opacity: 0.85;
-  color: var(--ion-color-tertiary);
+  box-shadow: 0 4px 16px rgba(95, 105, 86, 0.25);
 }
 
-.patient-tips-list {
-  margin: 0 0 0.75rem;
-  padding-inline-start: 1.25rem;
-  font-size: 0.92rem;
-  line-height: 1.5;
-  color: var(--mm-text-muted);
-
-  li {
-    margin-bottom: 0.45rem;
-  }
-
-  li:last-child {
-    margin-bottom: 0;
-  }
+.pd-hero__name {
+  margin: 0 0 0.3rem;
+  font-family: var(--mm-font-heading);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--ion-color-primary-shade);
+  letter-spacing: -0.02em;
 }
 
-.patient-tips-disclaimer {
+.pd-hero__stat {
   margin: 0;
-  font-size: 0.78rem;
-  line-height: 1.45;
-  opacity: 0.85;
-  color: var(--mm-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.9rem;
+  color: var(--mm-text-muted, rgba(26, 26, 26, 0.55));
+  font-weight: 500;
 }
 
-.intro {
-  p {
-    margin: 0;
-    line-height: 1.6;
-    font-size: 1.02rem;
-    color: var(--mm-text-muted, rgba(18, 10, 36, 0.82));
-  }
-
-  .intro-icon {
-    vertical-align: -4px;
-    margin-inline-end: 8px;
-    opacity: 0.85;
-    color: var(--ion-color-primary);
-  }
-}
-
-.empty-state {
-  text-align: center;
-  padding: 1.25rem 1rem;
-  max-width: 340px;
-  margin: 0 auto;
-
-  .empty-icon {
-    font-size: 3.75rem;
-    opacity: 0.4;
-    display: block;
-    margin-bottom: 0.85rem;
-    color: var(--ion-color-primary);
-  }
-
-  h2 {
-    margin: 0 0 0.5rem;
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--ion-text-color);
-  }
-
-  p {
-    margin: 0;
-    font-size: 1.02rem;
-    line-height: 1.55;
-    color: var(--mm-text-muted, rgba(18, 10, 36, 0.78));
-  }
-}
-
-.slot-icon {
-  font-size: 1.5rem;
-  margin-inline-end: 8px;
-  opacity: 0.85;
-}
-
-.tiny {
+.pd-hero__stat-ic {
   font-size: 1rem;
-  vertical-align: -3px;
-  margin-inline-end: 4px;
   opacity: 0.7;
 }
 
-.times {
-  font-size: 0.98rem;
-  margin-top: 4px;
-  color: var(--mm-text-muted, rgba(18, 10, 36, 0.8));
+/* ── Section heads ───────────────────────────────────────────────────────── */
+.pd-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.65rem;
 }
 
-.med-row ion-label h2 {
-  font-size: 1.125rem;
+.pd-section-head--mt {
+  margin-top: 1.5rem;
+}
+
+.pd-section-title {
+  margin: 0;
+  font-family: var(--mm-font-heading);
+  font-size: 1.05rem;
   font-weight: 700;
+  color: var(--ion-color-primary-shade);
+  letter-spacing: 0.01em;
+}
+
+.pd-section-add {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  background: var(--ion-color-primary);
+  color: #f0f7ec;
+  border: none;
+  border-radius: 999px;
+  padding: 5px 14px 5px 8px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+
+  .material-symbols-outlined { font-size: 1.05rem; }
+}
+
+.pd-section-add:active { background: var(--ion-color-primary-shade); }
+
+/* ── Medication cards ────────────────────────────────────────────────────── */
+.pd-med-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 0.25rem;
+}
+
+.pd-med-card {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  border-radius: 22px;
+  padding: 16px 14px 16px 18px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.14s ease;
+  color: #f4f9f0;
+}
+
+.pd-med-card:active { transform: scale(0.985); }
+
+.pd-med-card--sage  { background: #4a6840; }
+.pd-med-card--teal  { background: #2a7a78; }
+.pd-med-card--taupe { background: #5a4e44; }
+.pd-med-card--terra { background: #c8542a; }
+.pd-med-card--moss  { background: #5c6848; }
+
+.pd-med-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.pd-med-card__kicker {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 0 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.pd-med-kicker-ic {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.pd-med-card__name {
+  margin: 0 0 0.25rem;
+  font-family: var(--mm-font-heading);
+  font-size: 1.22rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  display: flex;
   align-items: center;
   gap: 8px;
-}
-.caregiver-line-content{display: flex;
-  align-items: center;}
-.med-row ion-label p {
-  font-size: 0.98rem;
-  line-height: 1.45;
+  flex-wrap: wrap;
 }
 
-.refill-line {
-  margin: 0.35rem 0 0;
+.pd-med-off-badge {
+  font-family: var(--ion-font-family);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.pd-med-card__note {
+  margin: 0;
   font-size: 0.85rem;
+  opacity: 0.8;
   line-height: 1.4;
-  opacity: 0.88;
-
-  .refill-badge {
-    vertical-align: middle;
-    margin-inline-start: 6px;
-  }
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.fab-icon {
-  font-size: 1.75rem;
+.pd-med-card__right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 8px;
 }
 
-.btn-ic {
-  font-size: 1.15rem;
-  vertical-align: -2px;
-  margin-inline-end: 6px;
+.pd-med-time-badge {
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 12px;
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.pd-med-card__actions {
+  display: flex;
+  gap: 4px;
+}
+
+.pd-med-act {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+
+  .material-symbols-outlined { font-size: 1rem; }
+}
+
+.pd-med-act:active { background: rgba(255, 255, 255, 0.22); }
+
+.pd-med-act--del {
+  background: rgba(255, 80, 40, 0.2);
+  color: rgba(255, 200, 180, 0.9);
+}
+
+.pd-med-act--del:active { background: rgba(255, 80, 40, 0.35); }
+
+/* ── Empty medications ───────────────────────────────────────────────────── */
+.pd-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.5rem 1.5rem 0.5rem;
+}
+
+.pd-empty__illus {
+  object-fit: contain;
+  filter: drop-shadow(0 6px 18px rgba(95, 105, 86, 0.15));
+  margin-bottom: 1.1rem;
+}
+
+.pd-empty__title {
+  margin: 0 0 0.4rem;
+  font-family: var(--mm-font-heading);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--ion-color-primary-shade);
+}
+
+.pd-empty__copy {
+  margin: 0 0 1.25rem;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--mm-text-muted, rgba(26, 26, 26, 0.6));
+  max-width: 240px;
+}
+
+.pd-empty__cta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--ion-color-primary);
+  color: #f0f7ec;
+  border: none;
+  border-radius: 999px;
+  padding: 12px 24px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(95, 105, 86, 0.28);
+  -webkit-tap-highlight-color: transparent;
+
+  .material-symbols-outlined { font-size: 1.2rem; }
+}
+
+/* ── Caregiver chip ──────────────────────────────────────────────────────── */
+.pd-caregiver-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(95, 105, 86, 0.08);
+  border-radius: 14px;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--ion-color-primary-shade);
+  font-weight: 500;
+}
+
+.pd-caregiver-ic {
+  font-size: 1.1rem;
+  opacity: 0.75;
+  flex-shrink: 0;
+}
+
+/* ── Caretaker invite teaser (free) ──────────────────────────────────────── */
+.pd-invite-card {
+  margin-bottom: 0.5rem;
+}
+
+.pd-invite-card__inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(135deg, #4a6840, #3a5232);
+  border-radius: 22px;
+  padding: 18px 18px 18px 20px;
+  color: #edf5e8;
+}
+
+.pd-invite-card__text {
+  flex: 1;
+}
+
+.pd-invite-card__title {
+  margin: 0 0 0.4rem;
+  font-family: var(--mm-font-heading);
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.pd-invite-card__body {
+  margin: 0 0 0.85rem;
+  font-size: 0.87rem;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+
+.pd-invite-cta {
+  display: inline-flex;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  color: #f0f7ec;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 7px 18px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+
+.pd-invite-cta:active { background: rgba(255, 255, 255, 0.25); }
+
+.pd-invite-icon {
+  font-size: 3rem;
+  opacity: 0.35;
+  flex-shrink: 0;
+}
+
+/* ── Invite form (Plus) ──────────────────────────────────────────────────── */
+.pd-invite-form {
+  margin-bottom: 0.5rem;
+}
+
+.pd-invite-form__inner {
+  background: #fff;
+  border-radius: 22px;
+  padding: 18px 18px 16px;
+  box-shadow: 0 2px 12px rgba(95, 105, 86, 0.1);
+  border: 1px solid rgba(95, 105, 86, 0.1);
+}
+
+.pd-invite-form__title {
+  margin: 0 0 1rem;
+  font-family: var(--mm-font-heading);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ion-color-primary-shade);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.pd-invite-form__ic {
+  font-size: 1.2rem;
+  opacity: 0.8;
+}
+
+.pd-invite-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(95, 105, 86, 0.06);
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border: 1.5px solid rgba(95, 105, 86, 0.15);
+}
+
+.pd-invite-input-ic {
+  font-size: 1.1rem;
+  color: var(--ion-color-primary);
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.pd-invite-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--ion-text-color);
+  outline: none;
+}
+
+.pd-invite-input::placeholder {
+  color: rgba(26, 26, 26, 0.35);
+}
+
+.pd-invite-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.pd-invite-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 14px;
+  border: none;
+  padding: 12px 10px;
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s;
+
+  .material-symbols-outlined { font-size: 1.1rem; }
+}
+
+.pd-invite-btn:disabled { opacity: 0.45; cursor: default; }
+
+.pd-invite-btn--wa {
+  background: #25d366;
+  color: #ffffff;
+}
+
+.pd-invite-btn--copy {
+  background: rgba(95, 105, 86, 0.1);
+  color: var(--ion-color-primary-shade);
+  border: 1.5px solid rgba(95, 105, 86, 0.2);
+}
+
+// Web fallback: a-tag styled as a full-width WhatsApp button
+.pd-invite-btn--link {
+  display: flex;
+  width: 100%;
+  margin-bottom: 8px;
+  text-decoration: none;
+  font-size: 0.97rem;
+  font-weight: 700;
+  animation: mm-fade-up 0.22s ease both;
+}
+
+.pd-invite-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--mm-text-muted, rgba(26, 26, 26, 0.55));
+}
+
+/* ── Bottom spacer + FAB ─────────────────────────────────────────────────── */
+.pd-bottom-spacer {
+  height: calc(5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.pd-fab-ic { font-size: 1.75rem; }
+
+.pd-not-found {
+  padding-top: 2rem;
+  text-align: center;
+  color: var(--mm-text-muted);
 }

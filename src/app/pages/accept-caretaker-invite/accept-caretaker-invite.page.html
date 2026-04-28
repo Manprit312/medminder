@@ -1,4 +1,4 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar color="primary">
     <ion-title>Caretaker invite</ion-title>
   </ion-toolbar>
@@ -16,40 +16,37 @@
   </div>
 
   <div *ngIf="!loadingPreview && preview && !previewError" class="invite-card">
-    <span *ngIf="preview.inviteePhone" class="material-symbols-outlined hero-icon" aria-hidden="true">call</span>
-    <span *ngIf="!preview.inviteePhone" class="material-symbols-outlined hero-icon" aria-hidden="true">mail</span>
+    <span class="material-symbols-outlined hero-icon" aria-hidden="true">volunteer_activism</span>
     <h1>Care invitation</h1>
     <p>
-      You’re invited to follow <strong>{{ preview.profileName }}</strong>’s medication track in MedMinder.
-    </p>
-    <p *ngIf="preview.inviteePhone" class="email-line">
-      This invite is for <strong>{{ preview.inviteePhone }}</strong>.
-    </p>
-    <p *ngIf="!preview.inviteePhone && preview.inviteeEmail" class="email-line">
-      This invite is for <strong>{{ preview.inviteeEmail }}</strong>.
-    </p>
-    <p *ngIf="preview.inviteePhone" class="steps-hint">
-      <strong>New to MedMinder?</strong> Tap <strong>Create account</strong> and sign up with that phone (SMS
-      verification) — you can use a browser. <strong>Already have an account?</strong> Tap <strong>Sign in</strong> with
-      the same phone, then return here and tap <strong>Accept invitation</strong>.
-    </p>
-    <p *ngIf="!preview.inviteePhone && preview.inviteeEmail" class="steps-hint">
-      <strong>New to MedMinder?</strong> Tap <strong>Create account</strong> and register with that exact email — you
-      don’t need the app installed first; this page works in the browser. <strong>Already have an account</strong> with
-      that email? Tap <strong>Sign in</strong>. Then come back and tap <strong>Accept invitation</strong>.
+      You're invited to follow <strong>{{ preview.profileName }}</strong>'s medication track in MedMinder.
     </p>
 
-    <ng-container *ngIf="!loggedIn">
-      <ion-button expand="block" color="tertiary" [routerLink]="['/login']" [queryParams]="{ returnUrl: returnUrlForAuth }">
-        Sign in
-      </ion-button>
-      <ion-button expand="block" fill="outline" [routerLink]="['/register']" [queryParams]="{ returnUrl: returnUrlForAuth }">
-        Create account
+    <p class="steps-hint">
+      Sign in with your Google account, then tap <strong>Accept invitation</strong> to confirm.
+    </p>
+
+    <ng-container *ngIf="!sessionValid()">
+      <ion-button
+        expand="block"
+        color="tertiary"
+        [routerLink]="['/login']"
+        [queryParams]="{ returnUrl: returnUrlForAuth }"
+      >
+        <img
+          src="assets/icon/google-logo.svg"
+          alt=""
+          aria-hidden="true"
+          width="18"
+          height="18"
+          style="margin-inline-end:8px"
+        />
+        Sign in with Google
       </ion-button>
     </ng-container>
 
     <ion-button
-      *ngIf="loggedIn"
+      *ngIf="sessionValid()"
       expand="block"
       color="tertiary"
       (click)="accept()"

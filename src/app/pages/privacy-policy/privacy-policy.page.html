@@ -1,0 +1,202 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Privacy Policy</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="pp-page mm-gradient-bg">
+
+  <!-- Hero -->
+  <div class="pp-hero">
+    <img
+      src="assets/illustrations/onboarding-done.png"
+      alt=""
+      aria-hidden="true"
+      class="pp-hero__illus"
+      width="160"
+      height="160"
+    />
+    <h1 class="pp-hero__title">Your privacy matters</h1>
+    <p class="pp-hero__sub">Last updated: April 2026</p>
+  </div>
+
+  <!-- Intro card -->
+  <div class="pp-card pp-card--highlight">
+    <span class="material-symbols-outlined pp-card__icon" aria-hidden="true">shield</span>
+    <div>
+      <p class="pp-card__lead">MedMinder is built with privacy first.</p>
+      <p class="pp-card__body">
+        We store only what's needed to run the app. We never sell your data, never share it with advertisers, and never use it for any purpose beyond providing MedMinder to you.
+      </p>
+    </div>
+  </div>
+
+  <!-- Section 1 -->
+  <div class="pp-section">
+    <div class="pp-section__header">
+      <img
+        src="assets/illustrations/profiles-hero.png"
+        alt=""
+        aria-hidden="true"
+        class="pp-section__illus"
+        width="80"
+        height="56"
+      />
+      <h2 class="pp-section__title">What we collect</h2>
+    </div>
+    <div class="pp-item">
+      <span class="material-symbols-outlined pp-item__ic" aria-hidden="true">account_circle</span>
+      <div>
+        <p class="pp-item__label">Account information</p>
+        <p class="pp-item__body">Your Google email address, used to identify your account. No passwords are stored — sign-in is handled entirely by Google.</p>
+      </div>
+    </div>
+    <div class="pp-item">
+      <span class="material-symbols-outlined pp-item__ic" aria-hidden="true">medication</span>
+      <div>
+        <p class="pp-item__label">Medication data</p>
+        <p class="pp-item__body">Medication names, dosage notes, reminder times, and dose logs (taken / skipped / missed) that you enter manually.</p>
+      </div>
+    </div>
+    <div class="pp-item">
+      <span class="material-symbols-outlined pp-item__ic" aria-hidden="true">people</span>
+      <div>
+        <p class="pp-item__label">Profile information</p>
+        <p class="pp-item__body">Names of profiles you create (e.g. "Dad", "Self"). No date of birth, address, or government ID is collected.</p>
+      </div>
+    </div>
+    <div class="pp-item">
+      <span class="material-symbols-outlined pp-item__ic" aria-hidden="true">smartphone</span>
+      <div>
+        <p class="pp-item__label">Device data</p>
+        <p class="pp-item__body">Push notification tokens (to deliver dose reminders on your device). These are stored locally and never shared.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2 -->
+  <div class="pp-section">
+    <div class="pp-section__header">
+      <img
+        src="assets/illustrations/onboarding-clock.png"
+        alt=""
+        aria-hidden="true"
+        class="pp-section__illus"
+        width="80"
+        height="56"
+      />
+      <h2 class="pp-section__title">How we use it</h2>
+    </div>
+    <div class="pp-item">
+      <span class="material-symbols-outlined pp-item__ic" aria-hidden="true">notifications_active</span>
+      <div>
+        <p class="pp-item__label">Dose reminders</p>
+        <p class="pp-item__body">Scheduled reminders are sent locally on your device. No notification content is sent to external servers.</p>
+      </div>
+    </div>
+    <div class="pp-item">
+      <span class="material-symbols-outlined pp-item__ic" aria-hidden="true">volunteer_activism</span>
+      <div>
+        <p class="pp-item__label">Caretaker sharing</p>
+        <p class="pp-item__body">When you send a caretaker invite, the invite link and the invited person's WhatsApp number are stored temporarily to facilitate the connection. The phone number is deleted once the invite is accepted or expires.</p>
+      </div>
+    </div>
+    <div class="pp-item">
+      <span class="material-symbols-outlined pp-item__ic" aria-hidden="true">payments</span>
+      <div>
+        <p class="pp-item__label">Payments</p>
+        <p class="pp-item__body">Payments are processed by Razorpay. MedMinder never sees or stores your card number, UPI PIN, or banking credentials. We only record whether your purchase was successful.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3 -->
+  <div class="pp-section">
+    <div class="pp-section__header">
+      <img
+        src="assets/illustrations/onboarding-family.png"
+        alt=""
+        aria-hidden="true"
+        class="pp-section__illus"
+        width="80"
+        height="56"
+      />
+      <h2 class="pp-section__title">Who we share it with</h2>
+    </div>
+    <div class="pp-card pp-card--clean">
+      <p>
+        <strong>No one, except as strictly necessary:</strong>
+      </p>
+      <ul class="pp-list" aria-label="Third party services">
+        <li>
+          <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+          <span><strong>Google Firebase</strong> — authenticates your sign-in. Governed by Google's Privacy Policy.</span>
+        </li>
+        <li>
+          <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+          <span><strong>Razorpay</strong> — processes payments for MedMinder Plus. Governed by Razorpay's Privacy Policy.</span>
+        </li>
+        <li>
+          <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+          <span><strong>Render.com</strong> — hosts the backend server in a secure data centre.</span>
+        </li>
+      </ul>
+      <p class="pp-card__body">We do <strong>not</strong> share data with advertisers, analytics platforms, or data brokers.</p>
+    </div>
+  </div>
+
+  <!-- Section 4 -->
+  <div class="pp-section">
+    <div class="pp-section__header">
+      <img
+        src="assets/illustrations/settings-hero.png"
+        alt=""
+        aria-hidden="true"
+        class="pp-section__illus"
+        width="80"
+        height="56"
+      />
+      <h2 class="pp-section__title">Your rights</h2>
+    </div>
+    <div class="pp-item">
+      <span class="material-symbols-outlined pp-item__ic" aria-hidden="true">delete_forever</span>
+      <div>
+        <p class="pp-item__label">Delete your data</p>
+        <p class="pp-item__body">Sign out and email us to request full account deletion. All your profiles, medications, and dose logs will be permanently removed within 30 days.</p>
+      </div>
+    </div>
+    <div class="pp-item">
+      <span class="material-symbols-outlined pp-item__ic" aria-hidden="true">download</span>
+      <div>
+        <p class="pp-item__label">Export your data</p>
+        <p class="pp-item__body">You can request a copy of all data we hold about you. Email us and we'll send it within 7 days.</p>
+      </div>
+    </div>
+    <div class="pp-item">
+      <span class="material-symbols-outlined pp-item__ic" aria-hidden="true">edit_note</span>
+      <div>
+        <p class="pp-item__label">Correct your data</p>
+        <p class="pp-item__body">Profile names and medication details can be edited directly in the app at any time.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact card -->
+  <div class="pp-card pp-card--contact">
+    <span class="material-symbols-outlined pp-card__icon" aria-hidden="true">mail</span>
+    <div>
+      <p class="pp-card__lead">Questions or requests?</p>
+      <p class="pp-card__body">Contact us at <strong>privacy&#64;medminder.app</strong> — we aim to respond within 48 hours.</p>
+    </div>
+  </div>
+
+  <!-- Disclaimer -->
+  <div class="pp-disclaimer">
+    <p>MedMinder is a reminder tool only and does not constitute medical advice. Always consult a qualified clinician or pharmacist before changing any medication.</p>
+    <p>This policy may be updated. Continued use of the app after changes constitutes acceptance.</p>
+  </div>
+
+</ion-content>

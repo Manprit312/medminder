@@ -56,6 +56,22 @@ export class CaretakingDetailPage implements ViewWillEnter {
     return todayStr();
   }
 
+  get isViewingToday(): boolean {
+    return this.selectedDate === todayStr();
+  }
+
+  get formattedSelectedDate(): string {
+    if (this.isViewingToday) {
+      return 'Today';
+    }
+    const [y, m, d] = this.selectedDate.split('-').map(Number);
+    return new Date(y, (m || 1) - 1, d || 1).toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  }
+
   private async loadForDate(date: string): Promise<void> {
     this.loading = true;
     this.error = null;

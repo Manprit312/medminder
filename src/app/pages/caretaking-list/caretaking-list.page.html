@@ -1,44 +1,88 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar color="primary">
     <ion-title>Caring</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="mm-gradient-bg">
-  <div class="ion-padding intro">
-    <div class="alerts-strip" *ngIf="(caretakerAlerts.unreadCount | async) as unread">
-      <ion-badge color="danger" *ngIf="unread > 0">{{ unread }}</ion-badge>
-      <span class="alerts-copy" *ngIf="unread > 0">{{ unread }} missed-dose alert{{ unread === 1 ? '' : 's' }}</span>
-      <span class="alerts-copy" *ngIf="unread === 0">No new missed-dose alerts</span>
-    </div>
-    <p>
-      <span class="material-symbols-outlined intro-icon">volunteer_activism</span>
-      People who invited you as a caretaker can appear here. You’ll see their medication schedule and today’s log (read-only).
-    </p>
-  </div>
+<ion-content [fullscreen]="true" class="caretaking-page mm-gradient-bg">
 
-  <div *ngIf="loading" class="ion-padding ion-text-center mm-page-loading">
+  <!-- Loading -->
+  <div *ngIf="loading" class="ct-loading">
     <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
     <p role="status">Loading…</p>
   </div>
 
-  <div *ngIf="!loading && loadError" class="ion-padding">
-    <p>{{ loadError }}</p>
-  </div>
+  <ng-container *ngIf="!loading">
 
-  <ion-list *ngIf="!loading && !loadError && profiles.length > 0" inset="true" lines="none" class="form-card ion-margin">
-    <ion-item button detail="true" *ngFor="let p of profiles" (click)="openProfile(p)">
-      <span class="material-symbols-outlined slot-icon" slot="start" aria-hidden="true">person</span>
-      <ion-label>
-        <h2>{{ p.name }}</h2>
-        <p>View medication track</p>
-      </ion-label>
-    </ion-item>
-  </ion-list>
+    <!-- Alert strip (only when there are unread alerts) -->
+    <ng-container *ngIf="(caretakerAlerts.unreadCount | async) as unread">
+      <div *ngIf="unread > 0" class="ct-alert-strip" role="alert">
+        <span class="material-symbols-outlined ct-alert-strip__icon" aria-hidden="true">notifications_active</span>
+        <span>{{ unread }} missed-dose alert{{ unread === 1 ? '' : 's' }}</span>
+        <ion-badge color="danger">{{ unread }}</ion-badge>
+      </div>
+    </ng-container>
 
-  <div *ngIf="!loading && !loadError && profiles.length === 0" class="ion-padding empty-state">
-    <span class="material-symbols-outlined empty-icon" aria-hidden="true">inbox</span>
-    <h2>No caretaker invites yet</h2>
-    <p>When someone with MedMinder Plus sends you an invite email, accept it from the link — then they’ll show up here.</p>
-  </div>
+    <!-- Hero (when profiles exist) -->
+    <div class="ct-hero" *ngIf="profiles.length > 0">
+      <div class="ct-hero__text">
+        <h2 class="ct-hero__title">People you care for</h2>
+        <p class="ct-hero__sub">Tap a profile to view their medication schedule.</p>
+      </div>
+      <img
+        class="ct-hero__illus"
+        src="assets/illustrations/profiles-hero.png"
+        alt=""
+        aria-hidden="true"
+        width="130"
+        height="90"
+      />
+    </div>
+
+    <!-- Profile cards -->
+    <div class="ct-list ion-padding-horizontal" *ngIf="profiles.length > 0">
+      <div
+        class="ct-card"
+        *ngFor="let p of profiles; let i = index"
+        (click)="openProfile(p)"
+        role="button"
+        [attr.aria-label]="'View ' + p.name + ' medication track'"
+        tabindex="0"
+        (keydown.enter)="openProfile(p)"
+      >
+        <div class="ct-avatar" [class]="'ct-avatar--' + avatarTone(i)" aria-hidden="true">
+          {{ p.name.charAt(0).toUpperCase() }}
+        </div>
+        <div class="ct-info">
+          <h3 class="ct-name">{{ p.name }}</h3>
+          <p class="ct-sub">View medication track</p>
+        </div>
+        <span class="material-symbols-outlined ct-chevron" aria-hidden="true">chevron_right</span>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="loadError" class="ct-empty ion-padding">
+      <span class="material-symbols-outlined ct-empty__icon" aria-hidden="true">error_outline</span>
+      <h2>Could not load</h2>
+      <p>{{ loadError }}</p>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!loadError && profiles.length === 0" class="ct-empty">
+      <img
+        class="ct-empty__illus"
+        src="assets/illustrations/onboarding-family.png"
+        alt=""
+        aria-hidden="true"
+        width="200"
+        height="160"
+      />
+      <h2 class="ct-empty__title">No one yet</h2>
+      <p class="ct-empty__copy">
+        When someone invites you as a caretaker, accept the invite link — their profile will appear here.
+      </p>
+    </div>
+
+  </ng-container>
 </ion-content>

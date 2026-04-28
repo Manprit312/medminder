@@ -89,6 +89,13 @@ const routes: Routes = [
         loadChildren: () => import('../pages/vitals/vitals.module').then((m) => m.VitalsPageModule),
       },
       {
+        path: 'settings/privacy-policy',
+        loadChildren: () =>
+          import('../pages/privacy-policy/privacy-policy.module').then(
+            (m) => m.PrivacyPolicyPageModule
+          ),
+      },
+      {
         path: 'settings',
         loadChildren: () =>
           import('../pages/settings/settings.module').then((m) => m.SettingsPageModule),

@@ -1,13 +1,15 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
+import { getApiUrl } from '../../../environments/api-url';
 import { LocalNotifications } from '@capacitor/local-notifications';
-import { LoadingController, ToastController, ViewWillEnter } from '@ionic/angular';
+import { AlertController, LoadingController, ToastController, ViewWillEnter } from '@ionic/angular';
 import { AuthService } from '../../services/auth.service';
 import { CaretakerAlertsService } from '../../services/caretaker-alerts.service';
 import { MedDataService } from '../../services/med-data.service';
 import { MedNotificationService } from '../../services/med-notification.service';
 import { SubscriptionService } from '../../services/subscription.service';
+import { UserDataService } from '../../services/user-data.service';
 
 @Component({
   selector: 'app-settings',
@@ -27,6 +29,8 @@ export class SettingsPage implements ViewWillEnter {
     private readonly router: Router,
     private readonly toastCtrl: ToastController,
     private readonly loadingCtrl: LoadingController,
+    private readonly alertCtrl: AlertController,
+    private readonly userData: UserDataService,
     readonly subscription: SubscriptionService
   ) {}
 
@@ -59,57 +63,6 @@ export class SettingsPage implements ViewWillEnter {
       }
       const t = await this.toastCtrl.create({
         message: msg,
-        duration: 3500,
-        color: 'danger',
-        position: 'bottom',
-      });
-      await t.present();
-    } finally {
-      await loading.dismiss();
-    }
-  }
-
-  /** Staging/dev only — server returns 403 when billing simulation is disabled. */
-  async simulatePlus(): Promise<void> {
-    const loading = await this.loadingCtrl.create({ message: 'Updating plan…' });
-    await loading.present();
-    try {
-      await this.subscription.simulateTier('premium');
-      const t = await this.toastCtrl.create({
-        message: 'Plan set to Plus (simulation).',
-        duration: 2500,
-        color: 'success',
-        position: 'bottom',
-      });
-      await t.present();
-    } catch {
-      const t = await this.toastCtrl.create({
-        message: 'Could not change plan (simulation may be disabled on this server).',
-        duration: 3500,
-        color: 'danger',
-        position: 'bottom',
-      });
-      await t.present();
-    } finally {
-      await loading.dismiss();
-    }
-  }
-
-  async simulateFree(): Promise<void> {
-    const loading = await this.loadingCtrl.create({ message: 'Updating plan…' });
-    await loading.present();
-    try {
-      await this.subscription.simulateTier('free');
-      const t = await this.toastCtrl.create({
-        message: 'Plan set to Free (simulation).',
-        duration: 2500,
-        color: 'medium',
-        position: 'bottom',
-      });
-      await t.present();
-    } catch {
-      const t = await this.toastCtrl.create({
-        message: 'Could not change plan.',
         duration: 3500,
         color: 'danger',
         position: 'bottom',
@@ -158,6 +111,108 @@ export class SettingsPage implements ViewWillEnter {
     });
     await t.present();
     await this.refreshPerm();
+  }
+
+  openPrivacyPolicy(): void {
+    const url = `${getApiUrl()}/privacy`;
+    if (Capacitor.isNativePlatform()) {
+      window.open(url, '_system');
+    } else {
+      window.open(url, '_blank', 'noopener');
+    }
+  }
+
+  async openMedicalReport(): Promise<void> {
+    const loading = await this.loadingCtrl.create({ message: 'Building report…' });
+    await loading.present();
+    try {
+      await this.userData.openMedicalReport();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Could not generate report. Try again.';
+      const t = await this.toastCtrl.create({
+        message: msg,
+        duration: 4000,
+        color: 'danger',
+        position: 'bottom',
+      });
+      await t.present();
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
+  async exportData(): Promise<void> {
+    const loading = await this.loadingCtrl.create({ message: 'Preparing export…' });
+    await loading.present();
+    try {
+      await this.userData.downloadJsonExport();
+      const t = await this.toastCtrl.create({
+        message: 'Your data has been downloaded as a JSON file.',
+        duration: 3000,
+        color: 'success',
+        position: 'bottom',
+      });
+      await t.present();
+    } catch {
+      const t = await this.toastCtrl.create({
+        message: 'Could not export data. Try again.',
+        duration: 3000,
+        color: 'danger',
+        position: 'bottom',
+      });
+      await t.present();
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
+  async confirmDeleteAccount(): Promise<void> {
+    const alert = await this.alertCtrl.create({
+      header: 'Delete account?',
+      message:
+        'This permanently deletes your account, all profiles, medications, and dose history. This cannot be undone.',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Delete everything',
+          role: 'destructive',
+          handler: () => {
+            void this.deleteAccount();
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private async deleteAccount(): Promise<void> {
+    const loading = await this.loadingCtrl.create({ message: 'Deleting account…' });
+    await loading.present();
+    try {
+      await this.userData.deleteAccount();
+      await this.auth.logout();
+      this.caretakerAlerts.stop();
+      this.medData.clear();
+      await this.medNotif.cancelAllPendingLocalNotifications();
+      await this.router.navigateByUrl('/login', { replaceUrl: true });
+      const t = await this.toastCtrl.create({
+        message: 'Your account and data have been permanently deleted.',
+        duration: 4000,
+        color: 'medium',
+        position: 'bottom',
+      });
+      await t.present();
+    } catch {
+      const t = await this.toastCtrl.create({
+        message: 'Could not delete account. Try again.',
+        duration: 3000,
+        color: 'danger',
+        position: 'bottom',
+      });
+      await t.present();
+    } finally {
+      await loading.dismiss();
+    }
   }
 
   async logout(): Promise<void> {

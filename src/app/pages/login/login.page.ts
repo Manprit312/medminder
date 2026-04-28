@@ -44,6 +44,7 @@ export class LoginPage implements OnInit, OnDestroy {
   ];
 
   currentSlide = 0;
+  processingRedirect = false;
 
   private touchStartX = 0;
   private autoTimer?: ReturnType<typeof setInterval>;
@@ -107,10 +108,13 @@ export class LoginPage implements OnInit, OnDestroy {
 
   async signInWithGoogle(): Promise<void> {
     this.stopAutoSlide();
+    // Must call startGoogleSignIn() before any await — the browser only allows
+    // popups from a synchronous user-gesture call stack.
+    const authPromise = this.firebaseAuth.startGoogleSignIn();
     const loading = await this.loadingCtrl.create({ message: 'Connecting Google…' });
     await loading.present();
     try {
-      const idToken = await this.firebaseAuth.getGoogleIdToken();
+      const idToken = await authPromise;
       await this.auth.loginWithGoogleIdToken(idToken);
       await this.finishLogin();
       await loading.dismiss();
@@ -124,15 +128,25 @@ export class LoginPage implements OnInit, OnDestroy {
   }
 
   private async finishGoogleRedirectIfPresent(): Promise<void> {
+    let loading: Awaited<ReturnType<typeof this.loadingCtrl.create>> | null = null;
     try {
       const idToken = await this.firebaseAuth.consumeGoogleRedirectResult();
       if (!idToken) {
         return;
       }
+      this.processingRedirect = true;
+      this.stopAutoSlide();
+      loading = await this.loadingCtrl.create({ message: 'Signing you in…' });
+      await loading.present();
       await this.auth.loginWithGoogleIdToken(idToken);
       await this.finishLogin();
+      await loading.dismiss();
     } catch (e) {
-      await this.showErr('Google sign-in failed', e, 'Could not complete Google redirect sign-in.');
+      this.processingRedirect = false;
+      if (loading) {
+        await loading.dismiss();
+      }
+      await this.showErr('Google sign-in failed', e, 'Could not complete sign-in. Please try again.');
     }
   }
 

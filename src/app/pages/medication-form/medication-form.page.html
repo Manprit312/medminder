@@ -1,4 +1,4 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button *ngIf="!isAdd || addStep === 1" [defaultHref]="backHref()" text="Back"></ion-back-button>
@@ -82,6 +82,8 @@
       </ion-item>
     </ion-list>
 
+    <!-- Supply & refill section hidden for now -->
+    <!--
     <div class="section-head ion-padding-horizontal">
       <span class="material-symbols-outlined">inventory_2</span>
       <span>Supply &amp; refill</span>
@@ -121,6 +123,7 @@
       When you mark a dose as <strong>taken</strong>, we subtract this many pills from your count. Leave blank to skip
       tracking.
     </p>
+    -->
 
     <div class="learn-more-block ion-padding-horizontal" *ngIf="formName.trim()">
       <ion-button fill="clear" size="small" color="secondary" type="button" (click)="openLearnMore()">

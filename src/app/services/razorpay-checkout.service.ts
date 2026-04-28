@@ -64,7 +64,7 @@ export class RazorpayCheckoutService {
             order_id: params.orderId,
             image: 'assets/icon/icon.png',
             prefill: params.prefill ?? {},
-            theme: { color: '#5B6EF5' },
+            theme: { color: '#4a6840' },
             handler: (response: RazorpayPaymentResult) => resolve(response),
             modal: {
               ondismiss: () => reject(new Error('Payment cancelled.')),

@@ -1,75 +1,109 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar color="primary">
     <ion-title>{{ subscription.isPremium ? 'Family profiles' : 'Profiles' }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="profiles-page mm-gradient-bg">
-  <div *ngIf="loading" class="ion-padding ion-text-center mm-profiles-loading">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="pp-loading">
     <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
-    <p role="status">{{ subscription.isPremium ? 'Loading family…' : 'Loading profile…' }}</p>
+    <p role="status">Loading…</p>
   </div>
 
   <ng-container *ngIf="!loading">
-  <div class="ion-padding-horizontal ion-padding-top" *ngIf="profiles.length > 0">
-    <ion-text color="medium" class="ion-text-wrap">
-      <p>
-        Each profile is one person. Open a profile to view medicines, reminders, and dose history for that person.
-      </p>
-    </ion-text>
-  </div>
-  <div class="ion-padding" *ngIf="profiles.length === 0">
-    <div class="mm-empty-hero">
-      <img
-        class="mm-empty-art"
-        src="assets/illustrations/family-empty.svg"
-        width="288"
-        height="176"
-        alt=""
-      />
-      <h2 class="mm-empty-title">No profiles yet</h2>
-      <p class="mm-empty-copy">Create a profile to add medications and get reminders.</p>
-      <ion-button expand="block" class="ion-margin-top" shape="round" type="button" (click)="goAddProfile()">
-        <span class="material-symbols-outlined btn-ic">person_add</span>
-        Add profile
-      </ion-button>
-    </div>
-  </div>
 
-  <ion-list *ngIf="profiles.length > 0" lines="none" class="mm-stack ion-padding">
-    <ion-item
-      button
-      detail="true"
-      *ngFor="let p of profiles; let i = index"
-      (click)="openProfile(p)"
-      class="profile-row"
-    >
-      <div class="avatar" slot="start" [style.background]="avatarColor(i)">
-        {{ p.name.charAt(0).toUpperCase() }}
+    <!-- Hero banner (shown whenever there are profiles) -->
+    <div class="pp-hero" *ngIf="profiles.length > 0">
+      <div class="pp-hero__text">
+        <h2 class="pp-hero__title">Your people</h2>
+        <p class="pp-hero__sub">Tap a profile to view medicines &amp; reminders.</p>
       </div>
-      <ion-label>
-        <h2>{{ p.name }}</h2>
-        <p>
-          <span class="material-symbols-outlined tiny">pill</span>
-          {{ medCount(p.id) }} medication<span *ngIf="medCount(p.id) !== 1">s</span>
-        </p>
-        <p class="ion-no-margin">Tap to open this person’s medicines and reminders.</p>
-      </ion-label>
-      <ion-buttons slot="end">
-        <ion-button fill="clear" type="button" (click)="editProfile(p, $event)" aria-label="Edit profile">
-          <span class="material-symbols-outlined" aria-hidden="true">edit</span>
-        </ion-button>
-        <ion-button fill="clear" color="danger" type="button" (click)="deleteProfile(p, $event)" aria-label="Remove profile">
-          <span class="material-symbols-outlined" aria-hidden="true">delete</span>
-        </ion-button>
-      </ion-buttons>
-    </ion-item>
-  </ion-list>
+      <img
+        class="pp-hero__illus"
+        src="assets/illustrations/profiles-hero.png"
+        alt=""
+        aria-hidden="true"
+        width="160"
+        height="110"
+      />
+    </div>
 
-  <ion-fab *ngIf="subscription.canAddProfile(profiles.length)" slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button color="tertiary" type="button" (click)="goAddProfile()" aria-label="Add profile">
-      <span class="material-symbols-outlined fab-icon">person_add</span>
-    </ion-fab-button>
-  </ion-fab>
+    <!-- Profile cards -->
+    <div class="pp-list ion-padding-horizontal" *ngIf="profiles.length > 0">
+      <div
+        class="pp-card"
+        *ngFor="let p of profiles; let i = index"
+        (click)="openProfile(p)"
+        role="button"
+        [attr.aria-label]="'Open ' + p.name + ' profile'"
+        tabindex="0"
+        (keydown.enter)="openProfile(p)"
+      >
+        <!-- Avatar -->
+        <div class="pp-avatar" [class]="'pp-avatar--' + avatarTone(i)" aria-hidden="true">
+          {{ p.name.charAt(0).toUpperCase() }}
+        </div>
+
+        <!-- Info -->
+        <div class="pp-info">
+          <h3 class="pp-name">{{ p.name }}</h3>
+          <p class="pp-meta">
+            <span class="material-symbols-outlined pp-meta-ic" aria-hidden="true">medication</span>
+            {{ medCount(p.id) }} med{{ medCount(p.id) !== 1 ? 's' : '' }}
+          </p>
+        </div>
+
+        <!-- Actions -->
+        <div class="pp-actions" (click)="$event.stopPropagation()">
+          <button
+            class="pp-action-btn"
+            type="button"
+            (click)="editProfile(p, $event)"
+            [attr.aria-label]="'Edit ' + p.name"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+          </button>
+          <button
+            class="pp-action-btn pp-action-btn--del"
+            type="button"
+            (click)="deleteProfile(p, $event)"
+            [attr.aria-label]="'Delete ' + p.name"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+          </button>
+        </div>
+
+        <span class="material-symbols-outlined pp-chevron" aria-hidden="true">chevron_right</span>
+      </div>
+    </div>
+
+    <!-- Add profile button (inline, below cards) — only shown when profiles already exist -->
+    <div class="pp-add-row ion-padding-horizontal" *ngIf="profiles.length > 0 && subscription.canAddProfile(profiles.length)">
+      <button class="pp-add-btn" type="button" (click)="goAddProfile()">
+        <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+        Add a person
+      </button>
+    </div>
+
+    <!-- Empty state -->
+    <div class="pp-empty ion-padding" *ngIf="profiles.length === 0">
+      <img
+        class="pp-empty__illus"
+        src="assets/illustrations/profiles-hero.png"
+        alt=""
+        aria-hidden="true"
+        width="220"
+        height="150"
+      />
+      <h2 class="pp-empty__title">No profiles yet</h2>
+      <p class="pp-empty__copy">Create a profile to add medications and set up reminders for any person.</p>
+      <button class="pp-add-btn pp-add-btn--primary" type="button" (click)="goAddProfile()">
+        <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+        Add first profile
+      </button>
+    </div>
+
   </ng-container>
 </ion-content>

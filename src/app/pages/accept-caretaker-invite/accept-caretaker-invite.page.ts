@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import { AuthService } from '../../services/auth.service';
@@ -14,14 +14,13 @@ import { MedDataService } from '../../services/med-data.service';
 })
 export class AcceptCaretakerInvitePage implements OnInit {
   token = '';
-  preview: {
-    profileName: string;
-    inviteePhone: string | null;
-    inviteeEmail: string | null;
-  } | null = null;
+  preview: { profileName: string } | null = null;
   previewError: string | null = null;
   loadingPreview = true;
   accepting = false;
+
+  /** True only after the backend confirms the stored token is valid. */
+  readonly sessionValid = signal(false);
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -34,6 +33,14 @@ export class AcceptCaretakerInvitePage implements OnInit {
 
   ngOnInit(): void {
     this.token = this.route.snapshot.queryParamMap.get('token')?.trim() ?? '';
+    void this.init();
+  }
+
+  private async init(): Promise<void> {
+    // Verify the stored token is still valid before showing "Accept invitation".
+    // A stale token (e.g. after a DB reset) would cause a confusing 404.
+    const valid = await this.auth.verifySession();
+    this.sessionValid.set(valid);
     void this.loadPreview();
   }
 
@@ -54,10 +61,6 @@ export class AcceptCaretakerInvitePage implements OnInit {
     }
   }
 
-  get loggedIn(): boolean {
-    return this.auth.isLoggedIn();
-  }
-
   get returnUrlForAuth(): string {
     return `/accept-caretaker-invite?token=${encodeURIComponent(this.token)}`;
   }
@@ -72,15 +75,10 @@ export class AcceptCaretakerInvitePage implements OnInit {
       await this.medData.refresh();
       await this.router.navigateByUrl('/tabs/caring', { replaceUrl: true });
     } catch (err: unknown) {
-      const phone = this.preview?.inviteePhone;
-      const email = this.preview?.inviteeEmail;
-      const invited = phone ?? email ?? 'the contact on this invite';
       let message = 'Something went wrong. Try again in a moment.';
       if (err instanceof HttpErrorResponse) {
-        if (err.status === 403) {
-          message = phone
-            ? `You’re signed in with a different phone than this invite. Sign out, then sign in with ${phone} using the SMS code.`
-            : `You’re signed in with a different email than this invite. Sign out, then sign in or create an account using ${email ?? invited}.`;
+        if (err.status === 400 || err.status === 403) {
+          message = 'You cannot accept your own invite. Share it with someone else.';
         } else if (err.status === 404) {
           message = 'This invite is invalid or was already used.';
         } else if (err.status === 410) {

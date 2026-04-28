@@ -80,6 +80,14 @@ export class SubscriptionService {
     return currentProfileCount < 1;
   }
 
+  /** Free tier: max 5 medications per profile. Plus: unlimited. */
+  canAddMedication(currentMedCount: number): boolean {
+    if (this.isPremium) {
+      return true;
+    }
+    return currentMedCount < 5;
+  }
+
   canUseCaregiverFields(): boolean {
     return this.isPremium;
   }

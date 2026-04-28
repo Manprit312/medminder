@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Capacitor } from '@capacitor/core';
 import { AlertController, LoadingController, ToastController, ViewWillEnter } from '@ionic/angular';
 import { Medication, Profile } from '../../models/med.models';
 import { patientContextTips } from '../../shared/patient-context-tips';
@@ -26,6 +27,8 @@ export class ProfileDetailPage implements ViewWillEnter {
   invitePhone = '';
   sendingInvite = false;
   lastInviteLink = '';
+  /** Populated after invite is prepared on web — shown as a tappable link. */
+  pendingWhatsAppUrl = '';
   recommendedAgents: AgentRecommendation[] = [];
 
   constructor(
@@ -43,8 +46,13 @@ export class ProfileDetailPage implements ViewWillEnter {
     readonly refill: RefillService
   ) {}
 
+  onInvitePhoneChange(): void {
+    this.pendingWhatsAppUrl = '';
+  }
+
   async ionViewWillEnter(): Promise<void> {
     this.pageReady = false;
+    this.pendingWhatsAppUrl = '';
     this.profileId =
       this.route.snapshot.paramMap.get('id') ??
       this.route.parent?.snapshot.paramMap.get('id') ??
@@ -119,7 +127,24 @@ export class ProfileDetailPage implements ViewWillEnter {
     return `/tabs/profiles/${this.profileId}/medications/${m.id}`;
   }
 
-  openAddMed(): void {
+  async openAddMed(): Promise<void> {
+    if (!this.subscription.canAddMedication(this.medications.length)) {
+      const alert = await this.alertCtrl.create({
+        header: 'Medication limit reached',
+        message: 'Free accounts can track up to 5 medications per profile. Upgrade to MedMinder Plus for unlimited medications.',
+        buttons: [
+          { text: 'Not now', role: 'cancel' },
+          {
+            text: 'Upgrade — ₹999',
+            handler: () => {
+              void this.router.navigateByUrl('/tabs/settings');
+            },
+          },
+        ],
+      });
+      await alert.present();
+      return;
+    }
     void this.router.navigateByUrl(this.addMedicationHref());
   }
 
@@ -129,6 +154,11 @@ export class ProfileDetailPage implements ViewWillEnter {
 
   backToFamily(): void {
     void this.router.navigateByUrl('/tabs/profiles');
+  }
+
+  medTone(index: number): string {
+    const tones = ['sage', 'teal', 'taupe', 'terra', 'moss'];
+    return tones[index % tones.length];
   }
 
   openEditMed(m: Medication): void {
@@ -159,10 +189,19 @@ export class ProfileDetailPage implements ViewWillEnter {
       const res = await this.caretakerApi.sendInvite(this.profileId, phone);
       this.lastInviteLink = res.acceptUrl;
       const name = this.profile?.name ?? 'family member';
-      const msg = `Hi, I invited you to follow ${name} on MedMinder. Open this secure invite link: ${res.acceptUrl}`;
-      const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
-      window.open(waUrl, '_system');
-      await this.simpleToast('WhatsApp invite opened.', 'success');
+      const msg = `Hi! I'd like you to be a caretaker for ${name} on MedMinder.\n\nOpen this secure invite link to accept:\n${res.acceptUrl}`;
+      const waPhone = phone.replace(/[^\d]/g, '');
+      const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`;
+
+      if (Capacitor.isNativePlatform()) {
+        // Native: window.open with _system opens the URL in the device's default browser → WhatsApp
+        window.open(waUrl, '_system');
+        await this.simpleToast('WhatsApp opened — send the message to complete the invite.', 'success');
+      } else {
+        // Web: popup blockers fire after async calls — show a tappable link instead
+        this.pendingWhatsAppUrl = waUrl;
+        await this.simpleToast('Invite ready — tap "Open WhatsApp" below to send it.', 'success');
+      }
     } catch {
       await this.simpleToast('Could not prepare WhatsApp invite.', 'danger');
     } finally {

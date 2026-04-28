@@ -1,9 +1,14 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/profiles" [text]="subscription.isPremium ? 'Family' : 'Profile'"></ion-back-button>
+      <ion-back-button defaultHref="/tabs/profiles" text=""></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ profile?.name || 'Profile' }}</ion-title>
+    <ion-title>
+      <span class="pd-toolbar-title">
+        <span class="pd-toolbar-title__name">{{ profile?.name || 'Profile' }}</span>
+        <span class="pd-toolbar-title__sub">Profile</span>
+      </span>
+    </ion-title>
     <ion-buttons slot="end" *ngIf="profile">
       <ion-button type="button" (click)="goEditProfile()" aria-label="Edit profile">
         <span class="material-symbols-outlined">edit</span>
@@ -12,187 +17,213 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="mm-gradient-bg">
-  <div *ngIf="!pageReady" class="mm-page-loading ion-padding ion-text-center">
+<ion-content [fullscreen]="true" class="mm-gradient-bg pd-content">
+
+  <!-- Loading -->
+  <div *ngIf="!pageReady" class="pd-loading">
     <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
-    <p class="mm-loading-caption" role="status">Loading profile…</p>
+    <p role="status">Loading profile…</p>
   </div>
 
   <ng-container *ngIf="pageReady && profile">
-    <div class="ion-padding intro">
-      <p>
-        <span class="material-symbols-outlined intro-icon">medication</span>
-        You’re viewing <strong>{{ profile.name }}</strong>. This page shows medicines, reminders, and logs for this profile only.
-      </p>
-    </div>
 
-    <!-- Free tier: explain where caretaker invites live (Plus); avoids “no option after login” confusion -->
-    <ion-list
-      *ngIf="!subscription.isPremium && profile"
-      inset="true"
-      lines="none"
-      class="form-card ion-margin-horizontal ion-margin-top mm-caretaker-teaser"
-    >
-      <ion-item lines="none">
-        <span class="material-symbols-outlined input-lead" slot="start" aria-hidden="true">volunteer_activism</span>
-        <ion-label class="ion-text-wrap">
-          <h2 class="mm-caretaker-teaser-title">Invite a caretaker</h2>
-          <p class="hint">
-            Send an invite so someone can follow this person’s medication track in their own account (read-only). They
-            accept using the same phone number you invite.
-            <strong>MedMinder Plus</strong> — turn on a Plus plan in Settings, then return here to send invites.
-          </p>
-        </ion-label>
-      </ion-item>
-      <div class="ion-padding-horizontal ion-padding-bottom">
-        <ion-button expand="block" fill="outline" color="primary" routerLink="/tabs/settings">
-          Open Settings (plan)
-        </ion-button>
+    <!-- ── Profile hero ────────────────────────────────────────────── -->
+    <div class="pd-hero">
+      <div class="pd-hero__avatar" aria-hidden="true">
+        {{ profile.name.charAt(0).toUpperCase() }}
       </div>
-    </ion-list>
-
-    <ion-list
-      *ngIf="subscription.isPremium && profile"
-      inset="true"
-      lines="none"
-      class="form-card ion-margin-horizontal ion-margin-top"
-    >
-      <ion-list-header>
-        <ion-label>Invite caretaker (app)</ion-label>
-      </ion-list-header>
-      <ion-item>
-        <span class="material-symbols-outlined input-lead" slot="start" aria-hidden="true">call</span>
-        <ion-input
-          type="tel"
-          label="Caretaker phone"
-          labelPlacement="stacked"
-          [(ngModel)]="invitePhone"
-          placeholder="+91 98765 43210"
-          autocomplete="tel"
-          inputmode="tel"
-        ></ion-input>
-      </ion-item>
-      <div class="ion-padding">
-        <ion-button
-          expand="block"
-          fill="outline"
-          color="success"
-          class="ion-margin-top"
-          [disabled]="!invitePhone.trim() || sendingInvite"
-          (click)="shareInviteOnWhatsApp()"
-        >
-          Share on WhatsApp
-        </ion-button>
-        <ion-button
-          expand="block"
-          fill="clear"
-          class="ion-margin-top"
-          [disabled]="!invitePhone.trim() || sendingInvite"
-          (click)="copyInviteLink()"
-        >
-          Copy invite link
-        </ion-button>
-        <p class="hint ion-no-margin ion-margin-top">
-          Share via WhatsApp or copy link. The caretaker must sign in with this exact phone number (SMS code) to accept.
+      <div class="pd-hero__info">
+        <h2 class="pd-hero__name">{{ profile.name }}</h2>
+        <p class="pd-hero__stat">
+          <span class="material-symbols-outlined pd-hero__stat-ic" aria-hidden="true">medication</span>
+          {{ medications.length }} medication{{ medications.length !== 1 ? 's' : '' }}
         </p>
       </div>
-    </ion-list>
-
-    <div class="ion-padding caregiver-line" *ngIf="profile.caregiverEmail || profile.caregiverPhone">
-      <div>
-        <div class="caregiver-line-content">   <span class="material-symbols-outlined intro-icon">contact_mail</span>
-          <strong>Caregiver:</strong></div>
-     
-
-
-        <span *ngIf="profile.caregiverEmail">{{ profile.caregiverEmail }}</span>
-        <span *ngIf="profile.caregiverEmail && profile.caregiverPhone"> · </span>
-        <span *ngIf="profile.caregiverPhone">{{ profile.caregiverPhone }}</span>
-      </div>
     </div>
 
-    <div class="ion-padding-horizontal ion-padding-bottom" *ngIf="patientTipsBlock as tips">
-      <div class="patient-tips-card">
-        <h3 class="patient-tips-title">
-          <span class="material-symbols-outlined patient-tips-ic" aria-hidden="true">lightbulb</span>
-          {{ tips.title }}
-        </h3>
-        <ul class="patient-tips-list">
-          <li *ngFor="let line of tips.bullets">{{ line }}</li>
-        </ul>
-        <p class="patient-tips-disclaimer">{{ tips.disclaimer }}</p>
-      </div>
+    <!-- ── Section: Medications ────────────────────────────────────── -->
+    <div class="pd-section-head ion-padding-horizontal">
+      <h3 class="pd-section-title">Medications</h3>
+      <button class="pd-section-add" type="button" (click)="openAddMed()" aria-label="Add medication">
+        <span class="material-symbols-outlined" aria-hidden="true">add</span>
+        Add
+      </button>
     </div>
 
-    <div class="ion-padding" *ngIf="medications.length === 0">
-      <div class="empty-state">
-        <span class="material-symbols-outlined empty-icon">prescriptions</span>
-        <h2>No medications</h2>
-        <p>Add one with the + button.</p>
-        <ion-button expand="block" class="ion-margin-top" type="button" (click)="openAddMed()">
-          <span class="material-symbols-outlined btn-ic">add_circle</span>
-          Add medication
-        </ion-button>
-      </div>
-    </div>
-
-    <ion-list *ngIf="medications.length > 0" lines="none" class="mm-stack ion-padding-horizontal">
-      <ion-item
-        button
-        detail="true"
-        *ngFor="let m of medications"
+    <!-- Med cards -->
+    <div class="pd-med-list ion-padding-horizontal" *ngIf="medications.length > 0">
+      <div
+        class="pd-med-card"
+        *ngFor="let m of medications; let i = index"
+        [class]="'pd-med-card pd-med-card--' + medTone(i)"
         (click)="openEditMed(m)"
-        class="med-row"
+        role="button"
+        [attr.aria-label]="'Edit ' + m.name"
+        tabindex="0"
+        (keydown.enter)="openEditMed(m)"
       >
-        <span class="material-symbols-outlined slot-icon" slot="start">pill</span>
-        <ion-label>
-          <h2>
+        <div class="pd-med-card__body">
+          <p class="pd-med-card__kicker">
+            <span class="material-symbols-outlined pd-med-kicker-ic" aria-hidden="true">alarm</span>
+            {{ m.enabled ? 'Active' : 'Paused' }}
+          </p>
+          <h4 class="pd-med-card__name">
             {{ m.name }}
-            <ion-badge *ngIf="!m.enabled" color="medium">Off</ion-badge>
-          </h2>
-          <p *ngIf="m.dosageNote">{{ m.dosageNote }}</p>
-          <p class="times">
-            <span class="material-symbols-outlined tiny">schedule</span>
-            {{ m.times.join(', ') }}
-          </p>
-          <p class="refill-line" *ngIf="refill.runOutMessage(m) as msg">
-            <span class="material-symbols-outlined tiny">inventory_2</span>
-            {{ msg }}
-            <ion-badge *ngIf="refill.shouldWarnRefill(m)" color="warning" class="refill-badge">Refill soon</ion-badge>
-          </p>
-        </ion-label>
-        <ion-buttons slot="end">
-          <ion-button
-            fill="clear"
-            color="secondary"
-            type="button"
-            (click)="openMedInfo(m, $event)"
-            aria-label="Open medicine information in browser"
-          >
-            <span class="material-symbols-outlined">open_in_new</span>
-          </ion-button>
-          <ion-button
-            fill="clear"
-            color="danger"
-            type="button"
-            (click)="deleteMedication(m, $event)"
-            aria-label="Remove medication"
-          >
-            <span class="material-symbols-outlined">delete</span>
-          </ion-button>
-        </ion-buttons>
-      </ion-item>
-    </ion-list>
+            <span class="pd-med-off-badge" *ngIf="!m.enabled" aria-label="Paused">Off</span>
+          </h4>
+          <p class="pd-med-card__note" *ngIf="m.dosageNote">{{ m.dosageNote }}</p>
+        </div>
 
-    <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-      <ion-fab-button color="tertiary" (click)="openAddMed()" aria-label="Add medication">
-        <span class="material-symbols-outlined fab-icon">add</span>
-      </ion-fab-button>
-    </ion-fab>
+        <div class="pd-med-card__right">
+          <div class="pd-med-time-badge">
+            <span *ngFor="let t of m.times.slice(0,2); let last = last">{{ t }}<span *ngIf="!last"> · </span></span>
+            <span *ngIf="m.times.length > 2"> +{{ m.times.length - 2 }}</span>
+          </div>
+          <div class="pd-med-card__actions" (click)="$event.stopPropagation()">
+            <button
+              class="pd-med-act"
+              type="button"
+              (click)="openMedInfo(m, $event)"
+              aria-label="View medicine info"
+            >
+              <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+            </button>
+            <button
+              class="pd-med-act pd-med-act--del"
+              type="button"
+              (click)="deleteMedication(m, $event)"
+              aria-label="Remove medication"
+            >
+              <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty medications -->
+    <div class="pd-empty" *ngIf="medications.length === 0">
+      <img
+        class="pd-empty__illus"
+        src="assets/illustrations/profile-empty-meds.png"
+        alt=""
+        aria-hidden="true"
+        width="240"
+        height="160"
+      />
+      <h3 class="pd-empty__title">No medications yet</h3>
+      <p class="pd-empty__copy">Add the first one using the button below.</p>
+      <button class="pd-empty__cta" type="button" (click)="openAddMed()">
+        <span class="material-symbols-outlined" aria-hidden="true">add_circle</span>
+        Add medication
+      </button>
+    </div>
+
+    <!-- ── Section: Caretaker ──────────────────────────────────────── -->
+    <div class="pd-section-head ion-padding-horizontal pd-section-head--mt">
+      <h3 class="pd-section-title">Care team</h3>
+    </div>
+
+    <!-- Caretaker info line (if set) -->
+    <div class="pd-caregiver-chip ion-padding-horizontal" *ngIf="profile.caregiverEmail || profile.caregiverPhone">
+      <span class="material-symbols-outlined pd-caregiver-ic" aria-hidden="true">contact_mail</span>
+      <span class="pd-caregiver-val">
+        {{ profile.caregiverEmail }}{{ profile.caregiverEmail && profile.caregiverPhone ? ' · ' : '' }}{{ profile.caregiverPhone }}
+      </span>
+    </div>
+
+    <!-- Free tier: invite teaser -->
+    <div class="pd-invite-card ion-padding-horizontal" *ngIf="!subscription.isPremium">
+      <div class="pd-invite-card__inner">
+        <div class="pd-invite-card__text">
+          <h4 class="pd-invite-card__title">Invite a caretaker</h4>
+          <p class="pd-invite-card__body">
+            Share read-only access with someone you trust. Requires <strong>MedMinder Plus</strong>.
+          </p>
+          <button class="pd-invite-cta" type="button" routerLink="/tabs/settings">
+            Unlock in Settings
+          </button>
+        </div>
+        <span class="material-symbols-outlined pd-invite-icon" aria-hidden="true">volunteer_activism</span>
+      </div>
+    </div>
+
+    <!-- Plus: invite form -->
+    <div class="pd-invite-form ion-padding-horizontal" *ngIf="subscription.isPremium">
+      <div class="pd-invite-form__inner">
+        <h4 class="pd-invite-form__title">
+          <span class="material-symbols-outlined pd-invite-form__ic" aria-hidden="true">share</span>
+          Send caretaker invite
+        </h4>
+        <div class="pd-invite-input-wrap">
+          <span class="material-symbols-outlined pd-invite-input-ic" aria-hidden="true">call</span>
+          <input
+            class="pd-invite-input"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel"
+            placeholder="+91 98765 43210"
+            [(ngModel)]="invitePhone"
+            (ngModelChange)="onInvitePhoneChange()"
+            aria-label="Caretaker phone number"
+          />
+        </div>
+
+        <!-- Web: show a direct link after invite is prepared (avoids popup blockers) -->
+        <a
+          *ngIf="pendingWhatsAppUrl"
+          class="pd-invite-btn pd-invite-btn--wa pd-invite-btn--link"
+          [href]="pendingWhatsAppUrl"
+          target="_blank"
+          rel="noopener"
+          aria-label="Open WhatsApp to send invite"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">chat</span>
+          Open WhatsApp →
+        </a>
+
+        <div class="pd-invite-btns" *ngIf="!pendingWhatsAppUrl">
+          <button
+            class="pd-invite-btn pd-invite-btn--wa"
+            type="button"
+            [disabled]="!invitePhone.trim() || sendingInvite"
+            (click)="shareInviteOnWhatsApp()"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">chat</span>
+            WhatsApp
+          </button>
+          <button
+            class="pd-invite-btn pd-invite-btn--copy"
+            type="button"
+            [disabled]="!invitePhone.trim() || sendingInvite"
+            (click)="copyInviteLink()"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">content_copy</span>
+            Copy link
+          </button>
+        </div>
+        <p class="pd-invite-hint">
+          {{ pendingWhatsAppUrl ? 'Tap "Open WhatsApp" above to send the invite.' : 'Enter their number — WhatsApp will open a direct chat with the invite ready to send.' }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Bottom padding -->
+    <div class="pd-bottom-spacer"></div>
+
   </ng-container>
 
-  <div *ngIf="pageReady && !profile" class="ion-padding mm-profile-missing">
+  <!-- FAB -->
+  <!-- <ion-fab slot="fixed" vertical="bottom" horizontal="end" *ngIf="pageReady && profile">
+    <ion-fab-button color="tertiary" (click)="openAddMed()" aria-label="Add medication">
+      <span class="material-symbols-outlined pd-fab-ic">add</span>
+    </ion-fab-button>
+  </ion-fab> -->
+
+  <!-- Not found -->
+  <div *ngIf="pageReady && !profile" class="pd-not-found ion-padding">
     <p>Profile not found.</p>
-    <ion-button type="button" (click)="backToFamily()">Back to Family</ion-button>
+    <ion-button type="button" (click)="backToFamily()">Back</ion-button>
   </div>
+
 </ion-content>

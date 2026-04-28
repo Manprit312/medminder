@@ -1,47 +1,172 @@
-.intro {
-  max-width: 520px;
-  margin: 0 auto;
-}
-
-.intro-icon {
-  vertical-align: middle;
-  margin-right: 0.35rem;
-}
-
-.alerts-strip {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.55rem;
-}
-
-.alerts-copy {
-  font-size: 0.85rem;
-  color: var(--ion-color-medium-shade, var(--ion-color-medium));
-}
-
-.mm-page-loading {
+// ── Loading ──────────────────────────────────────────────
+.ct-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.75rem;
-  min-height: 30vh;
-  padding-top: 2rem;
+  padding-top: 4rem;
   color: var(--ion-color-medium);
 }
 
-.slot-icon {
-  color: var(--ion-color-primary);
+// ── Alert strip ───────────────────────────────────────────
+.ct-alert-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fff3cd;
+  color: #7a5c00;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.6rem 1rem;
+  margin: 1rem 1rem 0;
+  border-radius: 12px;
+
+  &__icon {
+    font-size: 1.1rem;
+  }
+
+  ion-badge {
+    margin-left: auto;
+    font-size: 0.75rem;
+  }
 }
 
-.empty-state {
+// ── Hero ──────────────────────────────────────────────────
+.ct-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.25rem 0.75rem;
+  gap: 0.75rem;
+
+  &__text {
+    flex: 1;
+  }
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--ion-color-primary-shade);
+    margin: 0 0 0.2rem;
+  }
+
+  &__sub {
+    font-size: 0.82rem;
+    color: var(--ion-color-medium);
+    margin: 0;
+  }
+
+  &__illus {
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+}
+
+// ── Profile cards ─────────────────────────────────────────
+.ct-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-bottom: 1.5rem;
+}
+
+.ct-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: #fff;
+  border-radius: 16px;
+  padding: 0.9rem 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  }
+}
+
+// Avatar tones (mirrors profiles page)
+.ct-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  color: #fff;
+
+  &--sage  { background: #6b8c6b; }
+  &--clay  { background: #b07855; }
+  &--sky   { background: #5a87b0; }
+  &--sand  { background: #a89060; }
+  &--rose  { background: #b06070; }
+}
+
+.ct-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ct-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2d3a2d;
+  margin: 0 0 0.15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ct-sub {
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+  margin: 0;
+}
+
+.ct-chevron {
+  color: var(--ion-color-medium);
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+// ── Empty / Error state ───────────────────────────────────
+.ct-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  max-width: 420px;
-  margin: 2rem auto;
-  color: var(--ion-color-medium);
+  padding: 3rem 2rem 2rem;
+  gap: 0.5rem;
 
-  .empty-icon {
+  &__illus {
+    object-fit: contain;
+    margin-bottom: 0.75rem;
+  }
+
+  &__icon {
     font-size: 3rem;
+    color: var(--ion-color-medium);
     opacity: 0.5;
+    margin-bottom: 0.5rem;
+  }
+
+  &__title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--ion-color-primary-shade);
+    margin: 0;
+  }
+
+  &__copy {
+    font-size: 0.9rem;
+    color: var(--ion-color-medium);
+    max-width: 300px;
+    line-height: 1.5;
+    margin: 0;
   }
 }

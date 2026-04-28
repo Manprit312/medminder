@@ -44,6 +44,33 @@ export class TodayPage implements ViewWillEnter {
     adherencePercent: number | null;
     isFuture: boolean;
   }[] = [];
+  /** Companion mascot bubble open/closed state */
+  companionBubbleOpen = false;
+
+  /** One character is chosen randomly per session and stays consistent */
+  readonly companionImg: string = (() => {
+    const chars = [
+      'assets/illustrations/companion-char.png',
+      'assets/illustrations/companion-char-2.png',
+      'assets/illustrations/companion-char-3.png',
+    ];
+    return chars[Math.floor(Math.random() * chars.length)];
+  })();
+
+  /** One hero illustration is chosen randomly per session */
+  readonly heroImg: string = (() => {
+    const heroes = [
+      'assets/illustrations/today-hero-1.png',
+      'assets/illustrations/today-hero-2.png',
+      'assets/illustrations/today-hero-3.png',
+    ];
+    return heroes[Math.floor(Math.random() * heroes.length)];
+  })();
+
+  toggleCompanionBubble(): void {
+    this.companionBubbleOpen = !this.companionBubbleOpen;
+  }
+
   /** Full-screen expanded detail (same tone as tapped stack card) */
   expandedDose: TodayDose | null = null;
   expandedDeckIndex = 0;
@@ -105,6 +132,30 @@ export class TodayPage implements ViewWillEnter {
       return 'Good afternoon';
     }
     return 'Good evening';
+  }
+
+  /** Contextual message shown in the mascot speech bubble. */
+  get mascotMessage(): string {
+    if (this.loading) {
+      return 'Loading your doses…';
+    }
+    if (this.doses.length === 0) {
+      return "Hi! Add your first medicine and I'll remind you every day 💊";
+    }
+    const pending = this.pendingCount;
+    const taken = this.takenCount;
+    const total = this.doses.length;
+    if (pending === 0 && taken === total) {
+      return "Amazing! You've taken all your medicines today! ⭐";
+    }
+    if (pending === 0) {
+      return "All logged for today — well done! 🌿";
+    }
+    if (pending === 1) {
+      const next = this.pendingDoses[0];
+      return `Don't forget — ${next?.medName ?? 'one dose'} is still pending! ⏰`;
+    }
+    return `You have ${pending} dose${pending > 1 ? 's' : ''} left today — stay on track! 💪`;
   }
 
   onDateChanged(value: string | null | undefined): void {

@@ -1,216 +1,358 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar color="primary">
     <ion-title>Settings</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="settings-screen mm-gradient-bg">
-  <div class="form-hero ion-padding">
-    <span class="material-symbols-outlined hero-icon">settings</span>
-    <h1>Preferences</h1>
-    <p class="subtitle">Account, reminders, and privacy</p>
+
+  <!-- Hero -->
+  <div class="sp-hero">
+    <img
+      src="assets/illustrations/settings-hero.png"
+      alt=""
+      aria-hidden="true"
+      class="sp-hero__img"
+      width="160"
+      height="160"
+    />
+    <div class="sp-hero__text">
+      <h1 class="sp-hero__title">Preferences</h1>
+      <p class="sp-hero__sub">Account, reminders &amp; privacy</p>
+    </div>
   </div>
 
-  <ion-list inset="true" lines="none" class="form-card mm-settings-card">
+  <!-- Account -->
+  <ion-list inset="true" lines="none" class="sp-card">
     <ion-list-header>
-      <ion-label>
-        <span class="material-symbols-outlined section-ic">account_circle</span>
+      <ion-label class="sp-card__head">
+        <span class="material-symbols-outlined sp-head-ic" aria-hidden="true">account_circle</span>
         Account
       </ion-label>
     </ion-list-header>
 
-    <ion-item lines="none" class="mm-settings-item">
-      <span class="material-symbols-outlined input-lead" slot="start">call</span>
+    <ion-item lines="none" class="sp-item">
+      <span class="material-symbols-outlined sp-item-ic" slot="start" aria-hidden="true">call</span>
       <ion-label class="ion-text-wrap">
-        <h2 class="mm-settings-label">Signed in as</h2>
-        <p class="mm-settings-value">{{ userDisplay || '—' }}</p>
+        <p class="sp-label">Signed in as</p>
+        <p class="sp-value">{{ userDisplay || '—' }}</p>
       </ion-label>
     </ion-item>
 
-    <div class="mm-settings-actions">
-      <ion-button
-        expand="block"
-        shape="round"
-        color="danger"
-        fill="outline"
-        class="mm-settings-btn"
-        (click)="logout()"
-      >
-        <span class="material-symbols-outlined btn-ic" aria-hidden="true">logout</span>
+    <div class="sp-row-actions">
+      <button class="sp-signout-btn" (click)="logout()" type="button" aria-label="Sign out">
+        <span class="material-symbols-outlined" aria-hidden="true">logout</span>
         Sign out
-      </ion-button>
+      </button>
     </div>
   </ion-list>
 
-  <ion-list inset="true" lines="none" class="form-card mm-settings-card ion-margin-top">
+  <!-- Reminders -->
+  <ion-list inset="true" lines="none" class="sp-card">
     <ion-list-header>
-      <ion-label>
-        <span class="material-symbols-outlined section-ic">notifications</span>
+      <ion-label class="sp-card__head">
+        <span class="material-symbols-outlined sp-head-ic" aria-hidden="true">notifications</span>
         Reminders
       </ion-label>
     </ion-list-header>
 
-    <ion-item *ngIf="native" lines="none" class="mm-settings-item">
-      <span class="material-symbols-outlined input-lead" slot="start">campaign</span>
-      <ion-label class="ion-text-wrap">
-        <h2 class="mm-settings-label">Notifications</h2>
-        <p class="mm-settings-value">{{ permDisplay || '…' }}</p>
-      </ion-label>
-    </ion-item>
+    @if (native) {
+      <ion-item lines="none" class="sp-item">
+        <span class="material-symbols-outlined sp-item-ic" slot="start" aria-hidden="true">campaign</span>
+        <ion-label class="ion-text-wrap">
+          <p class="sp-label">Notifications</p>
+          <p class="sp-value">{{ permDisplay || '…' }}</p>
+        </ion-label>
+      </ion-item>
 
-    <div *ngIf="native" class="mm-settings-actions">
-      <ion-button
-        expand="block"
-        shape="round"
-        color="tertiary"
-        class="mm-settings-btn"
-        (click)="requestNotifications()"
-      >
-        <span class="material-symbols-outlined btn-ic" aria-hidden="true">notifications_active</span>
-        Enable reminders
-      </ion-button>
-      <ion-button
-        expand="block"
-        shape="round"
-        fill="outline"
-        color="primary"
-        class="mm-settings-btn ion-margin-top"
-        type="button"
-        (click)="sendTestReminder()"
-      >
-        <span class="material-symbols-outlined btn-ic" aria-hidden="true">science</span>
-        Test reminder in 10 seconds
-      </ion-button>
-      <p class="ion-padding-horizontal ion-text-wrap mm-settings-notify-hint">
-        Local only — scheduled on this device. Not Firebase or push from a server.
-      </p>
-    </div>
-
-    <ion-item *ngIf="!native" lines="none" class="mm-settings-item">
-      <span class="material-symbols-outlined input-lead" slot="start">smartphone</span>
-      <ion-label class="ion-text-wrap">
-        <h2 class="mm-settings-label">Device</h2>
-        <p class="mm-settings-value">Use the iOS or Android app for local reminders.</p>
-      </ion-label>
-    </ion-item>
+      <div class="sp-row-actions">
+        <ion-button
+          expand="block"
+          shape="round"
+          color="primary"
+          class="sp-primary-btn"
+          (click)="requestNotifications()"
+        >
+          <span class="material-symbols-outlined sp-btn-ic" aria-hidden="true">notifications_active</span>
+          Enable reminders
+        </ion-button>
+        <ion-button
+          expand="block"
+          shape="round"
+          fill="outline"
+          color="primary"
+          class="sp-outline-btn"
+          type="button"
+          (click)="sendTestReminder()"
+        >
+          <span class="material-symbols-outlined sp-btn-ic" aria-hidden="true">science</span>
+          Test reminder (10 s)
+        </ion-button>
+        <p class="sp-hint">Local only — scheduled on this device.</p>
+      </div>
+    } @else {
+      <ion-item lines="none" class="sp-item">
+        <span class="material-symbols-outlined sp-item-ic" slot="start" aria-hidden="true">smartphone</span>
+        <ion-label class="ion-text-wrap">
+          <p class="sp-label">Device</p>
+          <p class="sp-value">Use the iOS or Android app for local reminders.</p>
+        </ion-label>
+      </ion-item>
+    }
   </ion-list>
 
-  <ion-list inset="true" lines="none" class="form-card mm-settings-card ion-margin-top">
+  <!-- Care team -->
+  <ion-list inset="true" lines="none" class="sp-card">
     <ion-list-header>
-      <ion-label>
-        <span class="material-symbols-outlined section-ic">stethoscope</span>
+      <ion-label class="sp-card__head">
+        <span class="material-symbols-outlined sp-head-ic" aria-hidden="true">stethoscope</span>
         Care team
       </ion-label>
     </ion-list-header>
 
-    <ion-item class="mm-settings-item" lines="none" button detail="true" routerLink="/tabs/settings/care-team">
-      <span class="material-symbols-outlined input-lead" slot="start">group_add</span>
+    <ion-item class="sp-item" lines="none" button detail="true" routerLink="/tabs/settings/care-team">
+      <span class="material-symbols-outlined sp-item-ic" slot="start" aria-hidden="true">group_add</span>
       <ion-label class="ion-text-wrap">
-        <h2 class="mm-settings-label">Invite a clinician</h2>
-        <p class="mm-settings-value">Planned: share read-only progress with your doctor or care team</p>
+        <p class="sp-label">Invite a clinician</p>
+        <p class="sp-value">Share read-only progress with your doctor or care team</p>
       </ion-label>
+      <span class="sp-coming-soon" slot="end" aria-label="Coming soon">Soon</span>
     </ion-item>
 
-    <ion-item class="mm-settings-item" lines="none" button detail="true" routerLink="/tabs/settings/vitals">
-      <span class="material-symbols-outlined input-lead" slot="start">cardiology</span>
+    <ion-item class="sp-item" lines="none" button detail="true" routerLink="/tabs/settings/vitals">
+      <span class="material-symbols-outlined sp-item-ic" slot="start" aria-hidden="true">cardiology</span>
       <ion-label class="ion-text-wrap">
-        <h2 class="mm-settings-label">Heart rate &amp; blood pressure</h2>
-        <p class="mm-settings-value">Log readings; Apple Health &amp; Health Connect planned</p>
+        <p class="sp-label">Heart rate &amp; blood pressure</p>
+        <p class="sp-value">Log readings; Apple Health &amp; Health Connect coming soon</p>
       </ion-label>
     </ion-item>
   </ion-list>
 
-  <ion-list inset="true" lines="none" class="form-card mm-settings-card ion-margin-top">
+  <!-- MedMinder Plus -->
+  <ion-list inset="true" lines="none" class="sp-card">
     <ion-list-header>
-      <ion-label>
-        <span class="material-symbols-outlined section-ic">workspace_premium</span>
+      <ion-label class="sp-card__head">
+        <span class="material-symbols-outlined sp-head-ic sp-head-ic--gold" aria-hidden="true">workspace_premium</span>
         MedMinder Plus
       </ion-label>
     </ion-list-header>
 
-    <!-- Current plan badge -->
-    <ion-item lines="none" class="mm-settings-item">
-      <span class="material-symbols-outlined input-lead" slot="start">verified</span>
+    <!-- Current plan -->
+    <ion-item lines="none" class="sp-item">
+      <span class="material-symbols-outlined sp-item-ic" slot="start" aria-hidden="true">verified</span>
       <ion-label class="ion-text-wrap">
-        <h2 class="mm-settings-label">Your plan</h2>
-        <p class="mm-settings-value">
-          <span class="mm-plan-pill" [class.mm-plan-pill--plus]="subscription.isPremium">
-            {{ subscription.isPremium ? 'Plus — Lifetime' : 'Free' }}
+        <p class="sp-label">Your plan</p>
+        <p class="sp-value">
+          <span class="sp-plan-badge" [class.sp-plan-badge--plus]="subscription.isPremium">
+            @if (subscription.isPremium) {
+              <span class="material-symbols-outlined sp-badge-ic" aria-hidden="true">workspace_premium</span>
+              Plus · Lifetime
+            } @else {
+              Free
+            }
           </span>
         </p>
       </ion-label>
     </ion-item>
 
-    <!-- What Plus includes -->
-    <ion-item lines="none" class="mm-settings-item" *ngIf="!subscription.isPremium">
-      <span class="material-symbols-outlined input-lead" slot="start">star</span>
-      <ion-label class="ion-text-wrap">
-        <h2 class="mm-settings-label">What's in Plus</h2>
-        <p class="mm-settings-value">Family profiles · Caregiver contacts · Education hub · Unlimited access forever</p>
-      </ion-label>
-    </ion-item>
+    <!-- Free users: upgrade card -->
+    @if (!subscription.isPremium) {
+      <div class="sp-plus-card">
+        <!-- Header -->
+        <div class="sp-plus-card__head">
+          <img
+            src="assets/illustrations/settings-plus.png"
+            alt=""
+            aria-hidden="true"
+            class="sp-plus-card__img"
+            width="72"
+            height="72"
+          />
+          <div>
+            <p class="sp-plus-card__title">MedMinder Plus</p>
+            <p class="sp-plus-card__sub">One payment. Yours forever.</p>
+          </div>
+        </div>
 
-    <!-- Buy button (free users only) -->
-    <div class="mm-settings-actions ion-padding-horizontal ion-padding-bottom" *ngIf="!subscription.isPremium">
-      <ion-button expand="block" shape="round" color="tertiary" (click)="buyLifetime()">
-        <span class="material-symbols-outlined btn-ic" aria-hidden="true">lock_open</span>
-        Buy MedMinder Plus — ₹999 one-time
-      </ion-button>
-      <p class="ion-text-center ion-text-wrap ion-padding-top mm-buy-hint">
-        One-time payment. No subscription, no renewal — yours forever.
-      </p>
-    </div>
+        <!-- Feature comparison table -->
+        <div class="sp-compare">
+          <div class="sp-compare__header">
+            <span></span>
+            <span class="sp-compare__col-label">Free</span>
+            <span class="sp-compare__col-label sp-compare__col-label--plus">
+              <span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>
+              Plus
+            </span>
+          </div>
+          <div class="sp-compare__row">
+            <span>Profiles</span>
+            <span>1</span>
+            <span class="sp-compare__plus-val">Unlimited</span>
+          </div>
+          <div class="sp-compare__row">
+            <span>Medications per profile</span>
+            <span>5</span>
+            <span class="sp-compare__plus-val">Unlimited</span>
+          </div>
+          <div class="sp-compare__row">
+            <span>Dose reminders</span>
+            <span class="material-symbols-outlined sp-check" aria-label="Yes">check</span>
+            <span class="material-symbols-outlined sp-check" aria-label="Yes">check</span>
+          </div>
+          <div class="sp-compare__row">
+            <span>Dose history</span>
+            <span class="material-symbols-outlined sp-check" aria-label="Yes">check</span>
+            <span class="material-symbols-outlined sp-check" aria-label="Yes">check</span>
+          </div>
+          <div class="sp-compare__row">
+            <span>Caretaker invites</span>
+            <span class="material-symbols-outlined sp-cross" aria-label="No">close</span>
+            <span class="material-symbols-outlined sp-check" aria-label="Yes">check</span>
+          </div>
+          <div class="sp-compare__row">
+            <span>WhatsApp care alerts</span>
+            <span class="material-symbols-outlined sp-cross" aria-label="No">close</span>
+            <span class="material-symbols-outlined sp-check" aria-label="Yes">check</span>
+          </div>
+          <div class="sp-compare__row">
+            <span>Family profiles</span>
+            <span class="material-symbols-outlined sp-cross" aria-label="No">close</span>
+            <span class="material-symbols-outlined sp-check" aria-label="Yes">check</span>
+          </div>
+        </div>
 
-    <!-- Lifetime badge (premium users) -->
-    <ion-item lines="none" class="mm-settings-item" *ngIf="subscription.isPremium">
-      <span class="material-symbols-outlined input-lead" slot="start">all_inclusive</span>
-      <ion-label class="ion-text-wrap">
-        <h2 class="mm-settings-label">Lifetime access</h2>
-        <p class="mm-settings-value">All Plus features are permanently unlocked on this account.</p>
-      </ion-label>
-    </ion-item>
-
-    <ion-item class="mm-settings-item" lines="none" button detail="true" routerLink="/tabs/settings/education">
-      <span class="material-symbols-outlined input-lead" slot="start">menu_book</span>
-      <ion-label class="ion-text-wrap">
-        <h2 class="mm-settings-label">Learn &amp; safety</h2>
-        <p class="mm-settings-value">Disclaimers and reference links</p>
-      </ion-label>
-    </ion-item>
-
-    <!-- Dev simulate (collapsed details for dev / staging) -->
-    <details class="mm-dev-simulate">
-      <summary>Dev tools</summary>
-      <div class="ion-padding-horizontal ion-padding-bottom">
-        <ion-button expand="block" size="small" fill="outline" color="medium" (click)="simulatePlus()" *ngIf="!subscription.isPremium">
-          Simulate Plus
-        </ion-button>
-        <ion-button expand="block" size="small" fill="outline" color="medium" (click)="simulateFree()" *ngIf="subscription.isPremium">
-          Simulate Free
-        </ion-button>
+        <!-- Price + CTA -->
+        <div class="sp-plus-card__cta">
+          <div class="sp-price-row">
+            <span class="sp-price-main">₹999</span>
+            <span class="sp-price-note">one-time · no subscription</span>
+          </div>
+          <p class="sp-price-compare">vs ₹5,000+/year on similar apps</p>
+          <ion-button expand="block" shape="round" color="tertiary" (click)="buyLifetime()" class="sp-buy-btn">
+            <span class="material-symbols-outlined sp-btn-ic" aria-hidden="true">lock_open</span>
+            Unlock Plus forever
+          </ion-button>
+          <p class="sp-buy-hint">Secure payment via UPI, cards &amp; NetBanking</p>
+        </div>
       </div>
-    </details>
+    }
+
+    <!-- Premium users: lifetime note -->
+    @if (subscription.isPremium) {
+      <ion-item lines="none" class="sp-item">
+        <span class="material-symbols-outlined sp-item-ic" slot="start" aria-hidden="true">all_inclusive</span>
+        <ion-label class="ion-text-wrap">
+          <p class="sp-label">Lifetime access</p>
+          <p class="sp-value">All Plus features are permanently unlocked.</p>
+        </ion-label>
+      </ion-item>
+    }
+
+    <ion-item class="sp-item" lines="none" button detail="true" routerLink="/tabs/settings/education">
+      <span class="material-symbols-outlined sp-item-ic" slot="start" aria-hidden="true">menu_book</span>
+      <ion-label class="ion-text-wrap">
+        <p class="sp-label">Learn &amp; safety</p>
+        <p class="sp-value">Disclaimers and reference links</p>
+      </ion-label>
+    </ion-item>
+
   </ion-list>
 
-  <ion-list inset="true" lines="none" class="form-card mm-settings-card ion-margin-top">
+  <!-- Your data -->
+  <ion-list inset="true" lines="none" class="sp-card">
     <ion-list-header>
-      <ion-label>
-        <span class="material-symbols-outlined section-ic">gavel</span>
+      <ion-label class="sp-card__head">
+        <span class="material-symbols-outlined sp-head-ic" aria-hidden="true">database</span>
+        Your data
+      </ion-label>
+    </ion-list-header>
+
+    <ion-item lines="none" class="sp-item">
+      <span class="material-symbols-outlined sp-item-ic" slot="start" aria-hidden="true">medical_information</span>
+      <ion-label class="ion-text-wrap">
+        <p class="sp-label">Medical report for your doctor</p>
+        <p class="sp-value">A clean, printable summary of your medications and dose history — formatted for clinical review</p>
+      </ion-label>
+    </ion-item>
+    <div class="sp-row-actions">
+      <ion-button
+        expand="block"
+        shape="round"
+        fill="solid"
+        color="primary"
+        (click)="openMedicalReport()"
+      >
+        <span class="material-symbols-outlined sp-btn-ic" aria-hidden="true">print</span>
+        Open report (print / PDF)
+      </ion-button>
+    </div>
+
+    <ion-item lines="none" class="sp-item">
+      <span class="material-symbols-outlined sp-item-ic" slot="start" aria-hidden="true">download</span>
+      <ion-label class="ion-text-wrap">
+        <p class="sp-label">Export raw data (JSON)</p>
+        <p class="sp-value">All profiles, medications &amp; dose history in machine-readable format — for data portability</p>
+      </ion-label>
+    </ion-item>
+    <div class="sp-row-actions">
+      <ion-button
+        expand="block"
+        shape="round"
+        fill="outline"
+        color="primary"
+        class="sp-outline-btn"
+        (click)="exportData()"
+      >
+        <span class="material-symbols-outlined sp-btn-ic" aria-hidden="true">data_object</span>
+        Download JSON
+      </ion-button>
+    </div>
+
+    <ion-item lines="none" class="sp-item sp-item--danger">
+      <span class="material-symbols-outlined sp-item-ic sp-item-ic--danger" slot="start" aria-hidden="true">delete_forever</span>
+      <ion-label class="ion-text-wrap">
+        <p class="sp-label sp-label--danger">Delete my account</p>
+        <p class="sp-value">Permanently removes your account and all data. Cannot be undone.</p>
+      </ion-label>
+    </ion-item>
+    <div class="sp-row-actions">
+      <ion-button
+        expand="block"
+        shape="round"
+        fill="outline"
+        color="danger"
+        class="sp-outline-btn"
+        (click)="confirmDeleteAccount()"
+      >
+        <span class="material-symbols-outlined sp-btn-ic" aria-hidden="true">delete_forever</span>
+        Delete my account
+      </ion-button>
+    </div>
+  </ion-list>
+
+  <!-- Legal -->
+  <ion-list inset="true" lines="none" class="sp-card">
+    <ion-list-header>
+      <ion-label class="sp-card__head">
+        <span class="material-symbols-outlined sp-head-ic" aria-hidden="true">gavel</span>
         Legal
       </ion-label>
     </ion-list-header>
 
-    <ion-item lines="none" class="mm-settings-legal">
-      <ion-text class="ion-text-wrap">
-        <p>
-          MedMinder stores your session on this device and syncs when online. This app is for reminders only — not
-          medical advice. Confirm medications with your clinician or pharmacist.
-        </p>
-      </ion-text>
+    <ion-item class="sp-item" lines="none" button detail="true" (click)="openPrivacyPolicy()">
+      <span class="material-symbols-outlined sp-item-ic" slot="start" aria-hidden="true">shield</span>
+      <ion-label class="ion-text-wrap">
+        <p class="sp-label">Privacy Policy</p>
+        <p class="sp-value">How we collect, use, and protect your data</p>
+      </ion-label>
     </ion-item>
+
+    <div class="sp-legal">
+      <p>MedMinder stores your session on this device and syncs when online. This app is for reminders only — not medical advice. Confirm medications with your clinician or pharmacist.</p>
+    </div>
   </ion-list>
 
-  <div class="ion-padding version-block">
-    <p class="version">MedMinder · v0.1</p>
+  <div class="sp-version">
+    <p>MedMinder · v0.1</p>
   </div>
 </ion-content>

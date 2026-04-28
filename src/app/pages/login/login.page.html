@@ -71,6 +71,7 @@
       type="button"
       class="google-btn"
       (click)="signInWithGoogle()"
+      [disabled]="processingRedirect"
     >
       <img
         src="assets/icon/google-logo.svg"
