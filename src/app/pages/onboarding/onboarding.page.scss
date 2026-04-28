@@ -1,96 +1,179 @@
+// ── Container ───────────────────────────────────────────────────────────────
+
 .onboarding-content {
-  --padding-bottom: 2rem;
+  --background: #f2f2e6;
+  --padding-bottom: calc(2rem + env(safe-area-inset-bottom));
 }
 
-.progress-wrap {
-  padding-top: 0.5rem;
+// ── Toolbar brand ────────────────────────────────────────────────────────────
 
-  .step-label {
-    margin: 0.35rem 0 0;
-    font-size: 0.85rem;
-    opacity: 0.75;
-    text-align: center;
+.toolbar-brand {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+
+.brand-med {
+  color: #5f6956;
+}
+
+.brand-minder {
+  color: #ff6b35;
+}
+
+// ── Progress dots ────────────────────────────────────────────────────────────
+
+.ob-progress {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 1.25rem 1rem 0;
+}
+
+.ob-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(95, 105, 86, 0.25);
+  transition: width 0.25s ease, background 0.25s ease, border-radius 0.25s ease;
+
+  &.ob-dot--active {
+    width: 24px;
+    border-radius: 4px;
+    background: #ff6b35;
+  }
+
+  &.ob-dot--done {
+    background: #5f6956;
   }
 }
 
-.step-panel {
+// ── Panel layout ─────────────────────────────────────────────────────────────
+
+.ob-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1.5rem 0;
   max-width: 440px;
   margin: 0 auto;
 }
 
-.hero-block {
+// ── Hero illustration ────────────────────────────────────────────────────────
+
+.ob-hero {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.ob-hero-img {
+  width: 260px;
+  height: 260px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 18px rgba(95, 105, 86, 0.15));
+}
+
+// ── Icon-only hero (profile step) ───────────────────────────────────────────
+
+.ob-icon-wrap {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(95, 105, 86, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ob-icon {
+  font-size: 3rem;
+  color: #5f6956;
+}
+
+// ── Text block ───────────────────────────────────────────────────────────────
+
+.ob-hero-text {
   text-align: center;
   margin-bottom: 1.5rem;
-
-  .hero-icon {
-    font-size: 3.25rem;
-    opacity: 0.55;
-    display: block;
-    margin-bottom: 0.75rem;
-
-    &.success {
-      color: var(--ion-color-success);
-      opacity: 1;
-    }
-  }
+  width: 100%;
 
   h1 {
-    font-size: 1.5rem;
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 1.55rem;
     font-weight: 700;
     margin: 0 0 0.5rem;
-    color: var(--ion-text-color);
-  }
-
-  .lead {
-    margin: 0;
-    font-size: 1.05rem;
-    line-height: 1.55;
-    color: var(--mm-text-muted, rgba(18, 10, 36, 0.78));
+    color: #3a4134;
+    line-height: 1.25;
   }
 }
 
-.question {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0 0 0.75rem;
-  color: var(--ion-text-color);
+.ob-lead {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: rgba(26, 26, 26, 0.68);
 }
 
-.hint {
-  margin: 0 0 1.25rem;
-  font-size: 0.95rem;
-  line-height: 1.45;
-  color: var(--mm-text-muted, rgba(18, 10, 36, 0.72));
-}
+// ── Choice cards ─────────────────────────────────────────────────────────────
 
-.audience-group {
+.ob-choices {
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-bottom: 1.25rem;
 }
 
-.choice-card {
-  --background: var(--ion-card-background);
-  border-radius: var(--mm-radius-md, 18px);
-  border: 1px solid var(--ion-border-color);
-  box-shadow: var(--mm-shadow-soft);
+.ob-choice {
+  --background: #fafaf4;
+  border-radius: 14px;
+  border: 1.5px solid rgba(95, 105, 86, 0.2);
+  box-shadow: 0 2px 8px rgba(95, 105, 86, 0.08);
 }
 
-.choice-title {
+.ob-choice-label {
   font-weight: 600;
   font-size: 1.05rem;
+  color: #3a4134;
 }
 
-.form-card {
-  border-radius: var(--mm-radius-md, 18px);
+// ── Form card ────────────────────────────────────────────────────────────────
+
+.ob-form-card {
+  width: 100%;
+  border-radius: 18px;
+  border: 1.5px solid rgba(95, 105, 86, 0.2);
+  box-shadow: 0 2px 12px rgba(95, 105, 86, 0.08);
+  background: #fafaf4;
   margin-bottom: 1rem;
-  border: 1px solid var(--ion-border-color);
-  box-shadow: var(--mm-shadow-card);
 }
 
 .input-lead {
   margin-inline-end: 8px;
   opacity: 0.75;
   font-size: 1.35rem;
+  color: #5f6956;
+}
+
+// ── CTA ───────────────────────────────────────────────────────────────────────
+
+.ob-actions {
+  width: 100%;
+  padding: 0.5rem 0 0;
+
+  ion-button {
+    --border-radius: 32px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    --box-shadow: 0 4px 18px rgba(255, 107, 53, 0.28);
+  }
 }

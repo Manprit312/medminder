@@ -1,126 +1,182 @@
 <ion-header [translucent]="true">
-  <ion-toolbar color="primary">
-    <ion-title>Welcome</ion-title>
+  <ion-toolbar>
+    <ion-title>
+      <span class="toolbar-brand">
+        <span class="brand-med">Med</span><span class="brand-minder">Minder</span>
+      </span>
+    </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="onboarding-content mm-gradient-bg">
-  <div class="ion-padding progress-wrap">
-    <ion-progress-bar [value]="progress()" color="secondary"></ion-progress-bar>
-    <p class="step-label">Step {{ step }} of {{ totalSteps }}</p>
+<ion-content [fullscreen]="true" class="onboarding-content">
+
+  <!-- Progress dots -->
+  <div class="ob-progress" role="progressbar" [attr.aria-valuenow]="step" [attr.aria-valuemax]="totalSteps" [attr.aria-label]="'Step ' + step + ' of ' + totalSteps">
+    @for (s of stepsArray(); track s) {
+      <span class="ob-dot" [class.ob-dot--active]="s === step" [class.ob-dot--done]="s < step"></span>
+    }
   </div>
 
-  <!-- 1 Welcome -->
-  <section class="ion-padding step-panel" *ngIf="step === 1">
-    <div class="hero-block">
-      <span class="material-symbols-outlined hero-icon">waving_hand</span>
-      <h1>Welcome to MedMinder</h1>
-      <p class="lead" *ngIf="subscription.isPremium">
-        We’ll set up one family member and one medicine so you can see how reminders work. You can add more people later
-        in Family.
+  <!-- ── Step 1: Welcome ──────────────────────────────────────────── -->
+  <section class="ob-panel" *ngIf="step === 1">
+    <div class="ob-hero">
+      <img
+        src="assets/illustrations/onboarding-clock.png"
+        alt="Alarm clock with medicine capsules"
+        class="ob-hero-img"
+        width="260"
+        height="260"
+      />
+    </div>
+    <div class="ob-hero-text">
+      <h1>Welcome to <span class="brand-med">Med</span><span class="brand-minder">Minder</span></h1>
+      <p class="ob-lead" *ngIf="subscription.isPremium">
+        Set up a family member's medicines and reminders in just a few steps.
       </p>
-      <p class="lead" *ngIf="!subscription.isPremium">
-        We’ll create your profile and add one medicine so you can see how reminders work. On Free you track one person;
-        MedMinder Plus adds multiple family profiles and caretaker invites.
+      <p class="ob-lead" *ngIf="!subscription.isPremium">
+        Create your profile and add a medicine so reminders can start immediately.
       </p>
     </div>
-    <ion-button expand="block" size="large" (click)="nextFromWelcome()">
-      Get started
-      <span class="material-symbols-outlined" slot="end">arrow_forward</span>
-    </ion-button>
+    <div class="ob-actions">
+      <ion-button expand="block" size="large" color="tertiary" (click)="nextFromWelcome()">
+        Get started
+        <span class="material-symbols-outlined" slot="end">arrow_forward</span>
+      </ion-button>
+    </div>
   </section>
 
-  <!-- 2 Plus only: Who -->
-  <section class="ion-padding step-panel" *ngIf="showAudience()">
-    <h2 class="question">Who are you tracking medicines for?</h2>
-    <p class="hint">You can add more people later in Family.</p>
-    <ion-radio-group [(ngModel)]="audience" class="audience-group">
-      <ion-item lines="none" class="choice-card">
+  <!-- ── Step 2 (Plus): Who ─────────────────────────────────────────── -->
+  <section class="ob-panel" *ngIf="showAudience()">
+    <div class="ob-hero">
+      <img
+        src="assets/illustrations/onboarding-family.png"
+        alt="Family with medicine reminders"
+        class="ob-hero-img"
+        width="260"
+        height="260"
+      />
+    </div>
+    <div class="ob-hero-text">
+      <h1>Who are you tracking medicines for?</h1>
+      <p class="ob-lead">You can add more people later.</p>
+    </div>
+    <ion-radio-group [(ngModel)]="audience" class="ob-choices">
+      <ion-item lines="none" class="ob-choice">
         <ion-radio slot="start" value="self"></ion-radio>
-        <ion-label class="ion-text-wrap choice-title">Myself</ion-label>
+        <ion-label class="ion-text-wrap ob-choice-label">Myself</ion-label>
       </ion-item>
-      <ion-item lines="none" class="choice-card">
+      <ion-item lines="none" class="ob-choice">
         <ion-radio slot="start" value="family"></ion-radio>
-        <ion-label class="ion-text-wrap choice-title">Someone else</ion-label>
+        <ion-label class="ion-text-wrap ob-choice-label">Someone else</ion-label>
       </ion-item>
-      <ion-item lines="none" class="choice-card">
+      <ion-item lines="none" class="ob-choice">
         <ion-radio slot="start" value="multiple"></ion-radio>
-        <ion-label class="ion-text-wrap choice-title">Several people</ion-label>
+        <ion-label class="ion-text-wrap ob-choice-label">Several people</ion-label>
       </ion-item>
     </ion-radio-group>
-    <ion-button expand="block" size="large" (click)="nextFromAudience()" [disabled]="!audience">
-      Continue
-    </ion-button>
+    <div class="ob-actions">
+      <ion-button expand="block" size="large" color="tertiary" (click)="nextFromAudience()" [disabled]="!audience">
+        Continue
+        <span class="material-symbols-outlined" slot="end">arrow_forward</span>
+      </ion-button>
+    </div>
   </section>
 
-  <!-- First profile (Free step 2 / Plus step 3) -->
-  <section class="ion-padding step-panel" *ngIf="showProfile()">
-    <ng-container *ngIf="subscription.isPremium">
-      <h2 class="question">Add your first family member</h2>
-      <p class="hint">Use their name as you’d like to see it in reminders.</p>
-    </ng-container>
-    <ng-container *ngIf="!subscription.isPremium">
-      <h2 class="question">Your profile</h2>
-      <p class="hint">Enter your name or a short label (e.g. “Me”). This is who these reminders are for.</p>
-    </ng-container>
-    <ion-list inset="true" lines="none" class="form-card">
+  <!-- ── Profile name ───────────────────────────────────────────────── -->
+  <section class="ob-panel" *ngIf="showProfile()">
+    <div class="ob-hero">
+      <span class="ob-icon-wrap">
+        <span class="material-symbols-outlined ob-icon">person</span>
+      </span>
+    </div>
+    <div class="ob-hero-text">
+      <h1>{{ subscription.isPremium ? 'Add your first family member' : 'Your profile' }}</h1>
+      <p class="ob-lead">{{ subscription.isPremium ? 'Use their name as you\'d like to see it in reminders.' : 'Enter your name or a short label (e.g. "Me").' }}</p>
+    </div>
+    <ion-list inset="true" lines="none" class="ob-form-card">
       <ion-item>
-        <span class="material-symbols-outlined input-lead" slot="start">person</span>
+        <span class="material-symbols-outlined input-lead" slot="start">badge</span>
         <ion-input
           label="Name"
           labelPlacement="stacked"
           [(ngModel)]="profileName"
-          placeholder="e.g. Mom, Dad, you"
+          placeholder="e.g. Mom, Dad, Me"
           autocomplete="name"
+          enterkeyhint="done"
         ></ion-input>
       </ion-item>
     </ion-list>
-    <ion-button expand="block" size="large" (click)="nextFromProfile()" [disabled]="!profileName.trim()">
-      {{ subscription.isPremium ? 'Add person' : 'Continue' }}
-    </ion-button>
+    <div class="ob-actions">
+      <ion-button expand="block" size="large" color="tertiary" (click)="nextFromProfile()" [disabled]="!profileName.trim()">
+        {{ subscription.isPremium ? 'Add person' : 'Continue' }}
+        <span class="material-symbols-outlined" slot="end">arrow_forward</span>
+      </ion-button>
+    </div>
   </section>
 
-  <!-- First medicine -->
-  <section class="ion-padding step-panel" *ngIf="showMed()">
-    <h2 class="question">Add a first medicine</h2>
-    <p class="hint">You can add more doses and details later.</p>
-    <ion-list inset="true" lines="none" class="form-card">
+  <!-- ── First medicine ─────────────────────────────────────────────── -->
+  <section class="ob-panel" *ngIf="showMed()">
+    <div class="ob-hero">
+      <span class="ob-icon-wrap">
+        <span class="material-symbols-outlined ob-icon">medication</span>
+      </span>
+    </div>
+    <div class="ob-hero-text">
+      <h1>Add a first medicine</h1>
+      <p class="ob-lead">You can add more doses and details later.</p>
+    </div>
+    <ion-list inset="true" lines="none" class="ob-form-card">
       <ion-item>
-        <span class="material-symbols-outlined input-lead" slot="start">pill</span>
+        <span class="material-symbols-outlined input-lead" slot="start">medication</span>
         <ion-input
           label="Medication name"
           labelPlacement="stacked"
           [(ngModel)]="medName"
-          placeholder="e.g. Vitamin D"
+          placeholder="e.g. Vitamin D, Metformin"
+          enterkeyhint="next"
         ></ion-input>
       </ion-item>
       <ion-item>
         <span class="material-symbols-outlined input-lead" slot="start">schedule</span>
         <ion-input
           type="time"
-          label="Reminder time"
+          label="First reminder time"
           labelPlacement="stacked"
           [(ngModel)]="medTime"
         ></ion-input>
       </ion-item>
     </ion-list>
-    <ion-button expand="block" size="large" (click)="finishMedication()" [disabled]="!medName.trim()">
-      Save and continue
-    </ion-button>
+    <div class="ob-actions">
+      <ion-button expand="block" size="large" color="tertiary" (click)="finishMedication()" [disabled]="!medName.trim()">
+        Save and continue
+        <span class="material-symbols-outlined" slot="end">check</span>
+      </ion-button>
+    </div>
   </section>
 
-  <!-- Done -->
-  <section class="ion-padding step-panel" *ngIf="showDone()">
-    <div class="hero-block">
-      <span class="material-symbols-outlined hero-icon success">check_circle</span>
-      <h1>You’re ready</h1>
-      <p class="lead">
-        Open <strong>Today</strong> to log doses. On your phone, allow notifications for reminders.
+  <!-- ── Done ───────────────────────────────────────────────────────── -->
+  <section class="ob-panel" *ngIf="showDone()">
+    <div class="ob-hero">
+      <img
+        src="assets/illustrations/onboarding-done.png"
+        alt="All set"
+        class="ob-hero-img"
+        width="260"
+        height="260"
+      />
+    </div>
+    <div class="ob-hero-text">
+      <h1>You're all set!</h1>
+      <p class="ob-lead">
+        Open <strong>Today</strong> to log doses. On your phone, allow notifications so reminders fire on time.
       </p>
     </div>
-    <ion-button expand="block" size="large" (click)="goToToday()">
-      Go to Today
-      <span class="material-symbols-outlined" slot="end">event_available</span>
-    </ion-button>
+    <div class="ob-actions">
+      <ion-button expand="block" size="large" color="tertiary" (click)="goToToday()">
+        Go to Today
+        <span class="material-symbols-outlined" slot="end">event_available</span>
+      </ion-button>
+    </div>
   </section>
+
 </ion-content>

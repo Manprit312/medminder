@@ -759,7 +759,7 @@ app-dose-log .big-actions ion-button {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  opacity: 0.92;
+  opacity: 1;
 }
 
 .mm-expanded-name {
@@ -775,7 +775,7 @@ app-dose-log .big-actions ion-button {
   margin: 0 0 1rem;
   font-size: 1.02rem;
   line-height: 1.55;
-  opacity: 0.94;
+  opacity: 1;
 }
 
 .mm-expanded-chips {
@@ -814,7 +814,7 @@ app-dose-log .big-actions ion-button {
   display: flex;
   align-items: center;
   gap: 6px;
-  opacity: 0.9;
+  opacity: 1;
 }
 
 .mm-expanded-refill-line {
@@ -913,7 +913,7 @@ app-dose-log .big-actions ion-button {
 .mm-xp-status-p {
   margin: 0 0 0.75rem;
   font-size: 0.9rem;
-  opacity: 0.85;
+  opacity: 1;
 }
 
 .mm-xp-status-actions {
@@ -929,9 +929,10 @@ app-dose-log .big-actions ion-button {
 
 .mm-xp-done-ic {
   font-size: 2rem;
-  color: var(--ion-color-success-tint);
+  color: #d9f2cc;
   margin-bottom: 8px;
   display: block;
+  text-shadow: 0 1px 0 rgba(18, 40, 30, 0.6);
 }
 
 .mm-xp-skip-ic,
@@ -945,7 +946,7 @@ app-dose-log .big-actions ion-button {
 .mm-expanded-footnote {
   margin: 1.25rem 0 0;
   font-size: 0.82rem;
-  opacity: 0.72;
+  opacity: 0.9;
   display: flex;
   align-items: flex-start;
   gap: 6px;
@@ -956,11 +957,52 @@ app-dose-log .big-actions ion-button {
   color: var(--mm-text-muted);
 }
 
+/* Improve contrast in expanded medicine history calendar. */
+.mm-expanded-panel .mm-history-calendar ion-datetime {
+  --title-color: #f8fbf7;
+  --ion-text-color: #f4faf3;
+  --ion-color-step-600: #e9f3e7;
+  --ion-color-step-850: #f6fbf5;
+  --ion-color-primary: #d6f0d6;
+  --ion-color-primary-contrast: #173024;
+}
+
+.mm-expanded-panel .mm-history-calendar ion-datetime::part(weekday) {
+  color: rgba(240, 250, 240, 0.92);
+  font-weight: 700;
+}
+
+.mm-expanded-panel .mm-history-calendar ion-datetime::part(calendar-day) {
+  color: rgba(244, 252, 244, 0.98);
+  font-weight: 650;
+}
+
+.mm-expanded-panel .mm-history-calendar ion-datetime::part(calendar-day active) {
+  background: #b7dbb4;
+  color: #193325;
+  font-weight: 800;
+}
+
+.mm-expanded-panel .mm-history-calendar ion-datetime::part(calendar-day today) {
+  border: 1px solid rgba(227, 246, 224, 0.85);
+}
+
+.mm-expanded-panel .mm-history-calendar ion-datetime::part(calendar-day disabled) {
+  color: rgba(220, 235, 220, 0.72);
+  opacity: 1;
+}
+
+.mm-expanded-panel .mm-history-calendar ion-datetime::part(month-year-button),
+.mm-expanded-panel .mm-history-calendar ion-datetime::part(previous-month-button),
+.mm-expanded-panel .mm-history-calendar ion-datetime::part(next-month-button) {
+  color: rgba(240, 250, 240, 0.96);
+}
+
 
 
 
 .mm-hero-compact .mm-today-hero-alarm {
-  max-height: 120px;
+  // max-height: 120px;
   width: auto;
   margin: 0 auto;
   display: block;
@@ -1224,6 +1266,11 @@ app-dose-log .big-actions ion-button {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.mm-dose-checkin__actions ion-button[fill='outline'][color='warning'] {
+  --color: #f5e8c8;
+  --border-color: #dca34f;
 }
 
 .mm-missed-playbook {

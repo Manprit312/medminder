@@ -1,6 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
-    <ion-title>{{ subscription.isPremium ? 'Family' : 'Profile' }}</ion-title>
+    <ion-title>{{ subscription.isPremium ? 'Family profiles' : 'Profiles' }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -11,6 +11,13 @@
   </div>
 
   <ng-container *ngIf="!loading">
+  <div class="ion-padding-horizontal ion-padding-top" *ngIf="profiles.length > 0">
+    <ion-text color="medium" class="ion-text-wrap">
+      <p>
+        Each profile is one person. Open a profile to view medicines, reminders, and dose history for that person.
+      </p>
+    </ion-text>
+  </div>
   <div class="ion-padding" *ngIf="profiles.length === 0">
     <div class="mm-empty-hero">
       <img
@@ -46,6 +53,7 @@
           <span class="material-symbols-outlined tiny">pill</span>
           {{ medCount(p.id) }} medication<span *ngIf="medCount(p.id) !== 1">s</span>
         </p>
+        <p class="ion-no-margin">Tap to open this person’s medicines and reminders.</p>
       </ion-label>
       <ion-buttons slot="end">
         <ion-button fill="clear" type="button" (click)="editProfile(p, $event)" aria-label="Edit profile">

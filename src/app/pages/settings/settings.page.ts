@@ -39,6 +39,36 @@ export class SettingsPage implements ViewWillEnter {
     void this.subscription.refreshFromApi();
   }
 
+  async buyLifetime(): Promise<void> {
+    const loading = await this.loadingCtrl.create({ message: 'Opening payment…' });
+    await loading.present();
+    try {
+      const display = this.auth.getUserDisplay();
+      await this.subscription.buyLifetime({ name: display ?? undefined });
+      const t = await this.toastCtrl.create({
+        message: 'Welcome to MedMinder Plus! All features are now unlocked.',
+        duration: 3500,
+        color: 'success',
+        position: 'bottom',
+      });
+      await t.present();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Payment could not be completed.';
+      if (msg === 'Payment cancelled.') {
+        return;
+      }
+      const t = await this.toastCtrl.create({
+        message: msg,
+        duration: 3500,
+        color: 'danger',
+        position: 'bottom',
+      });
+      await t.present();
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
   /** Staging/dev only — server returns 403 when billing simulation is disabled. */
   async simulatePlus(): Promise<void> {
     const loading = await this.loadingCtrl.create({ message: 'Updating plan…' });

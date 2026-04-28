@@ -42,6 +42,10 @@ export class OnboardingPage {
     return this.step / this.totalSteps;
   }
 
+  stepsArray(): number[] {
+    return Array.from({ length: this.totalSteps }, (_, i) => i + 1);
+  }
+
   /** Plus: step 2 = who the medicines are for. */
   showAudience(): boolean {
     return this.subscription.isPremium && this.step === 2;

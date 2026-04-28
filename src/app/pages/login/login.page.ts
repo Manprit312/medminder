@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { AuthService } from '../../services/auth.service';
@@ -7,7 +7,13 @@ import { CaretakerAlertsService } from '../../services/caretaker-alerts.service'
 import { FirebaseAuthService } from '../../services/firebase-auth.service';
 import { MedDataService } from '../../services/med-data.service';
 import { MedNotificationService } from '../../services/med-notification.service';
-import { getApiUrl } from '../../../environments/api-url';
+
+interface SplashSlide {
+  id: string;
+  tagline: string;
+  desc: string;
+  image: string;
+}
 
 @Component({
   selector: 'app-login',
@@ -15,8 +21,32 @@ import { getApiUrl } from '../../../environments/api-url';
   styleUrls: ['./login.page.scss'],
   standalone: false,
 })
-export class LoginPage {
-  readonly apiUrl = getApiUrl();
+export class LoginPage implements OnInit, OnDestroy {
+  readonly slides: SplashSlide[] = [
+    {
+      id: 'reminders',
+      tagline: 'Stay on Track, Stay Healthy',
+      desc: 'Never miss a dose — smart reminders keep every medicine on schedule.',
+      image: 'assets/illustrations/onboarding-clock.png',
+    },
+    {
+      id: 'organise',
+      tagline: 'Organise Every Medicine',
+      desc: 'Track doses, refills and schedules all in one simple place.',
+      image: 'assets/illustrations/onboarding-pills.png',
+    },
+    {
+      id: 'family',
+      tagline: 'Keep Everyone Healthy',
+      desc: 'Create profiles for loved ones and share care with your family.',
+      image: 'assets/illustrations/onboarding-family.png',
+    },
+  ];
+
+  currentSlide = 0;
+
+  private touchStartX = 0;
+  private autoTimer?: ReturnType<typeof setInterval>;
 
   constructor(
     private readonly auth: AuthService,
@@ -30,7 +60,53 @@ export class LoginPage {
     private readonly loadingCtrl: LoadingController
   ) {}
 
+  ngOnInit(): void {
+    void this.finishGoogleRedirectIfPresent();
+    this.startAutoSlide();
+  }
+
+  ngOnDestroy(): void {
+    this.stopAutoSlide();
+  }
+
+  setSlide(index: number): void {
+    this.currentSlide = index;
+    this.stopAutoSlide();
+    this.startAutoSlide();
+  }
+
+  onTouchStart(ev: TouchEvent): void {
+    this.touchStartX = ev.touches[0]?.clientX ?? 0;
+  }
+
+  onTouchEnd(ev: TouchEvent): void {
+    const endX = ev.changedTouches[0]?.clientX ?? 0;
+    const diff = this.touchStartX - endX;
+    if (Math.abs(diff) < 40) {
+      return;
+    }
+    if (diff > 0 && this.currentSlide < this.slides.length - 1) {
+      this.setSlide(this.currentSlide + 1);
+    } else if (diff < 0 && this.currentSlide > 0) {
+      this.setSlide(this.currentSlide - 1);
+    }
+  }
+
+  private startAutoSlide(): void {
+    this.autoTimer = setInterval(() => {
+      this.currentSlide = (this.currentSlide + 1) % this.slides.length;
+    }, 4000);
+  }
+
+  private stopAutoSlide(): void {
+    if (this.autoTimer !== undefined) {
+      clearInterval(this.autoTimer);
+      this.autoTimer = undefined;
+    }
+  }
+
   async signInWithGoogle(): Promise<void> {
+    this.stopAutoSlide();
     const loading = await this.loadingCtrl.create({ message: 'Connecting Google…' });
     await loading.present();
     try {
@@ -40,11 +116,28 @@ export class LoginPage {
       await loading.dismiss();
     } catch (e: unknown) {
       await loading.dismiss();
+      if (this.firebaseAuth.isRedirectInitiatedError(e)) {
+        return;
+      }
       await this.showErr('Google sign-in failed', e, 'Try again in a moment.');
     }
   }
 
+  private async finishGoogleRedirectIfPresent(): Promise<void> {
+    try {
+      const idToken = await this.firebaseAuth.consumeGoogleRedirectResult();
+      if (!idToken) {
+        return;
+      }
+      await this.auth.loginWithGoogleIdToken(idToken);
+      await this.finishLogin();
+    } catch (e) {
+      await this.showErr('Google sign-in failed', e, 'Could not complete Google redirect sign-in.');
+    }
+  }
+
   private async finishLogin(): Promise<void> {
+    this.stopAutoSlide();
     await this.caretakerAlerts.start();
     await this.medData.refresh();
     await this.medNotif.initialize();
@@ -64,8 +157,7 @@ export class LoginPage {
     if (e instanceof HttpErrorResponse) {
       const body = e.error as { error?: string } | undefined;
       if (e.status === 0) {
-        msg =
-          'Could not reach the server. Check internet and API URL. If the API was cold-starting, wait a minute and try again.';
+        msg = 'Could not reach the server. Check internet connection and try again.';
       } else {
         msg = body?.error ?? e.message;
       }

@@ -98,23 +98,6 @@
   <ion-list inset="true" lines="none" class="form-card mm-settings-card ion-margin-top">
     <ion-list-header>
       <ion-label>
-        <span class="material-symbols-outlined section-ic">assistant</span>
-        Health assistant
-      </ion-label>
-    </ion-list-header>
-
-    <ion-item class="mm-settings-item" lines="none" button detail="true" routerLink="/tabs/settings/assistant">
-      <span class="material-symbols-outlined input-lead" slot="start">smart_toy</span>
-      <ion-label class="ion-text-wrap">
-        <h2 class="mm-settings-label">Assistant center</h2>
-        <p class="mm-settings-value">AI mode, weekly digests, and escalation rules</p>
-      </ion-label>
-    </ion-item>
-  </ion-list>
-
-  <ion-list inset="true" lines="none" class="form-card mm-settings-card ion-margin-top">
-    <ion-list-header>
-      <ion-label>
         <span class="material-symbols-outlined section-ic">stethoscope</span>
         Care team
       </ion-label>
@@ -145,15 +128,45 @@
       </ion-label>
     </ion-list-header>
 
+    <!-- Current plan badge -->
     <ion-item lines="none" class="mm-settings-item">
       <span class="material-symbols-outlined input-lead" slot="start">verified</span>
       <ion-label class="ion-text-wrap">
-        <h2 class="mm-settings-label">Plan</h2>
+        <h2 class="mm-settings-label">Your plan</h2>
         <p class="mm-settings-value">
           <span class="mm-plan-pill" [class.mm-plan-pill--plus]="subscription.isPremium">
-            {{ subscription.isPremium ? 'Plus' : 'Free' }}
+            {{ subscription.isPremium ? 'Plus — Lifetime' : 'Free' }}
           </span>
         </p>
+      </ion-label>
+    </ion-item>
+
+    <!-- What Plus includes -->
+    <ion-item lines="none" class="mm-settings-item" *ngIf="!subscription.isPremium">
+      <span class="material-symbols-outlined input-lead" slot="start">star</span>
+      <ion-label class="ion-text-wrap">
+        <h2 class="mm-settings-label">What's in Plus</h2>
+        <p class="mm-settings-value">Family profiles · Caregiver contacts · Education hub · Unlimited access forever</p>
+      </ion-label>
+    </ion-item>
+
+    <!-- Buy button (free users only) -->
+    <div class="mm-settings-actions ion-padding-horizontal ion-padding-bottom" *ngIf="!subscription.isPremium">
+      <ion-button expand="block" shape="round" color="tertiary" (click)="buyLifetime()">
+        <span class="material-symbols-outlined btn-ic" aria-hidden="true">lock_open</span>
+        Buy MedMinder Plus — ₹999 one-time
+      </ion-button>
+      <p class="ion-text-center ion-text-wrap ion-padding-top mm-buy-hint">
+        One-time payment. No subscription, no renewal — yours forever.
+      </p>
+    </div>
+
+    <!-- Lifetime badge (premium users) -->
+    <ion-item lines="none" class="mm-settings-item" *ngIf="subscription.isPremium">
+      <span class="material-symbols-outlined input-lead" slot="start">all_inclusive</span>
+      <ion-label class="ion-text-wrap">
+        <h2 class="mm-settings-label">Lifetime access</h2>
+        <p class="mm-settings-value">All Plus features are permanently unlocked on this account.</p>
       </ion-label>
     </ion-item>
 
@@ -165,22 +178,18 @@
       </ion-label>
     </ion-item>
 
-    <div class="mm-settings-actions ion-padding-horizontal ion-padding-bottom" *ngIf="!subscription.isPremium">
-      <ion-button expand="block" shape="round" fill="outline" color="tertiary" (click)="simulatePlus()">
-        <span class="material-symbols-outlined btn-ic" aria-hidden="true">upgrade</span>
-        Simulate Plus (dev / staging)
-      </ion-button>
-    </div>
-    <div class="mm-settings-actions ion-padding-horizontal ion-padding-bottom" *ngIf="subscription.isPremium">
-      <ion-button expand="block" shape="round" fill="outline" color="medium" (click)="simulateFree()">
-        Simulate Free (dev / staging)
-      </ion-button>
-    </div>
-    <ion-item lines="none" class="mm-settings-footnote-item">
-      <ion-text color="medium" class="ion-text-wrap mm-settings-footnote">
-        App Store / Play subscriptions can replace simulation once integrated. Production APIs may disable simulate-tier.
-      </ion-text>
-    </ion-item>
+    <!-- Dev simulate (collapsed details for dev / staging) -->
+    <details class="mm-dev-simulate">
+      <summary>Dev tools</summary>
+      <div class="ion-padding-horizontal ion-padding-bottom">
+        <ion-button expand="block" size="small" fill="outline" color="medium" (click)="simulatePlus()" *ngIf="!subscription.isPremium">
+          Simulate Plus
+        </ion-button>
+        <ion-button expand="block" size="small" fill="outline" color="medium" (click)="simulateFree()" *ngIf="subscription.isPremium">
+          Simulate Free
+        </ion-button>
+      </div>
+    </details>
   </ion-list>
 
   <ion-list inset="true" lines="none" class="form-card mm-settings-card ion-margin-top">

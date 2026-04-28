@@ -16,4 +16,6 @@ export const environment = {
     projectId: 'medminder-33713',
     appId: '1:926270091656:web:64606d3c0accbab6918a3d',
   },
+  /** Razorpay publishable key ID (safe to expose in frontend). Use rzp_test_... for dev. */
+  razorpayKeyId: '',
 };

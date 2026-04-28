@@ -1,13 +1,87 @@
-<ion-content [scrollY]="false" class="auth-wrap auth-wrap-standalone mm-gradient-bg">
-  <div class="auth-card mm-auth-card">
-    <span class="material-symbols-outlined logo">medication</span>
-    <h1>MedMinder</h1>
-    <p class="sub">Sign in with Google to continue.</p>
+<ion-content [scrollY]="false" class="splash-content">
 
-    <ion-button expand="block" size="large" fill="solid" color="dark" type="button" (click)="signInWithGoogle()">
+  <!-- Decorative floating pills background -->
+  <div class="deco" aria-hidden="true">
+    <span class="deco-pill deco-pill--1"></span>
+    <span class="deco-pill deco-pill--2"></span>
+    <span class="deco-pill deco-pill--3"></span>
+    <span class="deco-pill deco-pill--4"></span>
+    <span class="deco-pill deco-pill--5"></span>
+  </div>
+
+  <!-- Slides track -->
+  <div
+    class="slides-track"
+    (touchstart)="onTouchStart($event)"
+    (touchend)="onTouchEnd($event)"
+    role="region"
+    aria-label="App introduction"
+  >
+    <div
+      class="slides-inner"
+      [style.transform]="'translateX(-' + currentSlide * 100 + '%)'"
+    >
+      @for (slide of slides; track slide.id; let i = $index) {
+        <div
+          class="slide"
+          role="group"
+          [attr.aria-label]="'Slide ' + (i + 1) + ' of ' + slides.length"
+          [attr.aria-hidden]="i !== currentSlide"
+        >
+          <div class="slide-illustration">
+            <img
+              [src]="slide.image"
+              [alt]="slide.tagline"
+              class="slide-img"
+              width="320"
+              height="320"
+            />
+          </div>
+
+          <div class="brand" aria-label="MedMinder">
+            <span class="brand-med">Med</span><span class="brand-minder">Minder</span>
+          </div>
+
+          <h1 class="slide-tagline">{{ slide.tagline }}</h1>
+          <p class="slide-desc">{{ slide.desc }}</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Bottom section: dots + CTA -->
+  <div class="splash-footer">
+    <div class="dots" role="tablist" aria-label="Slide navigation">
+      @for (slide of slides; track slide.id; let i = $index) {
+        <button
+          class="dot"
+          [class.dot--active]="i === currentSlide"
+          (click)="setSlide(i)"
+          role="tab"
+          [attr.aria-selected]="i === currentSlide"
+          [attr.aria-label]="'Go to slide ' + (i + 1)"
+        ></button>
+      }
+    </div>
+
+    <ion-button
+      expand="block"
+      size="large"
+      color="tertiary"
+      type="button"
+      class="google-btn"
+      (click)="signInWithGoogle()"
+    >
+      <img
+        src="assets/icon/google-logo.svg"
+        alt=""
+        aria-hidden="true"
+        class="google-ic"
+        width="20"
+        height="20"
+      />
       Continue with Google
     </ion-button>
-    
- 
   </div>
+
 </ion-content>

@@ -6,6 +6,7 @@ import { environment } from '../../environments/environment';
 import { getApiUrl } from '../../environments/api-url';
 import { withApiTimeout } from '../shared/http-api-timeout';
 import { TokenStorageService } from './token-storage.service';
+import { RazorpayCheckoutService } from './razorpay-checkout.service';
 
 /**
  * Plan tier: server `/api/auth/me` when logged in; falls back to `environment.subscriptionTier`.
@@ -16,7 +17,8 @@ export class SubscriptionService {
 
   constructor(
     private readonly http: HttpClient,
-    private readonly tokens: TokenStorageService
+    private readonly tokens: TokenStorageService,
+    private readonly razorpay: RazorpayCheckoutService
   ) {}
 
   private envDefault(): 'free' | 'premium' {
@@ -84,5 +86,51 @@ export class SubscriptionService {
 
   canUseEducationHub(): boolean {
     return this.isPremium;
+  }
+
+  /**
+   * Full Razorpay lifetime purchase flow:
+   * 1. Create server-side order
+   * 2. Open Razorpay checkout modal
+   * 3. Verify payment server-side → tier set to premium
+   * 4. Update local tier signal
+   *
+   * Throws on failure or cancellation so the caller can show a toast.
+   */
+  async buyLifetime(prefill?: { name?: string; email?: string }): Promise<void> {
+    const apiUrl = getApiUrl();
+
+    // Step 1: create order on server
+    const order = await firstValueFrom(
+      withApiTimeout(
+        this.http.post<{ orderId: string; amount: number; currency: string; keyId: string }>(
+          `${apiUrl}/api/billing/razorpay/create-order`,
+          {}
+        )
+      )
+    );
+
+    // Step 2: open Razorpay checkout (throws if cancelled)
+    const keyId = order.keyId || environment.razorpayKeyId;
+    const result = await this.razorpay.openCheckout({
+      orderId: order.orderId,
+      amount: order.amount,
+      currency: order.currency,
+      keyId,
+      prefill,
+    });
+
+    // Step 3: verify on server
+    await firstValueFrom(
+      withApiTimeout(
+        this.http.post<{ ok: boolean; subscriptionTier: string }>(
+          `${apiUrl}/api/billing/razorpay/verify`,
+          result
+        )
+      )
+    );
+
+    // Step 4: update local tier
+    this.tier$.next('premium');
   }
 }

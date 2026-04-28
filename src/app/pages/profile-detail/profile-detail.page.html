@@ -22,36 +22,9 @@
     <div class="ion-padding intro">
       <p>
         <span class="material-symbols-outlined intro-icon">medication</span>
-        Medications and reminders for this person.
+        You’re viewing <strong>{{ profile.name }}</strong>. This page shows medicines, reminders, and logs for this profile only.
       </p>
     </div>
-
-    <ion-list inset="true" lines="none" class="form-card ion-margin-horizontal">
-      <ion-list-header>
-        <ion-label>Recommended agents</ion-label>
-      </ion-list-header>
-      <ion-item lines="none" *ngIf="recommendedAgents.length === 0">
-        <ion-text color="medium" class="ion-text-wrap">
-          <p>No recommendations available yet.</p>
-        </ion-text>
-      </ion-item>
-      <ion-item lines="none" *ngFor="let rec of recommendedAgents">
-        <ion-label class="ion-text-wrap">
-          <h3>
-            {{ agentDisplayName(rec.agentId) }}
-            <ion-badge [color]="agentPriorityColor(rec.priority)" class="ion-margin-start">
-              {{ agentPriorityLabel(rec.priority) }}
-            </ion-badge>
-          </h3>
-          <p>{{ rec.reason }}</p>
-        </ion-label>
-      </ion-item>
-      <div class="ion-padding-horizontal ion-padding-bottom">
-        <ion-button expand="block" fill="outline" color="primary" routerLink="/tabs/settings/assistant">
-          Open assistant center
-        </ion-button>
-      </div>
-    </ion-list>
 
     <!-- Free tier: explain where caretaker invites live (Plus); avoids “no option after login” confusion -->
     <ion-list

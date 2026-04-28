@@ -37,7 +37,13 @@ export class TodayPage implements ViewWillEnter {
   /** ISO week (Mon–Sun) for the selected day */
   weeklySummary: AdherencePeriodSummary | null = null;
   /** Mini week chart: one cell per day Mon–Sun */
-  weekStrip: { label: string; tone: 'empty' | 'bad' | 'mid' | 'good' }[] = [];
+  weekStrip: {
+    dateKey: string;
+    label: string;
+    tone: 'empty' | 'bad' | 'mid' | 'good';
+    adherencePercent: number | null;
+    isFuture: boolean;
+  }[] = [];
   /** Full-screen expanded detail (same tone as tapped stack card) */
   expandedDose: TodayDose | null = null;
   expandedDeckIndex = 0;
@@ -115,6 +121,44 @@ export class TodayPage implements ViewWillEnter {
   onHistoryDatePickerChange(event: Event): void {
     const detail = event as CustomEvent<{ value?: string | null }>;
     this.onDateChanged(detail.detail?.value);
+  }
+
+  onWeekStripDateSelect(dateKey: string): void {
+    this.onDateChanged(dateKey);
+  }
+
+  weekToneLabel(tone: 'empty' | 'bad' | 'mid' | 'good'): string {
+    if (tone === 'good') {
+      return 'on track';
+    }
+    if (tone === 'mid') {
+      return 'partly logged';
+    }
+    if (tone === 'bad') {
+      return 'needs attention';
+    }
+    return 'no scheduled doses';
+  }
+
+  weekCellAriaLabel(day: {
+    dateKey: string;
+    label: string;
+    tone: 'empty' | 'bad' | 'mid' | 'good';
+    adherencePercent: number | null;
+    isFuture: boolean;
+  }): string {
+    const dateText = new Date(`${day.dateKey}T12:00:00`).toLocaleDateString(undefined, {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
+    });
+    if (day.isFuture) {
+      return `${dateText}: upcoming day`;
+    }
+    if (day.adherencePercent == null) {
+      return `${dateText}: no scheduled doses`;
+    }
+    return `${dateText}: ${day.adherencePercent}% adherence, ${this.weekToneLabel(day.tone)}`;
   }
 
   private parseLocalDateKey(key: string): Date {
@@ -267,7 +311,7 @@ export class TodayPage implements ViewWillEnter {
   ): Promise<void> {
     const alert = await this.alertCtrl.create({
       header: 'Choose profile',
-      message: 'Select who this medication is for.',
+      message: 'Select who this medication is for, or create a new profile.',
       inputs: profiles.map((p, idx) => ({
         type: 'radio',
         label: p.name,
@@ -276,6 +320,14 @@ export class TodayPage implements ViewWillEnter {
       })),
       buttons: [
         { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'New profile',
+          role: 'secondary',
+          handler: () => {
+            const next = encodeURIComponent('/tabs/profiles/:id/medications/add');
+            void this.router.navigateByUrl(`/tabs/profiles/add?next=${next}`);
+          },
+        },
         {
           text: 'Continue',
           handler: (profileId: string | undefined) => {
@@ -319,12 +371,14 @@ export class TodayPage implements ViewWillEnter {
     meds: Medication[]
   ): void {
     const dates = enumerateDatesInclusive(monday, sunday);
+    const todayKey = formatLocalDate(new Date());
     this.weekStrip = dates.map((d) => {
       const dayLogs = weekLogs.filter((l) => l.date === d);
       const s = this.adherence.summarizePeriod(dayLogs, meds, d, d);
       const pct = s.adherencePercent;
+      const isFuture = d > todayKey;
       let tone: 'empty' | 'bad' | 'mid' | 'good' = 'empty';
-      if (s.totalScheduled > 0 && pct != null) {
+      if (!isFuture && s.totalScheduled > 0 && pct != null) {
         if (pct < 40) {
           tone = 'bad';
         } else if (pct < 80) {
@@ -334,7 +388,13 @@ export class TodayPage implements ViewWillEnter {
         }
       }
       const label = new Date(`${d}T12:00:00`).toLocaleDateString(undefined, { weekday: 'narrow' });
-      return { label, tone };
+      return {
+        dateKey: d,
+        label,
+        tone,
+        adherencePercent: !isFuture && s.totalScheduled > 0 ? s.adherencePercent : null,
+        isFuture,
+      };
     });
   }
 

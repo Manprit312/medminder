@@ -16,6 +16,7 @@ import { SubscriptionService } from '../../services/subscription.service';
 export class ProfileFormPage implements OnInit, ViewWillEnter {
   isEdit = false;
   profileId = '';
+  nextAfterCreate = '';
   /** True while the initial `refresh()` for this visit runs. */
   pageLoading = true;
   name = '';
@@ -40,6 +41,7 @@ export class ProfileFormPage implements OnInit, ViewWillEnter {
     this.isEdit = url.includes('/edit');
     this.profileId =
       this.route.snapshot.paramMap.get('id') ?? this.route.parent?.snapshot.paramMap.get('id') ?? '';
+    this.nextAfterCreate = this.route.snapshot.queryParamMap.get('next')?.trim() ?? '';
   }
 
   async ionViewWillEnter(): Promise<void> {
@@ -93,7 +95,7 @@ export class ProfileFormPage implements OnInit, ViewWillEnter {
       }
       const profile = await this.medData.createProfile(n, caregiver, this.formPatientGroup);
       await this.medNotif.rescheduleAll();
-      await this.router.navigate(['/tabs/profiles', profile.id]);
+      await this.router.navigateByUrl(this.resolveCreateSuccessUrl(profile.id));
     } finally {
       await loading.dismiss();
     }
@@ -132,5 +134,13 @@ export class ProfileFormPage implements OnInit, ViewWillEnter {
       this.isEdit &&
       !!(this.formCaregiverEmail?.trim() || this.formCaregiverPhone?.trim())
     );
+  }
+
+  private resolveCreateSuccessUrl(profileId: string): string {
+    const next = this.nextAfterCreate;
+    if (next.startsWith('/tabs/')) {
+      return next.replace(':id', profileId);
+    }
+    return `/tabs/profiles/${profileId}`;
   }
 }

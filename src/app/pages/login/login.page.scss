@@ -1,12 +1,201 @@
-@use '../auth-shell.scss';
+// ── Splash screen ──────────────────────────────────────────────────────────
 
-.api-hint {
-  margin-top: 1.5rem;
-  font-size: 0.72rem;
-  opacity: 0.45;
-  word-break: break-all;
+.splash-content {
+  --background: #f2f2e6;
+  --overflow: hidden;
+}
 
-  code {
-    font-size: 0.68rem;
+// ── Decorative floating pills ───────────────────────────────────────────────
+
+.deco {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.deco-pill {
+  position: absolute;
+  border-radius: 999px;
+  opacity: 0.15;
+}
+
+.deco-pill--1 {
+  width: 44px;
+  height: 18px;
+  background: #5f6956;
+  top: 8%;
+  left: 7%;
+  transform: rotate(-30deg);
+}
+
+.deco-pill--2 {
+  width: 28px;
+  height: 12px;
+  background: #ff6b35;
+  top: 14%;
+  right: 10%;
+  transform: rotate(20deg);
+}
+
+.deco-pill--3 {
+  width: 38px;
+  height: 16px;
+  background: #5f6956;
+  bottom: 28%;
+  left: 5%;
+  transform: rotate(50deg);
+}
+
+.deco-pill--4 {
+  width: 52px;
+  height: 20px;
+  background: #ff6b35;
+  bottom: 22%;
+  right: 6%;
+  transform: rotate(-15deg);
+}
+
+.deco-pill--5 {
+  width: 22px;
+  height: 22px;
+  background: #8a9480;
+  border-radius: 50%;
+  top: 42%;
+  left: 4%;
+}
+
+// ── Slides ──────────────────────────────────────────────────────────────────
+
+.slides-track {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  flex: 1;
+  height: calc(100% - 170px);
+}
+
+.slides-inner {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.slide {
+  flex: 0 0 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 2rem 0;
+  text-align: center;
+  gap: 0;
+}
+
+// ── Illustration ────────────────────────────────────────────────────────────
+
+.slide-illustration {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  isolation: isolate;
+}
+
+.slide-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 20px rgba(95, 105, 86, 0.15));
+}
+
+// ── Brand name ──────────────────────────────────────────────────────────────
+
+.brand {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 2.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 0.75rem;
+}
+
+.brand-med {
+  color: #5f6956;
+}
+
+.brand-minder {
+  color: #ff6b35;
+}
+
+// ── Text ────────────────────────────────────────────────────────────────────
+
+.slide-tagline {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: #3a4134;
+}
+
+.slide-desc {
+  font-size: 0.97rem;
+  line-height: 1.55;
+  color: rgba(26, 26, 26, 0.68);
+  margin: 0;
+  max-width: 300px;
+}
+
+// ── Footer: dots + button ───────────────────────────────────────────────────
+
+.splash-footer {
+  position: relative;
+  z-index: 2;
+  padding: 1rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(95, 105, 86, 0.3);
+  padding: 0;
+  cursor: pointer;
+  transition: width 0.25s ease, background 0.25s ease;
+
+  &.dot--active {
+    width: 24px;
+    border-radius: 4px;
+    background: #5f6956;
   }
+}
+
+.google-btn {
+  width: 100%;
+  --border-radius: 32px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  --box-shadow: 0 4px 18px rgba(255, 107, 53, 0.32);
+}
+
+.google-ic {
+  margin-inline-end: 10px;
+  vertical-align: middle;
+  filter: brightness(10);
 }

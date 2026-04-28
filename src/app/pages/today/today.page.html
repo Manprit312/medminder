@@ -58,27 +58,6 @@
     </section>
 
     <div class="mm-today-panels ion-padding-horizontal">
-      <div class="mm-surface-cream mm-assistant-card" aria-label="Health assistant briefing">
-        <h3 class="mm-assistant-card__title">
-          <span class="material-symbols-outlined" aria-hidden="true">smart_toy</span>
-          Health assistant
-        </h3>
-        <ul class="mm-assistant-card__list">
-          <li *ngFor="let b of assistantBullets">{{ b }}</li>
-        </ul>
-        <p class="mm-assistant-card__foot">{{ assistantFooter }}</p>
-        <div *ngIf="topAgentRecommendations.length > 0" class="ion-margin-top">
-          <p class="mm-assistant-card__foot">Recommended agents</p>
-          <p *ngFor="let rec of topAgentRecommendations" class="ion-no-margin ion-margin-top">
-            <ion-badge [color]="agentPriorityColor(rec.priority)">{{ agentPriorityLabel(rec.priority) }}</ion-badge>
-            {{ rec.reason }}
-          </p>
-          <ion-button fill="clear" size="small" class="ion-no-padding ion-margin-top" routerLink="/tabs/settings/assistant">
-            Open assistant center
-          </ion-button>
-        </div>
-      </div>
-
       <div class="mm-progress-compact mm-surface-cream mm-progress-premium">
         <div class="mm-progress-premium__head">
           <span class="mm-progress-premium__eyebrow">Today's progress</span>
@@ -106,17 +85,33 @@
           <span class="weekly-adh__value">{{ weeklySummary.adherencePercent }}%</span>
           <span class="weekly-adh__label">adherence</span>
         </p>
+        <p class="weekly-help">Tap a day to open that date’s doses.</p>
         <div
           class="mm-week-strip"
           *ngIf="weekStrip.length > 0"
-          role="img"
-          [attr.aria-label]="'Daily adherence: ' + weekStrip.length + ' days'"
+          role="listbox"
+          [attr.aria-label]="'Daily adherence for this week. Select a day to view doses.'"
         >
-          <div *ngFor="let d of weekStrip" class="mm-week-strip__cell">
-            <span class="mm-week-strip__day">{{ d.label }}</span>
-            <span class="mm-week-strip__bar" [class]="'mm-week-strip__bar--' + d.tone"></span>
-          </div>
+          <button
+            *ngFor="let d of weekStrip"
+            type="button"
+            class="mm-week-strip__cell mm-week-strip__cell-btn"
+            [class.mm-week-strip__cell--active]="d.dateKey === selectedDateKey"
+            (click)="onWeekStripDateSelect(d.dateKey)"
+            [attr.aria-label]="weekCellAriaLabel(d)"
+            [attr.aria-selected]="d.dateKey === selectedDateKey"
+          >
+            <span class="mm-week-strip__bar" [class]="'mm-week-strip__bar--' + d.tone">
+              <span style="display:flex;align-items:center;justify-content:center;height:100%;font-size:.8rem;font-weight:700;">
+                {{ d.label }}
+              </span>
+            </span>
+            <span class="mm-week-strip__pct">{{ d.isFuture ? 'Soon' : d.adherencePercent == null ? '—' : d.adherencePercent + '%' }}</span>
+          </button>
         </div>
+        <p class="weekly-help weekly-help--legend">
+          Green: on track · Pink: needs attention · Gold: partial · Gray: upcoming / no doses
+        </p>
       </div>
     </div>
 
@@ -397,40 +392,6 @@
           </ul>
         </div>
       </div>
-
-      <section class="mm-dose-checkin" aria-label="How are you feeling after this dose">
-        <h3 class="mm-dose-checkin__title">Quick check-in (optional)</h3>
-        <p class="mm-dose-checkin__hint">Educational only. Use this to track how you felt after this dose.</p>
-        <div class="mm-dose-checkin__actions">
-          <ion-button
-            size="small"
-            fill="outline"
-            color="success"
-            [strong]="doseCheckinStatus(dose) === 'none'"
-            (click)="setDoseCheckin(dose, 'none')"
-          >
-            No symptoms
-          </ion-button>
-          <ion-button
-            size="small"
-            fill="outline"
-            color="warning"
-            [strong]="doseCheckinStatus(dose) === 'mild'"
-            (click)="setDoseCheckin(dose, 'mild')"
-          >
-            Mild symptoms
-          </ion-button>
-          <ion-button
-            size="small"
-            fill="outline"
-            color="danger"
-            [strong]="doseCheckinStatus(dose) === 'concerning'"
-            (click)="setDoseCheckin(dose, 'concerning')"
-          >
-            Concerning
-          </ion-button>
-        </div>
-      </section>
 
       <p class="mm-expanded-footnote">
         <span class="material-symbols-outlined" aria-hidden="true">info</span>

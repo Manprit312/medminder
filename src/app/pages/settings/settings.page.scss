@@ -177,3 +177,26 @@ ion-list-header {
   font-size: 0.85rem;
   color: var(--ion-color-medium);
 }
+
+.mm-buy-hint {
+  font-size: 0.82rem;
+  color: var(--mm-text-muted);
+  margin: 0;
+  padding-bottom: 4px;
+}
+
+.mm-dev-simulate {
+  padding: 0 16px 8px;
+
+  summary {
+    font-size: 0.75rem;
+    color: var(--ion-color-medium);
+    cursor: pointer;
+    padding: 8px 0;
+    list-style: none;
+    user-select: none;
+
+    &::-webkit-details-marker { display: none; }
+    &::before { content: '⚙ '; }
+  }
+}
