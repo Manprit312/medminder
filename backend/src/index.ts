@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import express, { type NextFunction } from 'express';
@@ -37,6 +38,7 @@ import { caretakerRouter } from './routes/caretaker.js';
 import { profilesRouter } from './routes/profiles.js';
 import { medicationsRouter } from './routes/medications.js';
 import { doseLogsRouter } from './routes/dose-logs.js';
+import { userRouter } from './routes/user.js';
 
 const app = express();
 const port = Number(process.env.PORT ?? 3847);
@@ -84,6 +86,14 @@ app.get('/health', (_req, res) => {
   res.json({ ok: true, service: 'medminder-api' });
 });
 
+// Public static pages (no auth required)
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const publicDir = path.join(__dirname, '..', 'public');
+app.use(express.static(publicDir));
+app.get('/privacy', (_req, res) => {
+  res.sendFile(path.join(publicDir, 'privacy-policy.html'));
+});
+
 app.use('/api/auth', authRouter);
 app.use('/api/agents', agentsRouter);
 app.use('/api/billing', billingRouter);
@@ -91,6 +101,7 @@ app.use('/api/caretaker', caretakerRouter);
 app.use('/api/profiles', profilesRouter);
 app.use('/api/medications', medicationsRouter);
 app.use('/api/dose-logs', doseLogsRouter);
+app.use('/api/user', userRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' });

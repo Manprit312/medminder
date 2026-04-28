@@ -183,7 +183,7 @@ caretakerRouter.get(
   })
 );
 
-/** POST { token } — authenticated user must match invitee phone (or legacy invitee email) */
+/** POST { token } — any authenticated user who holds the valid token can accept */
 caretakerRouter.post(
   '/invites/accept',
   authMiddleware,
@@ -194,26 +194,15 @@ caretakerRouter.post(
       return;
     }
     const caretakerId = req.userId!;
-    const caretaker = await queryOne<{ email: string; phone: string | null }>(
-      'SELECT email, phone FROM users WHERE id = ?',
-      [caretakerId]
-    );
-    if (!caretaker) {
-      res.status(401).json({ error: 'Unauthorized' });
-      return;
-    }
-    const caretakerEmail = caretaker.email.trim().toLowerCase();
-    const caretakerPhoneNorm = caretaker.phone ? normalizePhoneE164(caretaker.phone) : null;
     const tokenHash = hashToken(token);
     const inv = await queryOne<{
       id: string;
       profile_id: string;
-      invitee_email: string;
-      invitee_phone: string | null;
+      inviter_user_id: string;
       expires_at: string;
       status: string;
     }>(
-      'SELECT id, profile_id, invitee_email, invitee_phone, expires_at, status FROM caretaker_invites WHERE token_hash = ?',
+      'SELECT id, profile_id, inviter_user_id, expires_at, status FROM caretaker_invites WHERE token_hash = ?',
       [tokenHash]
     );
     if (!inv || inv.status !== 'pending') {
@@ -224,13 +213,9 @@ caretakerRouter.post(
       res.status(410).json({ error: 'Invite expired' });
       return;
     }
-    if (inv.invitee_phone) {
-      if (!caretakerPhoneNorm || caretakerPhoneNorm !== inv.invitee_phone) {
-        res.status(403).json({ error: 'Sign in with the invited phone number to accept' });
-        return;
-      }
-    } else if (inv.invitee_email.trim().toLowerCase() !== caretakerEmail) {
-      res.status(403).json({ error: 'Sign in with the invited email address to accept' });
+    // Prevent the profile owner from accepting their own invite
+    if (inv.inviter_user_id === caretakerId) {
+      res.status(400).json({ error: 'You cannot accept your own invite' });
       return;
     }
 
