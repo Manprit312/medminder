@@ -2,9 +2,11 @@ import { Capacitor } from '@capacitor/core';
 import { environment } from './environment';
 
 /**
- * API base URL for the current runtime. On native Android, rewrites `localhost` /
- * `127.0.0.1` to `10.0.2.2` so a dev server on the host is reachable from the
- * emulator (physical devices still need your LAN IP in `environment`).
+ * API base URL. Uses `environment.apiUrl`.
+ *
+ * - **Browser (`ionic serve`)**: uses configured URL as-is (often localhost → local backend).
+ * - **Android emulator + localhost**: `getApiUrl()` rewrites host to `10.0.2.2` so the emulator reaches the host machine.
+ * - **Physical device**: `localhost` points at the phone itself — use a public HTTPS URL (default in env) or your PC’s LAN IP for a local backend.
  */
 export function getApiUrl(): string {
   const configured = environment.apiUrl;

@@ -5,6 +5,7 @@ import { getApiUrl } from '../../environments/api-url';
 import { withApiTimeout } from '../shared/http-api-timeout';
 import { SubscriptionService } from './subscription.service';
 import { TokenStorageService } from './token-storage.service';
+import { FirebaseAuthService } from './firebase-auth.service';
 
 export interface AuthUser {
   id: string;
@@ -18,7 +19,8 @@ export class AuthService {
   constructor(
     private readonly http: HttpClient,
     private readonly tokens: TokenStorageService,
-    private readonly subscription: SubscriptionService
+    private readonly subscription: SubscriptionService,
+    private readonly firebaseAuth: FirebaseAuthService
   ) {}
 
   isLoggedIn(): boolean {
@@ -127,6 +129,7 @@ export class AuthService {
   }
 
   async logout(): Promise<void> {
+    await this.firebaseAuth.signOutGoogleSession();
     await this.tokens.clear();
     this.subscription.resetToEnvironmentDefault();
   }

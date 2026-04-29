@@ -25,7 +25,7 @@
   --mm-duration: 0.28s;
 }
 
-/* Headings — Fraunces (serif), body inherits DM Sans from Ionic */
+/* Headings — DM Sans bold, same as body for a clean modern look */
 ion-toolbar ion-title,
 .mm-empty-title,
 .intro-title,
@@ -36,7 +36,8 @@ ion-toolbar ion-title,
 app-profile-detail h1,
 app-medication-form ion-title {
   font-family: var(--mm-font-heading);
-  font-optical-sizing: auto;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .intro-title {
@@ -681,26 +682,58 @@ app-dose-log .big-actions ion-button {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transform-origin: 50% 85%;
+  transform-origin: center bottom;
+  will-change: transform, opacity;
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .mm-expanded-panel {
-    animation: mm-expanded-grow 0.42s var(--mm-ease-out) both;
+    animation: mm-card-pull-enter 0.38s var(--mm-ease-out) both;
+  }
+
+  .mm-expanded-panel--closing {
+    animation: mm-card-pull-exit 0.30s cubic-bezier(0.4, 0, 1, 1) both !important;
   }
 }
 
-@keyframes mm-expanded-grow {
+/* Card enters: rises from the deck position and unfurls to full screen */
+@keyframes mm-card-pull-enter {
   0% {
-    opacity: 0.96;
-    transform: scale(0.88);
-    border-radius: 40px;
+    opacity: 0;
+    transform: translateY(56px) scale(0.82);
+    border-radius: 28px;
+  }
+  50% {
+    opacity: 1;
+    border-radius: 16px;
   }
   100% {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0) scale(1);
     border-radius: 0;
   }
+}
+
+/* Card exits: shrinks back down into the deck */
+@keyframes mm-card-pull-exit {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    border-radius: 0;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(64px) scale(0.80);
+    border-radius: 28px;
+  }
+}
+
+/* Card lift — brief "peel up" when the user taps */
+.mm-rc--pulling {
+  transform: translateY(-8px) scale(1.025) !important;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35) !important;
+  transition: transform 0.14s ease-out, box-shadow 0.14s ease-out;
+  z-index: 9999;
 }
 
 .mm-expanded-toolbar {

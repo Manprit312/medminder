@@ -120,8 +120,8 @@
     <div class="mm-reminder-stack ion-padding mm-reminder-stack--spaced">
       <article
         *ngFor="let dose of dosesForDeck; let i = index"
-        [class]="reminderCardClass(dose, i) + ' ' + doseCardStatusClass(dose)"
-        [style.zIndex]="i + 1"
+        [class]="reminderCardClass(dose, i) + ' ' + doseCardStatusClass(dose) + (pulledCardIndex === i ? ' mm-rc--pulling' : '')"
+        [style.zIndex]="pulledCardIndex === i ? 9999 : i + 1"
         (click)="openDose(dose)"
       >
         <div class="mm-track-row">
@@ -156,7 +156,7 @@
         </div>
       </article>
     </div>
-    <div class="mm-meals-wrap ion-padding-horizontal ion-margin-bottom" *ngIf="mealLogDateKey">
+    <!-- <div class="mm-meals-wrap ion-padding-horizontal ion-margin-bottom" *ngIf="mealLogDateKey">
       <div class="mm-meals-card mm-surface-cream mm-meals-compact">
         <h3 class="mm-meals-title">
           <span class="material-symbols-outlined mm-meals-title-ic" aria-hidden="true">restaurant</span>
@@ -207,7 +207,7 @@
           ></ion-textarea>
         </ion-item>
       </div>
-    </div>
+    </div> -->
     <div class="mm-today-sticky-cta">
       <ion-button expand="block" shape="round" color="tertiary" class="mm-sticky-cta-btn" (click)="addMedicationNow()">
         <span class="material-symbols-outlined btn-lead" aria-hidden="true">add_circle</span>
@@ -252,7 +252,7 @@
   [attr.aria-label]="dose.medName + ' details'"
 >
   <div
-    [class]="'mm-expanded-panel ' + expandedToneClass()"
+    [class]="'mm-expanded-panel ' + expandedToneClass() + (panelClosing ? ' mm-expanded-panel--closing' : '')"
     (click)="$event.stopPropagation()"
   >
     <header class="mm-expanded-toolbar">

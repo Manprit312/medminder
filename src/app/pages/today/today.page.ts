@@ -78,6 +78,11 @@ export class TodayPage implements ViewWillEnter {
   expandedDateStatus: 'taken' | 'skipped' | 'missed' | 'pending' = 'pending';
   historyStatusByDate: Record<string, 'taken' | 'skipped' | 'missed'> = {};
 
+  /** Index of card currently being "pulled" (lift animation before panel opens) */
+  pulledCardIndex: number | null = null;
+  /** True while the close animation is playing */
+  panelClosing = false;
+
   /** Local date key (YYYY-MM-DD) for meal journal persistence */
   mealLogDateKey = '';
   /** Optional notes — synced to device storage only */
@@ -664,14 +669,22 @@ export class TodayPage implements ViewWillEnter {
 
   async openDose(dose: TodayDose): Promise<void> {
     const idx = this.dosesForDeck.findIndex((d) => d.key === dose.key);
+    // Briefly show card lift, then open the panel
+    this.pulledCardIndex = idx >= 0 ? idx : 0;
+    await new Promise<void>(r => setTimeout(r, 160));
     this.expandedDeckIndex = idx >= 0 ? idx : 0;
     this.expandedDose = dose;
+    this.pulledCardIndex = null;
     await this.loadExpandedHistory(dose);
   }
 
   closeExpanded(): void {
-    this.expandedDose = null;
-    this.expandedHistoryLoading = false;
+    this.panelClosing = true;
+    setTimeout(() => {
+      this.expandedDose = null;
+      this.expandedHistoryLoading = false;
+      this.panelClosing = false;
+    }, 300);
   }
 
   /** Jump to medication form (times, stock, notes) without going through Family. */
