@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { initializeApp, type FirebaseApp } from 'firebase/app';
-import { GoogleAuthProvider, getAuth, getRedirectResult, signInWithPopup, signInWithRedirect } from 'firebase/auth';
+import { GoogleAuthProvider, getAuth, getRedirectResult, signInWithCredential, signInWithPopup, signInWithRedirect, signOut } from 'firebase/auth';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -72,7 +72,12 @@ export class FirebaseAuthService {
       if (!idToken) {
         throw new Error(this.nativeGoogleMissingIdTokenMessage());
       }
-      return idToken;
+      /** Backend uses Firebase Admin `verifyIdToken` — needs a Firebase ID token, not the raw Google OAuth token from the native SDK. */
+      const auth = getAuth(this.getApp());
+      const accessToken = user.authentication?.accessToken ?? undefined;
+      const credential = GoogleAuthProvider.credential(idToken, accessToken);
+      const firebaseCred = await signInWithCredential(auth, credential);
+      return firebaseCred.user.getIdToken();
     } catch (err: unknown) {
       throw new Error(this.explainNativeGoogleError(err));
     }
@@ -117,8 +122,14 @@ export class FirebaseAuthService {
     return raw || 'Google sign-in failed.';
   }
 
-  /** Signs out of the native Google session (no-op on web). Safe to call even if not signed in with Google. */
+  /** Signs out Firebase + native Google session on device; Firebase only on web after Google popup. */
   async signOutGoogleSession(): Promise<void> {
+    try {
+      const auth = getAuth(this.getApp());
+      await signOut(auth);
+    } catch {
+      /* ignore */
+    }
     if (!Capacitor.isNativePlatform()) {
       return;
     }
