@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">MedMinder</string>
     <string name="title_activity_main">MedMinder</string>
-    <string name="package_name">app.medminder.app</string>
-    <string name="custom_url_scheme">app.medminder.app</string>
+    <string name="package_name">app.medminder.med</string>
+    <string name="custom_url_scheme">app.medminder.med</string>
 </resources>

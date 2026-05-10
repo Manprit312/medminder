@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
-import { LocalNotifications } from '@capacitor/local-notifications';
+import { LocalNotifications, type LocalNotificationSchema } from '@capacitor/local-notifications';
+import {
+  MM_ANDROID_CHANNEL_CARETAKER,
+  MM_NOTIF_CARETAKER_ACCENT,
+} from '../notification-theme';
 import { Preferences } from '@capacitor/preferences';
 import { BehaviorSubject } from 'rxjs';
 import { CaretakerAlert, CaretakerApiService } from './caretaker-api.service';
@@ -70,6 +74,26 @@ export class CaretakerAlertsService {
     }
   }
 
+  private async ensureCaretakerAndroidChannel(): Promise<void> {
+    if (Capacitor.getPlatform() !== 'android') {
+      return;
+    }
+    try {
+      await LocalNotifications.createChannel({
+        id: MM_ANDROID_CHANNEL_CARETAKER,
+        name: 'MedMinder · Family alerts',
+        description: 'Missed-dose alerts for people you care for — titled “Family alert · [name]”.',
+        importance: 4,
+        visibility: 1,
+        lights: true,
+        lightColor: MM_NOTIF_CARETAKER_ACCENT,
+        vibration: true,
+      });
+    } catch {
+      /* channel may exist */
+    }
+  }
+
   private async notifyNewAlerts(alerts: CaretakerAlert[]): Promise<void> {
     const fresh = alerts.filter((a) => !this.seenIds.has(a.id));
     if (fresh.length === 0) {
@@ -89,15 +113,22 @@ export class CaretakerAlertsService {
     if (perm.display !== 'granted') {
       return;
     }
+    await this.ensureCaretakerAndroidChannel();
     const now = Date.now();
-    await LocalNotifications.schedule({
-      notifications: fresh.map((a, idx) => ({
+    const notifications: LocalNotificationSchema[] = fresh.map((a, idx) => {
+      const n: LocalNotificationSchema = {
         id: this.notificationId(a.id, idx),
-        title: `${a.profileName} missed medicine`,
-        body: `${a.medicationName} at ${a.scheduledTime} on ${a.date}.`,
+        title: `Family alert · ${a.profileName}`,
+        body: `${a.profileName} missed ${a.medicationName} (due ${a.scheduledTime}, ${a.date}). Tap to open MedMinder.`,
         schedule: { at: new Date(now + 500 + idx * 150), allowWhileIdle: true },
-      })),
+      };
+      if (Capacitor.getPlatform() === 'android') {
+        n.channelId = MM_ANDROID_CHANNEL_CARETAKER;
+        n.iconColor = MM_NOTIF_CARETAKER_ACCENT;
+      }
+      return n;
     });
+    await LocalNotifications.schedule({ notifications });
   }
 
   private notificationId(seed: string, salt: number): number {

@@ -5,6 +5,11 @@ import { App } from '@capacitor/app';
 import { LocalNotifications, type LocalNotificationSchema } from '@capacitor/local-notifications';
 import { ToastController } from '@ionic/angular';
 import { MedDataService } from './med-data.service';
+import {
+  MM_ANDROID_CHANNEL_DOSE,
+  MM_NOTIF_ICON_COLOR,
+  MM_NOTIF_LED_COLOR,
+} from '../notification-theme';
 
 const ACTION_TYPE_ID = 'MED_DOSE_V1';
 const ACTION_TAKEN = 'TAKEN';
@@ -62,6 +67,70 @@ function parseTime(t: string): { hour: number; minute: number } | null {
 
 function encodeTimeTokenForDoseRoute(scheduledTime: string): string {
   return scheduledTime.trim().replace(/:/g, '-');
+}
+
+/** 24h "HH:MM" → locale-friendly time for notification body (e.g. 9:00 AM). */
+function formatTimeForNotificationBody(timeKey: string): string {
+  const parsed = parseTime(timeKey);
+  if (!parsed) {
+    return timeKey.trim();
+  }
+  const d = new Date();
+  d.setHours(parsed.hour, parsed.minute, 0, 0);
+  return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
+/**
+ * Local dose reminders: always name the **profile (person)** so multi-profile households
+ * can tell “my dose” vs “Mom’s dose” vs family alerts (caretaker push uses different wording).
+ */
+function doseReminderNotificationText(
+  profileName: string,
+  medName: string,
+  friendlyTime: string,
+  profileCount: number
+): { title: string; body: string } {
+  if (profileCount > 1) {
+    return {
+      title: `Dose for ${profileName}`,
+      body: `${medName} at ${friendlyTime}. Tap to log in MedMinder.`,
+    };
+  }
+  return {
+    title: `${profileName} · dose reminder`,
+    body: `${medName} at ${friendlyTime}. Tap to log taken or missed.`,
+  };
+}
+
+/** Bundled web asset (same art as med detail). Android uses a drawable copy for `largeIcon`. */
+const NOTIF_ILLUSTRATION_WEB_PATH = 'assets/illustrations/med-detail-pill.png';
+/** Must match `android/app/src/main/res/drawable/ic_notif_dose_reminder.png` (no extension in JS). */
+const ANDROID_NOTIF_LARGE_ICON = 'ic_notif_dose_reminder';
+
+function nativeNotificationImage(): Pick<
+  LocalNotificationSchema,
+  'largeIcon' | 'attachments' | 'iconColor'
+> {
+  if (!Capacitor.isNativePlatform()) {
+    return {};
+  }
+  if (Capacitor.getPlatform() === 'android') {
+    return {
+      largeIcon: ANDROID_NOTIF_LARGE_ICON,
+      iconColor: MM_NOTIF_ICON_COLOR,
+    };
+  }
+  if (Capacitor.getPlatform() === 'ios') {
+    return {
+      attachments: [
+        {
+          id: 'mm-dose-illus',
+          url: `res:///${NOTIF_ILLUSTRATION_WEB_PATH}`,
+        },
+      ],
+    };
+  }
+  return {};
 }
 
 /**
@@ -207,11 +276,15 @@ export class MedicationReminderNotificationsService {
     }
     try {
       await LocalNotifications.createChannel({
-        id: 'medminder',
-        name: 'Medication reminders',
-        description: 'Daily medication reminders',
+        id: MM_ANDROID_CHANNEL_DOSE,
+        name: 'MedMinder · Dose reminders',
+        description:
+          'Medication reminders — each alert names which profile (person) the dose is for. Private to this device.',
         importance: 4,
         visibility: 1,
+        lights: true,
+        lightColor: MM_NOTIF_LED_COLOR,
+        vibration: true,
       });
     } catch {
       /* channel may exist */
@@ -259,6 +332,7 @@ export class MedicationReminderNotificationsService {
 
     const profiles = this.medData.getProfilesSnapshot();
     const profileNames = new Map(profiles.map((p) => [p.id, p.name]));
+    const profileCount = profiles.length;
     const meds = this.medData.getMedicationsSnapshot().filter((m) => m.enabled);
 
     const notifications: LocalNotificationSchema[] = [];
@@ -282,10 +356,12 @@ export class MedicationReminderNotificationsService {
         // IMPORTANT (Android): The native plugin evaluates `every` before `on`. If both are set,
         // it uses setRepeating(interval) from *now* and never applies hour/minute — reminders won't
         // fire at dose times. iOS evaluates `on` first; omitting `every` is correct on both.
+        const friendlyTime = formatTimeForNotificationBody(timeKey);
+        const { title, body } = doseReminderNotificationText(pname, m.name, friendlyTime, profileCount);
         const n: LocalNotificationSchema = {
           id: stableNotificationId(m.id, timeKey),
-          title: 'Medication reminder',
-          body: `${m.name} — ${pname} · ${timeKey}`,
+          title,
+          body,
           actionTypeId: ACTION_TYPE_ID,
           extra,
           schedule: {
@@ -293,9 +369,10 @@ export class MedicationReminderNotificationsService {
             repeats: true,
             allowWhileIdle: true,
           },
+          ...nativeNotificationImage(),
         };
         if (Capacitor.getPlatform() === 'android') {
-          n.channelId = 'medminder';
+          n.channelId = MM_ANDROID_CHANNEL_DOSE;
         }
         notifications.push(n);
       }
@@ -362,12 +439,13 @@ export class MedicationReminderNotificationsService {
     const at = new Date(Date.now() + sec * 1000);
     const n: LocalNotificationSchema = {
       id: TEST_NOTIFICATION_ID,
-      title: 'MedMinder test',
-      body: `This is a local notification. Fires at ${at.toLocaleTimeString()}.`,
+      title: 'MedMinder · test alert',
+      body: `Sample only. Real reminders look like “Dose for [name]” or “[name] · dose reminder”. (${at.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })})`,
       schedule: { at, allowWhileIdle: true },
+      ...nativeNotificationImage(),
     };
     if (Capacitor.getPlatform() === 'android') {
-      n.channelId = 'medminder';
+      n.channelId = MM_ANDROID_CHANNEL_DOSE;
     }
     await LocalNotifications.schedule({ notifications: [n] });
     return true;

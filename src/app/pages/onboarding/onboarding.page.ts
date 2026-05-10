@@ -22,6 +22,8 @@ export class OnboardingPage {
   private profileId = '';
 
   medName = '';
+  /** How much to take each time (required; stored as dosage note). */
+  medDose = '';
   medTime = '09:00';
 
   constructor(
@@ -118,7 +120,8 @@ export class OnboardingPage {
 
   async finishMedication(): Promise<void> {
     const med = this.medName.trim();
-    if (!med || !this.profileId) {
+    const dose = this.medDose.trim();
+    if (!med || !dose || !this.profileId) {
       return;
     }
     const times = [this.normalizeTime(this.medTime)];
@@ -127,6 +130,7 @@ export class OnboardingPage {
     try {
       await this.medData.createMedication(this.profileId, {
         name: med,
+        dosageNote: dose,
         times,
         enabled: true,
       });

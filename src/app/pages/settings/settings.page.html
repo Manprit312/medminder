@@ -60,8 +60,8 @@
       <ion-item lines="none" class="sp-item">
         <span class="material-symbols-outlined sp-item-ic" slot="start" aria-hidden="true">campaign</span>
         <ion-label class="ion-text-wrap">
-          <p class="sp-label">Notifications</p>
-          <p class="sp-value">{{ permDisplay || '…' }}</p>
+          <p class="sp-label">Dose reminders</p>
+          <p class="sp-value">{{ reminderPermissionHint }}</p>
         </ion-label>
       </ion-item>
 
@@ -74,7 +74,7 @@
           (click)="requestNotifications()"
         >
           <span class="material-symbols-outlined sp-btn-ic" aria-hidden="true">notifications_active</span>
-          Enable reminders
+          Allow dose reminders
         </ion-button>
         <ion-button
           expand="block"
@@ -86,16 +86,16 @@
           (click)="sendTestReminder()"
         >
           <span class="material-symbols-outlined sp-btn-ic" aria-hidden="true">science</span>
-          Test reminder (10 s)
+          Send test alert (10 s)
         </ion-button>
-        <p class="sp-hint">Local only — scheduled on this device.</p>
+        <p class="sp-hint">Scheduled on this device only — not sent over the internet.</p>
       </div>
     } @else {
       <ion-item lines="none" class="sp-item">
         <span class="material-symbols-outlined sp-item-ic" slot="start" aria-hidden="true">smartphone</span>
         <ion-label class="ion-text-wrap">
-          <p class="sp-label">Device</p>
-          <p class="sp-value">Use the iOS or Android app for local reminders.</p>
+          <p class="sp-label">Reminders on this device</p>
+          <p class="sp-value">Install the MedMinder app on iPhone or Android for timed dose alerts. The web version cannot wake your phone.</p>
         </ion-label>
       </ion-item>
     }

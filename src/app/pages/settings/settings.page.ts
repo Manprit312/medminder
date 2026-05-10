@@ -38,6 +38,20 @@ export class SettingsPage implements ViewWillEnter {
     return this.auth.getUserDisplay();
   }
 
+  /** Friendly copy for Settings → Reminders (avoids raw API values like `prompt`). */
+  get reminderPermissionHint(): string {
+    switch (this.permDisplay) {
+      case 'granted':
+        return 'On — we will remind you at each scheduled dose time.';
+      case 'denied':
+        return 'Off — enable alerts in system Settings to receive dose reminders.';
+      case 'prompt':
+        return 'Not enabled yet — tap Allow dose reminders below.';
+      default:
+        return this.permDisplay ? String(this.permDisplay) : 'Checking…';
+    }
+  }
+
   ionViewWillEnter(): void {
     void this.refreshPerm();
     void this.subscription.refreshFromApi();
@@ -81,7 +95,7 @@ export class SettingsPage implements ViewWillEnter {
   }
 
   async requestNotifications(): Promise<void> {
-    const loading = await this.loadingCtrl.create({ message: 'Enabling reminders…' });
+    const loading = await this.loadingCtrl.create({ message: 'Turning on reminders…' });
     await loading.present();
     try {
       await this.medNotif.requestPermissionAndSchedule();
@@ -103,8 +117,8 @@ export class SettingsPage implements ViewWillEnter {
     }
     const t = await this.toastCtrl.create({
       message: ok
-        ? 'Test reminder in about 10 seconds. You can leave the app.'
-        : 'Allow notifications first (Enable reminders), then try again.',
+        ? 'You should get a test alert in about 10 seconds. You can leave the app.'
+        : 'Allow notifications first (Allow dose reminders), then try again.',
       duration: 3500,
       position: 'bottom',
       color: ok ? 'success' : 'warning',

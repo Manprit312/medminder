@@ -85,8 +85,8 @@ export class FirebaseAuthService {
 
   private nativeGoogleMissingIdTokenMessage(): string {
     return (
-      'Google did not return an ID token. Open Firebase Console → Project settings → Your apps → Android ' +
-      '(app.medminder.app) and add your debug SHA-1: run `cd android && ./gradlew signingReport`, copy SHA1 under debug.'
+      'Google did not return an ID token. In Firebase → Android app app.medminder.med, add SHA-1 + SHA-256 from ' +
+        '`./gradlew signingReport` (use **debug** for dev builds, **release** for signed release APKs), then rebuild.'
     );
   }
 
@@ -107,15 +107,19 @@ export class FirebaseAuthService {
     // Plugin passes status code as second line sometimes: "Something went wrong" + "10"
     if (raw.includes('10') || lower.includes('developer_error') || lower.includes('developer error')) {
       return (
-        'Google Sign-In setup error (code 10). Fix: (1) Firebase Console → Project settings → Your apps → add Android app ' +
-        '`app.medminder.app` if missing. (2) Add SHA-1 fingerprint: run `cd android && ./gradlew signingReport`, copy SHA1 from the debug variant, paste into Firebase Android app. ' +
-        '(3) Download fresh google-services.json into android/app/ if you use it. Then rebuild the app.'
+        'Google Sign-In setup error (code 10 / DEVELOPER_ERROR). Do this in Firebase (project medminder-3d4c6): ' +
+          'Project settings → Your apps → Android `app.medminder.med` → Add fingerprint. ' +
+          'Run `cd android && ./gradlew signingReport` and add **both** SHA-1 and SHA-256 for **debug** (dev builds) ' +
+          'and **release** (Play/APK you install). Save, wait ~5 min, then rebuild the app. ' +
+          'Also confirm Authentication → Sign-in method → Google is enabled.'
       );
     }
 
     if (lower.includes('something went wrong')) {
       return (
-        `${raw}. Usually: add your debug SHA-1 in Firebase for package app.medminder.app, or confirm googleWebClientId is the OAuth "Web client" ID from the same Google Cloud project as Firebase.`
+        `${raw} — Most often: (1) Firebase → Android app \`app.medminder.med\` is missing **SHA-1** (and **SHA-256**) from \`./gradlew signingReport\` for the variant you run (debug vs release). ` +
+          `(2) \`googleWebClientId\` must be the **Web client** OAuth ID from Google Cloud **for the same project** as Firebase (Firebase console → Project settings → Your apps, or APIs & Services → Credentials → Web client). ` +
+          `(3) After changing Firebase, sync \`android/app/google-services.json\` and rebuild.`
       );
     }
 

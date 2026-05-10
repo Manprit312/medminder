@@ -151,6 +151,10 @@ profilesRouter.post(
       return;
     }
     const dosageNote = req.body?.dosageNote != null ? String(req.body.dosageNote).trim() : '';
+    if (!dosageNote) {
+      res.status(400).json({ error: 'dosageNote is required — describe how much to take each time' });
+      return;
+    }
     const enabled = req.body?.enabled !== false;
     const rq = req.body?.remainingQuantity;
     const remainingQuantity =
@@ -167,7 +171,7 @@ profilesRouter.post(
         id,
         profileId,
         name,
-        dosageNote || null,
+        dosageNote,
         JSON.stringify(timeStrs),
         enabled ? 1 : 0,
         remainingQuantity,

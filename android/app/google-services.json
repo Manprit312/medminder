@@ -1,33 +1,41 @@
 {
   "project_info": {
-    "project_number": "926270091656",
-    "project_id": "medminder-33713",
-    "storage_bucket": "medminder-33713.firebasestorage.app"
+    "project_number": "496540692342",
+    "project_id": "medminder-3d4c6",
+    "storage_bucket": "medminder-3d4c6.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:926270091656:android:7f47a2c01f4784a0918a3d",
+        "mobilesdk_app_id": "1:496540692342:android:a1426c8e8ebe0ee20ed457",
         "android_client_info": {
-          "package_name": "app.medminder.app"
+          "package_name": "app.medminder.med"
         }
       },
       "oauth_client": [
         {
-          "client_id": "926270091656-kfirh36lbdch3mtftcdmekis0psfh75i.apps.googleusercontent.com",
+          "client_id": "496540692342-9qf64aju2jksgka1c5e3m5l5s49lgi25.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.medminder.med",
+            "certificate_hash": "e1c07bc9f4a60c28a3c05a9ab8b1ef4421a442e7"
+          }
+        },
+        {
+          "client_id": "496540692342-jojci0pl58bgk285jkvooo094g484sf8.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCkZm8nE82SauvhPIhPt6ZW9OKzNf6Ek5c"
+          "current_key": "AIzaSyAewNqJgyo73wcg_ui-hlINjmjQcdOUBbc"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "926270091656-kfirh36lbdch3mtftcdmekis0psfh75i.apps.googleusercontent.com",
+              "client_id": "496540692342-jojci0pl58bgk285jkvooo094g484sf8.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

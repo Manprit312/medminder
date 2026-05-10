@@ -53,6 +53,11 @@ yarn-error.log
 .history/*
 
 
+# Local secrets (API keys, Firebase private keys, etc.)
+.env
+.env.*
+!.env.example
+
 # Miscellaneous
 /.angular
 /.angular/cache

@@ -254,7 +254,7 @@ export class MedDataService {
     profileId: string,
     body: {
       name: string;
-      dosageNote?: string;
+      dosageNote: string;
       times: string[];
       enabled: boolean;
       remainingQuantity?: number | null;
@@ -266,7 +266,7 @@ export class MedDataService {
       withApiTimeout(
         this.http.post<{ medication: ApiMedication }>(`${this.base()}/api/profiles/${profileId}/medications`, {
           name: body.name.trim(),
-          dosageNote: body.dosageNote?.trim() || undefined,
+          dosageNote: body.dosageNote.trim(),
           times: body.times,
           enabled: body.enabled,
           remainingQuantity:

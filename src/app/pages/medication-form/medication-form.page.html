@@ -11,7 +11,7 @@
       isAdd ? (addStep === 1 ? 'Choose medicine type' : 'Add medication') : 'Edit medication'
     }}</ion-title>
     <ion-buttons slot="end" *ngIf="(!isAdd || addStep === 2) && profile">
-      <ion-button strong="true" (click)="save()" [disabled]="!formName.trim()">
+      <ion-button strong="true" (click)="save()" [disabled]="!formName.trim() || !formDosage.trim()">
         <span class="material-symbols-outlined" slot="start">save</span>
         Save
       </ion-button>
@@ -74,10 +74,11 @@
         <span class="material-symbols-outlined input-lead" slot="start">straighten</span>
         <ion-input
           name="dosage"
-          label="Dose note (optional)"
+          label="Dose (each time)"
           labelPlacement="stacked"
           [(ngModel)]="formDosage"
           placeholder="e.g. 1 tablet, 500 mg"
+          required
         ></ion-input>
       </ion-item>
     </ion-list>
@@ -186,7 +187,7 @@
     </ion-list>
 
     <div class="ion-padding">
-      <ion-button expand="block" size="large" type="submit" [disabled]="!formName.trim()">
+      <ion-button expand="block" size="large" type="submit" [disabled]="!formName.trim() || !formDosage.trim()">
         <span class="material-symbols-outlined btn-ic">check_circle</span>
         {{ isAdd ? 'Add medication' : 'Save changes' }}
       </ion-button>

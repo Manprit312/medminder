@@ -59,10 +59,15 @@ medicationsRouter.patch(
       return;
     }
     const name = req.body?.name != null ? String(req.body.name).trim() : existing.name;
-    const dosageNote =
+    const resolvedDosage =
       req.body?.dosageNote !== undefined
         ? String(req.body.dosageNote).trim() || null
         : existing.dosage_note;
+    if (!resolvedDosage?.trim()) {
+      res.status(400).json({ error: 'dosageNote is required — describe how much to take each time' });
+      return;
+    }
+    const dosageNote = resolvedDosage.trim();
     let timesJson = existing.times_json;
     if (req.body?.times != null) {
       const times = req.body.times as unknown;

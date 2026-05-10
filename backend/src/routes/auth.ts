@@ -106,6 +106,7 @@ authRouter.post(
     try {
       decoded = await verifyFirebaseIdToken(idToken);
     } catch (err) {
+      console.error('[auth/google] verifyFirebaseIdToken:', err);
       const message = errorMessage(err);
       if (message.toLowerCase().includes('credentials missing')) {
         res.status(503).json({ error: 'Google sign-in is not configured on the server yet.' });
@@ -113,8 +114,13 @@ authRouter.post(
       }
       if (
         message.toLowerCase().includes('id token') ||
+        message.toLowerCase().includes('firebase id token') ||
         message.toLowerCase().includes('jwt') ||
-        message.toLowerCase().includes('certificate')
+        message.toLowerCase().includes('certificate') ||
+        message.toLowerCase().includes('audience') ||
+        message.toLowerCase().includes('signature') ||
+        message.toLowerCase().includes('expired') ||
+        message.toLowerCase().includes('decoding')
       ) {
         res.status(401).json({ error: 'Google token verification failed. Sign in again and retry.' });
         return;

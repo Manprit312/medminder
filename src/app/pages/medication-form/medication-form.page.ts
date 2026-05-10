@@ -235,6 +235,7 @@ export class MedicationFormPage implements OnInit, ViewWillEnter {
     this.formTimes = this.formTimes.map((t) => this.normalizeTime(String(t ?? '')));
 
     const name = this.formName.trim();
+    const dose = this.formDosage.trim();
     if (!name || !this.profileId) {
       if (!this.profileId) {
         const a = await this.alertCtrl.create({
@@ -244,6 +245,15 @@ export class MedicationFormPage implements OnInit, ViewWillEnter {
         });
         await a.present();
       }
+      return;
+    }
+    if (!dose) {
+      const a = await this.alertCtrl.create({
+        header: 'Dose required',
+        message: 'Enter how much to take each time (for example 1 tablet or 500 mg).',
+        buttons: ['OK'],
+      });
+      await a.present();
       return;
     }
     const times = [...this.formTimes];
@@ -289,7 +299,7 @@ export class MedicationFormPage implements OnInit, ViewWillEnter {
       if (this.isAdd) {
         await this.medData.createMedication(this.profileId, {
           name,
-          dosageNote: this.formDosage.trim() || undefined,
+          dosageNote: dose,
           times: unique,
           enabled: this.formEnabled,
           remainingQuantity: this.parseRemainingForCreate(),
@@ -300,7 +310,7 @@ export class MedicationFormPage implements OnInit, ViewWillEnter {
         await this.medData.updateMedication({
           ...existing,
           name,
-          dosageNote: this.formDosage.trim() || undefined,
+          dosageNote: dose,
           times: unique,
           enabled: this.formEnabled,
           remainingQuantity: this.parseRemainingForEdit(),

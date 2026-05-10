@@ -1,4 +1,4 @@
-package app.medminder.app;
+package app.medminder.med;
 
 import android.os.Bundle;
 import androidx.core.view.WindowCompat;
